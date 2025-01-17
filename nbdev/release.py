@@ -203,7 +203,7 @@ def _get_conda_meta():
     doc_url = (cfg.doc_host + cfg.doc_baseurl) if (cfg.doc_host and cfg.doc_baseurl) else url
     dev_url = cfg.git_url if cfg.git_url else url
 
-    hostreqs = ['packaging', f'python >={cfg.min_python}']
+    hostreqs = ['setuptools', 'packaging', f'python >={cfg.min_python}']
     reqs = hostreqs+[]
     if cfg.get('requirements'): reqs += cfg.requirements.split()
     if cfg.get('conda_requirements'): reqs += cfg.conda_requirements.split()
