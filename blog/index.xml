@@ -1,0 +1,782 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>nbdev</title>
+<link>https://nbdev.fast.ai/blog/</link>
+<atom:link href="https://nbdev.fast.ai/blog/index.xml" rel="self" type="application/rss+xml"/>
+<description>Create delightful software with Jupyter Notebooks</description>
+<generator>quarto-1.6.40</generator>
+<lastBuildDate>Mon, 07 Nov 2022 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Create A 🤗 Space From A Notebook</title>
+  <dc:creator>Hamel Husain</dc:creator>
+  <link>https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/blog_cover.jpeg" class="img-fluid figure-img"></p>
+<figcaption>Image created with Stable Diffusion from <a href="https://huggingface.co/spaces/stabilityai/stable-diffusion">this space</a></figcaption>
+</figure>
+</div>
+<p><a href="https://huggingface.co/spaces/launch">Hugging Face Spaces</a> provides an easy ways to deploy a web app with python. <a href="https://gradio.app/">Gradio</a> is one of my favorite tools for building these web apps. For example, the cover-image for this blog post was generated with a <a href="https://huggingface.co/spaces/stabilityai/stable-diffusion">Gradio App</a>!<sup>1</sup> Gradio also allows you to prototype your web apps in notebooks which allows you to iterate fast. Unfortunately, Hugging Face Spaces requires you to package your web application code as a python script named <code>app.py</code>.</p>
+<p>However, <strong>thanks to <a href="https://nbdev.fast.ai">nbdev</a>, you can deploy a Gradio app to Spaces from a notebook without having to refactor your code into a script!</strong> When you finish this tutorial, you will have an app that looks like this:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://huggingface.co/spaces/hamel/hfspace_demo"><img src="https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/final_app.png" class="img-fluid figure-img" alt="A Gradio app that shows the size of a HF Dataset."></a></p>
+<figcaption><a href="https://huggingface.co/spaces/hamel/hfspace_demo">A Gradio app</a> that shows the size of a HF Dataset.</figcaption>
+</figure>
+</div>
+<p><em>The above app allows you to lookup the size of any <a href="https://huggingface.co/docs/datasets/index">Hugging Face Dataset</a>, using the <a href="https://huggingface.co/docs/datasets-server/index">Hugging Face Datasets Server API</a>.</em></p>
+<p>Authoring your spaces in notebooks offers a number of benefits such as the ability to:</p>
+<ul>
+<li>Document your code (with <code>quarto</code> or <code>nbdev</code>)</li>
+<li>Prototype and author your code (with <code>nbdev.export.export_nb</code>)</li>
+<li>Test your code (with <code>nbdev_test</code>)</li>
+</ul>
+<p>… All from the same environment!</p>
+<section id="create-a-gradio-enabled-space-on-hugging-face" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-gradio-enabled-space-on-hugging-face">1. Create a Gradio-enabled Space on Hugging Face</h2>
+<p>The first step is to create a space and select the appropriate sdk (which is Gradio in this example), according to <a href="https://huggingface.co/docs/hub/spaces-overview#creating-a-new-space">these instructions</a>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/create_space.png" class="img-fluid figure-img"></p>
+<figcaption>create a Hugging Face Space</figcaption>
+</figure>
+</div>
+<p>After you are done creating the space, clone the repo locally. In this example, I ran the command <code>git clone https://huggingface.co/spaces/hamel/hfspace_demo</code>.</p>
+</section>
+<section id="create-a-notebook" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-notebook">2. Create A Notebook</h2>
+<p>Before getting started you will want to install the dependencies for this tutorial:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>pip install git<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>https:<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">//</span>github.com<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span>fastai<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span>nbdev.git gradio fastcore</span></code></pre></div>
+<p>Create a notebook called <code>app.ipynb</code> in the root of your newly cloned repo. Alternatively, download <a href="https://gist.github.com/hamelsmu/35be07d242f3f19063c3a3839127dc67">the notebook</a> and follow along.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Download the notebook and follow along
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This blog post is a verbose version of the “notebook” you can use to create a Gradio app. However, it can be useful to see just the code without any of the prose. A <a href="https://gist.github.com/hamelsmu/35be07d242f3f19063c3a3839127dc67">concise version of this notebook is here</a>. I recommend taking a look at this notebook during or after you read this blog post.</p>
+</div>
+</div>
+</section>
+<section id="make-an-app-with-gradio" class="level2">
+<h2 class="anchored" data-anchor-id="make-an-app-with-gradio">3. Make an app with Gradio</h2>
+<p>Below, I will create a <a href="https://gradio.app/">gradio</a> app in a notebook and show you how to deploy it to <a href="https://huggingface.co/docs/hub/spaces">Hugging Face Spaces</a>.</p>
+<p>First, lets import the libraries we need, which in this case are <code>gradio</code> and <code>fastcore</code>:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#|export</span></span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> gradio <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> gr</span>
+<span id="cb2-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> fastcore.net <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> urljson, HTTPError</span></code></pre></div>
+<p>Next, write the functions your gradio app will use. Because of <a href="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/">nbdev</a>, you can prototype and package your code all in one place. <strong>The special comment <code>#|export</code> marks which cells will be sent to a python script</strong> (more on this later). Note that there are only three cells in this notebook with the <code>#|export</code> directive.</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#|export</span></span>
+<span id="cb3-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> size(repo:<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>):</span>
+<span id="cb3-3">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"Returns the size in GB of a HuggingFace Dataset."</span></span>
+<span id="cb3-4">    url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'https://huggingface.co/api/datasets/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>repo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb3-5">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>: resp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> urljson(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>url<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/treesize/main'</span>)</span>
+<span id="cb3-6">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> HTTPError: <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Did not find repo: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>url<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb3-7">    gb <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> resp[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'size'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e9</span></span>
+<span id="cb3-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>gb<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> GB'</span></span></code></pre></div>
+<p><code>size</code> takes as an input a <a href="https://huggingface.co/docs/datasets/index">Hugging Face Dataset</a> repo and returns the total size in GB of the data.</p>
+<p>For example, I can check the size of <a href="https://huggingface.co/datasets/tglcourse/CelebA-faces-cropped-128">tglcourse/CelebA-faces-cropped-128</a> like so:</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">size(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tglcourse/CelebA-faces-cropped-128"</span>)</span></code></pre></div>
+<div class="cell-output">
+<pre><code>'5.49 GB'</code></pre>
+</div>
+<p>You can construct a simple UI with the <code>gradio.interface</code> and then call the <code>launch</code> method of that interface to display a preview in a notebook. This is a great way to test your app to see if it works:</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#|export</span></span>
+<span id="cb6-2">iface <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> gr.Interface(fn<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>size, inputs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>gr.Text(value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tglcourse/CelebA-faces-cropped-128"</span>), outputs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>)</span>
+<span id="cb6-3">iface.launch(height<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">450</span>, width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">500</span>)</span></code></pre></div>
+<div class="cell-output">
+<pre><code>Running on local URL:  http://127.0.0.1:7861
+
+To create a public link, set `share=True` in `launch()`.</code></pre>
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/gradio_local.png" class="img-fluid"></p>
+</div>
+<p>Note how running the <code>launch()</code> method in a notebook runs a webserver in the background. Below, I call the <code>close()</code> method to close the webserver.</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># this is only necessary in a notebook</span></span>
+<span id="cb8-2">iface.close()</span></code></pre></div>
+<div class="cell-output">
+<pre><code>Closing server running on port: 7861</code></pre>
+</div>
+</section>
+<section id="convert-this-notebook-into-a-gradio-app" class="level2">
+<h2 class="anchored" data-anchor-id="convert-this-notebook-into-a-gradio-app">4. Convert This Notebook Into A Gradio App</h2>
+<p>In order to host this code on Hugging Face Spaces, you will export parts of this notebook to a script named <code>app.py</code>. As a reminder, this is what the special <code>#|export</code> comment that you have seen in cells above do! You can export code from this notebook like so:</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> nbdev.export <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> nb_export</span>
+<span id="cb10-2">nb_export(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'app.ipynb'</span>, lib_path<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'.'</span>, name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'app'</span>)</span></code></pre></div>
+<section id="understanding-what-is-generated" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-what-is-generated">Understanding what is generated</h3>
+<p>Notice how the contents of app.py only contain the exported cells from this notebook:</p>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>cat app.py</span></code></pre></div>
+<div class="cell-output">
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># AUTOGENERATED! DO NOT EDIT! File to edit: app.ipynb.</span></span>
+<span id="cb12-2"></span>
+<span id="cb12-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># %% auto 0</span></span>
+<span id="cb12-4">__all__ <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'iface'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'size'</span>]</span>
+<span id="cb12-5"></span>
+<span id="cb12-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># %% app.ipynb 6</span></span>
+<span id="cb12-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> gradio <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> gr</span>
+<span id="cb12-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> fastcore.net <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> urljson, HTTPError</span>
+<span id="cb12-9"></span>
+<span id="cb12-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># %% app.ipynb 8</span></span>
+<span id="cb12-11"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> size(repo:<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>):</span>
+<span id="cb12-12">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"Returns the size in GB of a HuggingFace Dataset."</span></span>
+<span id="cb12-13">    url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'https://huggingface.co/api/datasets/</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>repo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb12-14">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>: resp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> urljson(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>url<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">/treesize/main'</span>)</span>
+<span id="cb12-15">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> HTTPError: <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Did not find repo: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>url<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb12-16">    gb <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> resp[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'size'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e9</span></span>
+<span id="cb12-17">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>gb<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> GB'</span></span>
+<span id="cb12-18"></span>
+<span id="cb12-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># %% app.ipynb 12</span></span>
+<span id="cb12-20">iface <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> gr.Interface(fn<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>size, inputs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>gr.Text(value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tglcourse/CelebA-faces-cropped-128"</span>), outputs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>)</span>
+<span id="cb12-21">iface.launch(height<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">450</span>, width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">500</span>)</span></code></pre></div>
+</div>
+</section>
+<section id="fill-out-requirements.txt" class="level3">
+<h3 class="anchored" data-anchor-id="fill-out-requirements.txt">Fill out <code>requirements.txt</code></h3>
+<p>You must supply a <code>requirements.txt</code> file so the Gradio app knows how to build your dependencies. In this example, the only dependency other than Gradio is <code>fastcore</code>. You don’t need to specify Gradio itself as a dependency in <code>requirements.txt</code>, so our <code>requirements.txt</code> file has only one dependency:</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>writefile requirements.txt</span>
+<span id="cb13-2">fastcore</span></code></pre></div>
+<pre><code>Writing requirements.txt</code></pre>
+<p><em>Note: you may want to add operating system dependencies in addition to python dependencies. You can do this via a <code>packages.txt</code> file as <a href="https://huggingface.co/docs/hub/spaces-dependencies#adding-your-own-dependencies">documented here</a>.</em></p>
+</section>
+</section>
+<section id="launch-your-gradio-app" class="level2">
+<h2 class="anchored" data-anchor-id="launch-your-gradio-app">5. Launch Your Gradio App</h2>
+<p>To launch your gradio app, you need to commit the changes to the Hugging Face repo:</p>
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> add <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-A</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">;</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> commit <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Add application files"</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">;</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> push</span></code></pre></div>
+</section>
+<section id="voilà-enjoy-your-gradio-app" class="level1">
+<h1>Voilà! Enjoy your Gradio App</h1>
+<p>After a couple of minutes, you will see your app published! This app is published <a href="https://huggingface.co/spaces/hamel/hfspace_demo">here</a>.</p>
+</section>
+<section id="shameless-plug-nbdev" class="level1">
+<h1>Shameless Plug: <a href="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/">nbdev</a></h1>
+<p>Hopefully you felt something magical while doing this example. Even though the target application required you to write a python script (<code>app.py</code>), you didn’t have to refactor your script from a notebook! I believe that you shouldn’t have to refactor your code and switch contexts even when creating python packages! If this intrigues you, check out <a href="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/">nbdev</a></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>The prompt that generated the cover image is: “A data scientist at a computer in a futuristic city with a view of the planet Jupyter in the night sky, trending on artstation, high detail, science-fiction”↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <guid>https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/</guid>
+  <pubDate>Mon, 07 Nov 2022 00:00:00 GMT</pubDate>
+  <media:content url="https://nbdev.fast.ai/blog/posts/2022-11-07-spaces/blog_cover.jpeg" medium="image" type="image/jpeg"/>
+</item>
+<item>
+  <title>The Jupyter+git problem is now solved</title>
+  <dc:creator>Jeremy Howard</dc:creator>
+  <link>https://nbdev.fast.ai/blog/posts/2022-08-25-jupyter-git/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p><em><a href="https://www.fast.ai/2022/08/25/jupyter-git/">Originally posted</a> on the fast.ai blog</em></p>
+<blockquote class="blockquote">
+<p>Jupyter notebooks don’t work with git by default. With <a href="https://nbdev.fast.ai/">nbdev2</a>, the Jupyter+git problem has been totally solved. It provides a set of hooks which provide clean git diffs, solve most git conflicts automatically, and ensure that any remaining conflicts can be resolved entirely within the standard Jupyter notebook environment. To get started, follow the directions on <a href="https://nbdev.fast.ai/tutorials/git_friendly_jupyter.html">Git-friendly Jupyter</a>.</p>
+</blockquote>
+<section id="the-jupytergit-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-jupytergit-problem">The Jupyter+git problem</h2>
+<p><a href="https://Jupyter.org/">Jupyter notebooks</a> are a powerful tool for scientists, engineers, technical writers, students, teachers, and more. They provide an ideal <a href="https://en.wikipedia.org/wiki/Lab_notebook">notebook</a> environment for interactively exploring data and code, writing programs, and documenting the results as dashboards, books, or blogs.</p>
+<p>But when collaborating with others, this ideal environment goes up in smoke. That’s because tools such as git, which are the most popular approaches for asynchronous collaboration, makes notebooks unusable. Literally. Here’s what it looks like if you and a colleague both modify a notebook cell (including, in many cases, simply executing a cell withuout changing it), and then try to open that notebook later:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-08-25-jupyter-git/unreadable-notebook.png" class="img-fluid figure-img"></p>
+<figcaption>What merge conflicts normally do to Jupyter Notebooks</figcaption>
+</figure>
+</div>
+<p>The reason for this stems from a fundamental incompatibility between the format Jupyter notebooks use (JSON) and the format that git conflict markers assume by default (plain lines of text). This is what it looks like when git adds its conflict markers to a notebook:</p>
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+<pre><code>   "source": [
+&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+    "z=3\n",
+======
+    "z=2\n",
+&gt;&gt;&gt;&gt;&gt;&gt; a7ec1b0bfb8e23b05fd0a2e6cafcb41cd0fb1c35
+    "z"
+   ]</code></pre>
+</div>
+<p>That’s not valid JSON, and therefore Jupyter can’t open it. Conflicts are particularly common in notebooks, because Jupyter changes the following every time you run a notebook:</p>
+<ul>
+<li>Every cell includes a number indicating what order it was run in. If you and a colleague run the cells in different orders, you’ll have a conflict in every single cell! This would take a very long time to fix manually</li>
+<li>For every figure, such as a plot, Jupyter includes not only the image itself in the notebook, but also a plain text description that includes the <code>id</code> (like a memory address) of the object, such as <code>&lt;matplotlib.axes._subplots.AxesSubplot at 0x7fbc113dbe90&gt;</code>. This changes every time you execute a notebook, and therefore will create a conflict every time two people execute this cell</li>
+<li>Some outputs may be non-deterministic, such as a notebook that uses random numbers, or that interacts with a service that provides different outputs over time (such as a weather service)</li>
+<li>Jupyter adds metadata to the notebook describing the environment it was last run in, such as the name of the kernel. This often varies across installations, and therefore two people saving a notebook (even without and other changes) will often end up with a conflict in the metadata.</li>
+</ul>
+<p>All these changes to notebook files also make git diffs of notebooks very verbose. This can make code reviews a challenge, and make git repos more bulky than necessary.</p>
+<p>The result of these problems is that many Jupyter users feel that collaborating with notebooks is a clunky, error-prone, and frustrating experience. (We’ve even seen people on social media describe Jupyter’s notebook format as “stupid” or “terrible”, despite otherwise professing their love for the software!)</p>
+<p>It turns out, however, that Jupyter and git can work together extremely well, with none of the above problems at all. All that’s needed is a bit of special software…</p>
+</section>
+<section id="the-solution" class="level2">
+<h2 class="anchored" data-anchor-id="the-solution">The solution</h2>
+<p>Jupyter and git are both well-designed software systems that provide many powerful extensibility mechanisms. It turns out that we can use these to fully and automatically solve the Jupyter+git problem. We identified two categories of problems in the previous section:</p>
+<ol type="1">
+<li>git conflicts lead to broken notebooks</li>
+<li>Unnecessary conflicts due to metadata and outputs.</li>
+</ol>
+<p>In our newly released <a href="https://nbdev.fast.ai/">nbdev2</a>, an open source Jupyter-based development platform, we’ve solve each of the problems:</p>
+<ol type="1">
+<li>A new <em>merge driver</em> for git provides “notebook-native” conflict markers, resulting in notebooks that can be opened directly in Jupyter, even when there are git conflicts</li>
+<li>A new <em>save hook</em> for Jupyter automatically removes all unnecessary metadata and non-deterministic cell output.</li>
+</ol>
+<p>Here’s what a conflict looks like in Jupyter with nbdev’s merge driver:</p>
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-08-25-jupyter-git/friendly-conflict.png" class="img-fluid"></p>
+</div>
+<p>As you see, the local and remote change are each clearly displayed as separate cells in the notebook, allowing you to simply delete the version you don’t want to keep, or combine the two cells as needed.</p>
+<p>The techniques used to make the merge driver work are quite fascinating – let’s dive into the details!</p>
+<section id="the-nbdev2-git-merge-driver" class="level3">
+<h3 class="anchored" data-anchor-id="the-nbdev2-git-merge-driver">The nbdev2 git merge driver</h3>
+<p>We provide here a summary of the git merge driver – for full details and source code see the <a href="https://nbdev.fast.ai/api/merge.html"><code>nbdev.merge</code> docs</a>. Amazingly enough, the entire implementation is just 58 lines of code!</p>
+<p>The basic idea is to first “undo” the original git merge which created the conflict, and then “redo” it at a cell level (instead of a line level) and looking only at cell source (not outputs or metadata). The “undoing” is straightforward: just create two copies of the conflicted file (representing the local and remove versions of the file), go through each git conflict marker, and replace the conflict section with either the local or remote version of the code.</p>
+<p>Now that we’ve got the original local and remote notebooks, we can load the json using <a href="https://fastai.github.io/execnb/nbio.html"><code>execnb.nbio</code></a>, which will then give us an array of cells for each notebook. Now we’re up to the interesting bit – creating cell-level diffs based only on the cell source.</p>
+<p>The Python standard library contains a very flexible and effective implementation of a diff algorithm in the <code>difflib</code> module. In particular, the <a href="https://docs.python.org/3/library/difflib.html#difflib.SequenceMatcher"><code>SequenceMatcher</code></a> class provides the fundamental building blocks for implementing your own conflict resolution system. We pass the two sets of cells (remote and local) to <code>SequenceMatcher(...).get_matching_blocks()</code>, and it returns a list of each section of cells that match (i.e.&nbsp;have no conflicts/differences). We can then go through each matching section and copy them into the final notebook, and through each non-matching section and copy in each of the remote and local cells (add cells between them to mark the conflicts).</p>
+<p>Making <code>SequenceMatcher</code> work with notebook cells (represented in nbdev by the <code>NbCell</code> class) requires only adding <code>__hash__</code> and <code>__eq__</code> methods to <code>NbCell</code>. In each case, these methods are defined to look only at the actual source code, and not at any metadata or outputs. As a result, <code>SequenceMatcher</code> will only show differences in source code, and will ignore differences in everything else.</p>
+<p>With a single line of configuration, we can ask git to call our python script, instead of its default line-based implementation, any time it is merging changes. <code>nbdev_install_hooks</code> sets up this configuration automatically, so after running it, git conflicts become much less common, and never result in broken notebooks.</p>
+</section>
+<section id="the-nbdev2-jupyter-save-hook" class="level3">
+<h3 class="anchored" data-anchor-id="the-nbdev2-jupyter-save-hook">The nbdev2 Jupyter save hook</h3>
+<p>Solving git merges locally is extremely helpful, but we need to solve them remotely as well. For instance, if a contributor submits a pull request (PR), and then someone else commits to the same notebook before the PR is merged, the PR might now have a conflict like this:</p>
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+<pre><code>   "outputs": [
+    {
+&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+     "execution_count": 7,
+======
+     "execution_count": 5,
+&gt;&gt;&gt;&gt;&gt;&gt; a7ec1b0bfb8e23b05fd0a2e6cafcb41cd0fb1c35
+     "metadata": {},</code></pre>
+</div>
+<p>This conflict shows that the two contributors have run cells in different orders (or perhaps one added a couple of cells above in the notebook), so their commits have conflicting execution counts. GitHub will refuse to allow this PR to be merged until this conflict is fixed.</p>
+<p>But of course we don’t really care about the conflict at all – it doesn’t matter what, if any, execution count is stored in the notebook. So we’d really prefer to ignore this difference entirely!</p>
+<p>Thankfully, Jupyter provides a “pre-save” hook which allows code to be run every time a notebook is saved. nbdev uses this to set up a hook which removes all unnecessary metadata (including <code>execution_count</code>) on saving. That means there’s no pointless conflicts like the one above, because no commits will have this information stored in the first place.</p>
+</section>
+</section>
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>Here at fast.ai we use Jupyter for everything. All our tests, documentation, and module source code for all of our many libraries is entirely developed in notebooks (using nbdev, of course!) And we use git for all our libraries too. Some of our repositories have many hundreds of contributors. Therefore solving the Jupyter+git problem has been critical for us. The solution presented here is the result of years of work by many people.</p>
+<p>Our first approach, developed by Stas Bekman and me, was to use git <a href="https://bignerdranch.com/blog/git-smudge-and-clean-filters-making-changes-so-you-dont-have-to/">“smudge” and “clean” filters</a> that automatically rewrote all notebook json to remove unneeded metadata when committing. This helped a bit, but git quite often ended up in an odd state where it was impossible to merge.</p>
+<p>In nbdev v1 Sylvain Gugger created an amazing tool called <code>nbdev_fix_merge</code> which used very clever custom logic to manually fix merge conflicts in notebooks, to ensure that they could opened in Jupyter. For nbdev v2 I did a from-scratch rewrite of every part of the library, and I realised that we could replace the custom logic with the <code>SequenceMatcher</code> approach described above.</p>
+<p>None of these steps fully resolved the Jupyter+git problem, since we were getting frequent merge errors caused by the smudge/clean git filters, and conflicts required manually running <code>nbdev_fix_merge</code>. Wasim Lorgat realised that we could resolve the smudge/clean issue by moving that logic into an nbdev save hook, and avoid the manual fix step by moving that logic into a git merge driver. This resolved the final remaining issues! (I was actually quite stunned that Wasim went from our first discussion of the outstanding problems, to figuring out how to solve all of them, in the space of about two days…)</p>
+</section>
+<section id="the-result" class="level2">
+<h2 class="anchored" data-anchor-id="the-result">The result</h2>
+<p>The new tools in nbdev2, which we’ve been using internally for the last few months, have been transformational to our workflow. <strong>The Jupyter+git problem has been totally solved.</strong> I’ve seen no unnecessary conflicts, cell-level merges have worked like magic, and on the few occassions where I’ve changed the source in the same cell as a collaborator, fixing the conflict in Jupyter has been straightforward and convenient.</p>
+</section>
+<section id="postscript-other-jupytergit-tools" class="level2">
+<h2 class="anchored" data-anchor-id="postscript-other-jupytergit-tools">Postscript: other Jupyter+git tools</h2>
+<section id="reviewnb" class="level3">
+<h3 class="anchored" data-anchor-id="reviewnb">ReviewNB</h3>
+<p>There is one other tool which we’ve found very helpful in using Jupyter with git, which is <a href="https://www.reviewnb.com/">ReviewNB</a>. ReviewNB solves the problem of doing pull requests with notebooks. GitHub’s code review GUI only works well for line-based file formats, such as plain python scripts. This works fine with the Python modules that nbdev exports, and I often do reviews directly on the Python files, instead of the source notebooks.</p>
+<p>However, much of the time I’d rather do reviews on the source notebooks, because:</p>
+<ul>
+<li>I want to review the documentation and tests, not just the implementation</li>
+<li>I want to see the changes to cell outputs, such as charts and tables, not just the code.</li>
+</ul>
+<p>For this purpose, ReviewNB is perfect. Just like nbdev makes git merges and commits Jupyter-friendly, ReviewNB makes code reviews Jupyter-friendly. A picture is worth a thousand words, so rather than trying to explain, I’ll just show this picture from the ReviewNB website of what PRs look like in their interface:</p>
+<p><img src="https://uploads-ssl.webflow.com/5ba4ebe021cb91ae35dbf88c/61f800c83d99ed2f1810b6e4_visual_diff_2.png" class="img-fluid"></p>
+</section>
+<section id="an-alternative-solution-jupytext" class="level3">
+<h3 class="anchored" data-anchor-id="an-alternative-solution-jupytext">An alternative solution: Jupytext</h3>
+<p>Another potential solution to the Jupyter+git problem might be to use <a href="https://jupytext.readthedocs.io/en/latest/index.html">Jupytext</a>. Jupytext saves notebooks in a line-based format, instead of in JSON. This means that all the usual git machinery, such as merges and PRs, works fine. Jupytext can even use <a href="https://quarto.org/">Quarto’s</a> format, <code>qmd</code>, as a format for saving notebooks, which then can be used to generate a website.</p>
+<p>Jupytext can be a bit tricky to manage when you want to save your cell outputs (which I generally want to do, since many of my notebooks take a long time to run – e.g training deep learning models.) Whilst Jupytext can save outputs in a linked <code>ipynb</code> file, managing this linkage gets complex, and ends up with the Jupyter+git problem all over again! If you don’t need to save outputs, then you might find Jupytext sufficient – although of course you’ll miss out on the cell-based code reviews of ReviewNB and your users won’t be able to read your notebooks properly when they’re browsing GitHub.</p>
+</section>
+<section id="nbdime" class="level3">
+<h3 class="anchored" data-anchor-id="nbdime">nbdime</h3>
+<p>There’s also an interesting project called <a href="https://nbdime.readthedocs.io/en/latest/">nbdime</a> which has its own git drivers and filters. Since they’re not really compatible with nbdev (partly because they tackle some of the same problems in different ways) I haven’t used them much, so haven’t got an informed opinion about them. However I do use nbdime’s Jupyter extension sometimes, which provides a view similar to ReviewNB, but for local changes instead of PRs.</p>
+<p>If you want to try to yourself, follow the directions on <a href="https://nbdev.fast.ai/tutorials/git_friendly_jupyter.html">Git-friendly Jupyter</a> to get started.</p>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <guid>https://nbdev.fast.ai/blog/posts/2022-08-25-jupyter-git/</guid>
+  <pubDate>Thu, 25 Aug 2022 00:00:00 GMT</pubDate>
+  <media:content url="https://nbdev.fast.ai/blog/posts/2022-08-25-jupyter-git/unreadable-notebook.png" medium="image" type="image/png" height="37" width="144"/>
+</item>
+<item>
+  <title>nbdev+Quarto: A new secret weapon for productivity</title>
+  <dc:creator>Hamel Husain</dc:creator>
+  <dc:creator>Jeremy Howard</dc:creator>
+  <link>https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/</link>
+  <description><![CDATA[ 
+
+
+
+
+<p><em><a href="https://www.fast.ai/2022/07/28/nbdev-v2/">Originally posted</a> on the fast.ai blog</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/images/card.png" class="img-fluid figure-img"></p>
+<figcaption>A single notebook can create a python module, tests, CI, pypi/conda packages, and more.</figcaption>
+</figure>
+</div>
+<section id="our-new-secret-weapon-for-productivity" class="level2">
+<h2 class="anchored" data-anchor-id="our-new-secret-weapon-for-productivity">Our new secret weapon for productivity</h2>
+<p>Today we’re excited to announce that we’ve teamed up with Quarto to give <a href="https://nbdev.fast.ai">nbdev</a> superpowers. nbdev offers Python programmers a common set of tools for using Jupyter notebooks to:</p>
+<ul>
+<li>Write &amp; distribute software packages</li>
+<li>Test code, and</li>
+<li>Author documentation and technical articles</li>
+</ul>
+<p>Although notebooks are already widely used for once-off exploratory work, it’s less well-known that they are perfectly capable of writing quality software. In fact, we’ve used nbdev for a wide range of software projects over the last three years, including <a href="https://github.com/fastai/fastai">deep learning libraries,</a> <a href="https://github.com/fastai/ghapi">API clients</a>, <a href="https://github.com/fastai/fastcore">Python language extensions</a>, <a href="https://github.com/nat/ghtop">terminal user interfaces</a>, and more. We discovered that it is not only capable of writing great software but that it <strong>has also increased our productivity by 300% or more</strong>. With nbdev, developers simply write notebooks with lightweight markup and get high-quality documentation, tests, continuous integration, and packaging for free! Nbdev has allowed us to maintain and scale many <a href="https://github.com/fastai">open source projects</a>. Pull requests are often accompanied by detailed documentation and tests–contributors simply write notebooks.</p>
+<p>This is why we’re excited to share nbdev v2. It’s rewritten from the ground up, with much-anticipated features including:</p>
+<ul>
+<li>Interoperation with non-nbdev codebases for tasks like documentation</li>
+<li>Support for any static site generator</li>
+<li>Wide variety of output mediums such as blogs, papers, slides, and websites</li>
+<li>A faster Jupyter kernel, which also means faster tests</li>
+<li>Cleaner and more extensible API, which supports custom directives, custom module exporters, and more</li>
+</ul>
+</section>
+<section id="nbdev-in-industry" class="level2">
+<h2 class="anchored" data-anchor-id="nbdev-in-industry">nbdev in industry</h2>
+<p>We have piloted nbdev at several companies. We were delighted to receive the following feedback, which fits our own experience using and developing nbdev:</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://www.linkedin.com/in/david-j-berg/">David Berg</a>, on using nbdev for internal documentation at Netflix:</strong> “Prior to using nbdev, documentation was the most cumbersome aspect of our software development process… Using nbdev allows us to spend more time creating rich prose around the many code snippets guaranteeing the whole experience is robust. nbdev has turned what was once a chore into a natural extension of the notebook-based testing we were already doing.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/logo_netflix.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-width="200" data-fig-pos="center"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://news.ycombinator.com/item?id=25165306">Erik Gaasedelen</a>, on using nbdev in production at Lyft:</strong> “I use this in production at my company. It’s an awesome tool… nbdev streamlines everything so I can write docs, tests, and code all in one place… The packaging is also really well thought out. From my point of view it is close to a Pareto improvement over traditional Python library development.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/logo_lyft.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-width="200"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://twitter.com/hugobowne">Hugo Bowne-Anderson</a>, on using nbdev for <a href="https://outerbounds.com/docs">Outerbounds</a>:</strong> “nbdev has transformed the way we write documentation. Gone are the days of worrying about broken code examples when our API changes or [due to] human errors associated with copying &amp; pasting code into markdown files. The authoring experience of nbdev… [allows] us to write prose and live code in a unified interface, which allows more experimentation… On top of this, nbdev allows us to include unit tests in our documentation which mitigates the burden of maintaining the docs over time.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/logo_ob.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-width="200"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://www.linkedin.com/in/roxanna-pourzand-445a3035/">Roxanna Pourzand</a>, on using nbdev for <a href="https://docs.transform.co/">Transform</a>:</strong> “We’re so excited about using nbdev. Our product is technical so our resulting documentation includes a lot of code-based examples. Before nbdev, we had no way of maintaining our code examples and ensuring that it was up-to-date for both command inputs and outputs. It was all manual. With nbdev, we now have this under control in a sustainable way. Since we’ve deployed these docs, we also had a situation where we were able to identify a bug in one of our interfaces, which we found by seeing the error that was output in the documentation.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/logo_transform.png" class="img-fluid" width="200"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="whats-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="whats-nbdev">What’s nbdev?</h2>
+<p>Nbdev embraces the dynamic nature of python and REPL-driven development in ways that traditional IDEs and software development workflows cannot. We thoroughly discussed the motivation, history, and goals of nbdev in this <a href="https://www.fast.ai/posts/2019-11-27-nbdev.html#software-development-tools">initial launch post</a> three years ago. The creator of Jupyter, Fernando Pérez, told us:</p>
+<blockquote class="blockquote">
+<p>[Nbdev] should be celebrated and used a lot more - I have kept a tab with your original nbdev blog post open for months in Chrome because of how often I refer to it and point others to this work</p>
+</blockquote>
+<p>In short, nbdev embraces ideas from <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a> and <a href="https://en.wikipedia.org/wiki/Exploratory_programming">exploratory programming</a>. These paradigms have been revisited in platforms like XCode <a href="https://en.wikipedia.org/wiki/Swift_Playgrounds">Playgrounds</a> and languages like Smalltalk, LISP, and Mathematica. With nbdev, we sought to push these paradigms even further by enabling it for one of the most popular dynamic programming languages in the world: Python.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/lang_rank.png" class="img-fluid figure-img"></p>
+<figcaption>State of the Octoverse 2021, GitHub</figcaption>
+</figure>
+</div>
+<p>Even though nbdev is most widely used in scientific computing communities due to its integration with Jupyter Notebooks, we’ve found that nbdev is well suited for a much wider range of software. We have used nbdev to write <a href="https://github.com/fastai/fastai">deep learning libraries,</a> <a href="https://github.com/fastai/ghapi">API clients</a>, <a href="https://github.com/fastai/fastcore">python language extensions</a>, <a href="https://github.com/nat/ghtop">terminal user interfaces</a>, and more!</p>
+<p><em>Hamel: When I use nbdev, my colleagues are often astounded by how quickly I can create and distribute high-quality python packages. I consider nbdev to be a superpower that allows me to create tests and documentation without any additional friction, which makes all of my projects more maintainable. I also find writing software with nbdev to be more fun and productive as I can iterate very fast on ideas relative to more traditional software engineering workflows. Lastly, with nbdev I can also use traditional text-based IDEs if I want to, so I get the best of both worlds.</em></p>
+</section>
+<section id="what-we-learned-after-three-years-of-using-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="what-we-learned-after-three-years-of-using-nbdev">What we learned after three years of using nbdev</h2>
+<p>While nbdev was originally developed to simplify the software development workflow for various <a href="https://github.com/fastai">fast.ai projects</a>, we found that users wanted to extend nbdev to:</p>
+<ul>
+<li>Write and publish blog posts, books, papers, and other types of documents with Jupyter Notebooks</li>
+<li>Document existing codebases not written in nbdev</li>
+<li>Accommodate traditional Python conventions–for those constrained in how their code is organized and formatted</li>
+<li>Publish content using <em>any</em> static site generator</li>
+</ul>
+<p>While we created projects such as <a href="https://github.com/fastai/fastpages">fastpages</a> and <a href="https://github.com/fastai/fastdoc">fastdoc</a> to accomplish some of these tasks, we realized that it would be better to have a single set of flexible tools to accomplish all of them. To this end, we were extremely excited to discover <a href="https://quarto.org/">Quarto</a>, an open-source technical publishing system built on pandoc.</p>
+<p><em>Hamel: The more I used nbdev for creating Python modules, the more I wanted to use it for writing blogs and documenting existing codebases. The ability to customize the way notebooks are rendered (hiding vs.&nbsp;showing cells, stripping output, etc.), along with the facilities for including unit tests, made it my go-to authoring tool for all technical content. I’m excited that nbdev2 unlocks all of these possibilities for everyone!</em></p>
+</section>
+<section id="enter-quarto-a-pandoc-super-processor" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="enter-quarto-a-pandoc-super-processor">Enter Quarto: A pandoc super-processor</h2>
+<p><a href="https://quarto.org/">Quarto</a> is a project that enables technical publishing with support for Jupyter Notebook, VSCode, Observable, and plaintext editors. Furthermore, Quarto enables the publishing of high-quality articles, reports, websites, and blogs in HTML, PDF, ePub, PowerPoint slides, and more. Quarto is maintained by <a href="https://www.rstudio.com/">RStudio</a>, a company with a long history of products supporting literate programming, such as RMarkdown and RStudio.</p>
+<p>Quarto is built on top of <a href="https://pandoc.org/">Pandoc</a>, a universal document converter that supports nearly any format you can think of. Pandoc achieves this seemingly magical feat by representing documents in a common abstract syntax tree (AST) that serves as the medium through which different formats can be translated. By extension, Quarto allows you to generate content in almost any format you wish! You can use <a href="https://pandoc.org/filters%202.html#summary">pandoc filters</a> to modify the AST and the output format, which allows you to use any static site generator you want, and programmatically modify and generate content.</p>
+<p>Quarto allows you to <a href="https://quarto.org/docs/extensions/filters.html#activating-filters">compose pandoc filters in a processing pipeline</a> and apply them to specific documents or entire projects. You can also <a href="https://quarto.org/docs/extensions/filters.html#distribution">distribute filters as Quarto extensions</a>, which makes Quarto extremely customizable.</p>
+<p>We also find Quarto compelling because user interfaces such as <a href="https://quarto.org/docs/reference/cells/cells-jupyter.html#overview">comment directives</a> (comments that start with <code>#|</code>) correlate with nbdev. In fact, we even learned that nbdev inspired Quarto in this regard! In general, Quarto and nbdev share many goals, and the Quarto team has been incredibly responsive to our suggestions. For example, the ability to create <a href="https://quarto.org/docs/extensions/nbfilter.html">notebook filters</a> to modify notebooks before rendering. Below is a screenshot of a Jupyter notebook rendered with Quarto and nbdev.</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/nb_quarto.png" class="img-fluid figure-img column-page-inset"></p>
+<figcaption>Quarto rendering a Jupyter notebook written with nbdev</figcaption>
+</figure>
+</div>
+</div>
+<p>Finally, Quarto supports more programming languages than just Python and has been adding new features and fixing bugs at an impressive speed. This gives us confidence that we will be able to expand nbdev to support more use cases in the future. We discuss some of these future directions in the closing section.</p>
+</section>
+<section id="a-blazing-fast-notebook-kernel-execnb" class="level2">
+<h2 class="anchored" data-anchor-id="a-blazing-fast-notebook-kernel-execnb">A blazing fast notebook kernel: execnb</h2>
+<p>A core component of nbdev is executing and testing notebooks programmatically. It is important that this notebook runner executes with minimal overhead to maintain our goal of providing a delightful developer experience. This is why we built <a href="https://github.com/fastai/execnb">execnb</a>, a lightweight notebook runner for Python kernels, which executes notebooks blazingly fast. Furthermore, execnb allows parameterized execution of notebooks.</p>
+<p><em>Hamel: I have been an enthusiastic user of tools like papermill that programmatically run notebooks for use-cases like <a href="https://github.com/github/covid19-dashboard">creating dashboards</a> or enabling <a href="https://outerbounds.com/blog/notebooks-in-production-with-metaflow">new kinds of machine learning workflows</a>. I believe execnb unlocks even more possibilities with its ability to inject arbitrary code at any place in a notebook, as well as the ability to pass callbacks that run before and/or after cells are executed. This opens up possibilities to create new types of workflows with notebooks that I am excited about exploring in the near future.</em></p>
+</section>
+<section id="towards-a-dialect-of-python-that-embraces-its-dynamic-nature" class="level2">
+<h2 class="anchored" data-anchor-id="towards-a-dialect-of-python-that-embraces-its-dynamic-nature">Towards a dialect of python that embraces its dynamic nature</h2>
+<p>One way to understand nbdev is part of an ecosystem that is designed to embrace Python’s dynamic properties for REPL-driven software engineering. <a href="https://clojure.org/guides/repl/enhancing_your_repl_workflow">Similar to Clojure</a>, our goal is to provide tools that remove all friction from using the REPL in your programming workflow. We believe that the REPL enhances developer workflows thanks to context-sensitive auto-completion, signature inspection, and documentation–all based on the actual state of your code, and none of which are available in IDEs that depend solely on static analysis. We have found that for this reason, nbdev, with its Jupyter notebook foundation, makes programming significantly more productive and enjoyable.</p>
+<p>Our efforts to support REPL-driven development and literate programming are not limited to nbdev. We maintain a number of libraries that extend python to bolster this programming experience. The most notable of these libraries is <a href="https://github.com/fastai/fastcore">fastcore</a>, which extends Python in terms of <a href="https://fastcore.fast.ai/test.html">testing</a>, <a href="https://fastcore.fast.ai/docments.html">documenting code</a>, <a href="https://fastcore.fast.ai/meta.html#Metaprogramming">metaprogramming</a>, <a href="https://fastcore.fast.ai/basics.html#Attribute-Helpers">attribute helpers</a>, <a href="https://fastcore.fast.ai/basics.html#basic_repr">enhanced representations of objects</a>, and notebook-friendly <a href="https://fastcore.fast.ai/basics.html#Patching">patching</a>. This <a href="https://fastpages.fast.ai/fastcore/">blog post</a> offers a gentle introduction to fastcore. In addition to literate programming, fastcore encourages conventions such as brevity and efficient use of vertical space so you can accomplish more with significantly less code. For example, below is a simple decorator that enables notebook-friendly <a href="https://fastcore.fast.ai/basics.html#Patching">patching</a>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/patch.png" class="img-fluid figure-img" width="600"></p>
+<figcaption><code>@patch</code> decorator from fastcore</figcaption>
+</figure>
+</div>
+<p>We believe that this combination of a new developer workflow (nbdev), Python extensions (fastcore), and associated norms form a new dialect of Python that is centered on leveraging its dynamic nature–in contrast to an ever-growing trend toward <a href="https://mypy.readthedocs.io/en/stable/">static analysis</a>. We suspect that this dialect of Python will be more productive for programmers in many scenarios. We are framing this ecosystem as a “dialect” as it is still very much Python and is approachable by anyone who is familiar with the language. Furthermore, despite nbdev’s notebook workflow, our tools generate plaintext modules that can be navigated and edited with text-based IDEs, allowing programmers to experience the best of both worlds, if they desire.</p>
+<p><em>Hamel: I believe this framing of a Python dialect is key to properly understanding what nbdev is. While it may be tempting to get stuck on specific features or technical details of nbdev, it is useful to zoom out to understand the overall intent of creating a better workflow rather than conforming too rigidly to existing ones. A good analogy is TypeScript’s relationship with JavaScript: it is an extension of an existing programming language that supports a new way of programming. I encourage you to treat nbdev in a similar fashion: be willing to try new ways of programming and observe which tradeoffs resonate with you. At the very least, I believe nbdev is a fun way to experience a different way of writing software, which will broaden your horizons about programming in general, all without having to learn an entirely new programming language!</em></p>
+</section>
+<section id="the-future-of-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="the-future-of-nbdev">The future of nbdev</h2>
+<p>While we are excited about nbdev2, we believe we have only scratched the surface of what’s possible. We are considering the following features:</p>
+<ul>
+<li>Supporting more languages beyond Python, such as Julia, R and JavaScript</li>
+<li>Offering interfaces for executing parameterized notebooks that mimic Python scripts</li>
+<li>Extensions for more static site generators and filters</li>
+<li>Supporting alternate testing backends, such as pytest</li>
+<li>Supporting a greater number of docstring formats, such as <a href="https://google.github.io/styleguide/pyguide.html#381-docstrings">Google-style</a> docstrings</li>
+<li>More options to use plain-text or human readable notebook backends other than JSON</li>
+</ul>
+<p>If you have interesting ideas about how nbdev can be extended, please drop and chat with us on <a href="https://discord.com/invite/xnpeRdg">discord</a> or post a message in the <a href="https://forums.fast.ai/">forums</a>.</p>
+</section>
+<section id="how-you-can-get-started-with-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="how-you-can-get-started-with-nbdev">How you can get started with nbdev</h2>
+<p>Our project’s website is at <a href="https://nbdev.fast.ai/">nbdev.fast.ai</a>, where we will be posting tutorials, examples, and more documentation in the coming days.</p>
+</section>
+<section id="thank-you" class="level2">
+<h2 class="anchored" data-anchor-id="thank-you">Thank You</h2>
+<p>This new version of nbdev was a team effort by many wonderful people. We want to highlight two people who have made outstanding contributions:</p>
+<ul>
+<li><p><a href="https://twitter.com/wasimlorgat">Wasim Lorgat</a> was instrumental across different areas, including significant contributions to fastcore, execnb, and nbdev, as well as the implementation of the new nbdev <a href="https://nbdev.fast.ai/">home page</a>. With Wasim’s help, we were able to push nbdev to a new level of functionality and quality.</p></li>
+<li><p><a href="https://en.wikipedia.org/wiki/Joseph_J._Allaire">JJ Allaire</a> is not only the CEO of RStudio but also the steward of Quarto. JJ was incredibly responsive and eager to work with us on nbdev and added many features to Quarto specifically with nbdev in mind, such as <a href="https://quarto.org/docs/extensions/nbfilter.html">notebook filters</a>. We were also astounded by the attention to detail and the pace at which bugs are addressed. This new version of nbdev would not have been possible without JJ’s help, and we are excited to continue to work with him.</p></li>
+</ul>
+<p>We also want to thank the amazing fastai community, notably <a href="https://twitter.com/isaac_flath">Isaac Flath</a>, <a href="https://mobile.twitter.com/benjamin_warner">Benjamin Warner</a> and <a href="https://twitter.com/TheZachMueller">Zach Mueller</a> for their tireless work on this project.</p>
+</section>
+<section id="a-conversation-with-jj-allaire" class="level2">
+<h2 class="anchored" data-anchor-id="a-conversation-with-jj-allaire">A conversation with JJ Allaire</h2>
+<p>To celebrate the launch of nbdev v2 and Quarto, Jeremy sat down with the CEO of Posit (previously known as RStudio, the company behind Quarto), JJ Allaire, to talk about software development, scientific publishing, R, Python, literate programming, and much more.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xxVVSxcjNQs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="">
+</iframe>
+</center>
+
+
+</section>
+
+ ]]></description>
+  <guid>https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/</guid>
+  <pubDate>Thu, 28 Jul 2022 00:00:00 GMT</pubDate>
+  <media:content url="https://nbdev.fast.ai/images/card.png" medium="image" type="image/png" height="66" width="144"/>
+</item>
+</channel>
+</rss>
