@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="How to write great nbdev notebooks">
+
+<title>Notebook Best Practices – nbdev</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Notebook Best Practices – nbdev">
+<meta property="og:description" content="How to write great nbdev notebooks">
+<meta property="og:image" content="https://nbdev.fast.ai/tutorials/images/marie-curie-notebook.jpg">
+<meta property="og:site_name" content="nbdev">
+<meta name="twitter:title" content="Notebook Best Practices – nbdev">
+<meta name="twitter:description" content="How to write great nbdev notebooks">
+<meta name="twitter:image" content="https://nbdev.fast.ai/tutorials/images/marie-curie-notebook.jpg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">nbdev</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../tutorials/tutorial.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/fastai/nbdev/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://forums.fast.ai/"><i class="bi bi-chat-right-text" role="img">
+</i> 
+ <span class="dropdown-text">Fast.ai Forum</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../getting_started.html#faq"><i class="bi bi-question-circle" role="img">
+</i> 
+ <span class="dropdown-text">FAQ</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/nbdev"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/index.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/best_practices.html">Notebook Best Practices</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../tutorials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">End-To-End Walkthrough</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/best_practices.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Notebook Best Practices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/qmd_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Qmd Documents</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/renderscript.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RenderScripts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/git_friendly_jupyter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Git-Friendly Jupyter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/blogging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blogging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/pre_commit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pre-Commit Hooks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/docs_only.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Documentation Only Sites</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/extensions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Writing nbdev plugins</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/migrating.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nbdev1 Migration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/modular_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modular nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../explanations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explanations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings.ini</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/directives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docs Website</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/why_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Why nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../api/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/maker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">maker</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/process.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">process</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/export.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">export</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/doclinks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">doclinks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/sync.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sync</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/merge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/showdoc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">showdoc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/frontmatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">frontmatter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/processors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">processors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/clean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">clean</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/cli.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cli</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/quarto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">quarto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/qmd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">qmd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/migrate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">migrate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/serve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">serve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/release.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">release</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#know-which-form-of-notebook-youre-writing" id="toc-know-which-form-of-notebook-youre-writing" class="nav-link active" data-scroll-target="#know-which-form-of-notebook-youre-writing">Know which form of notebook you’re writing</a></li>
+  <li><a href="#start-with-a-great-title-and-subtitle" id="toc-start-with-a-great-title-and-subtitle" class="nav-link" data-scroll-target="#start-with-a-great-title-and-subtitle">Start with a great title and subtitle</a></li>
+  <li><a href="#introduce-your-notebook" id="toc-introduce-your-notebook" class="nav-link" data-scroll-target="#introduce-your-notebook">Introduce your notebook</a></li>
+  <li><a href="#use-lots-of-code-examples-pictures-plots-and-videos" id="toc-use-lots-of-code-examples-pictures-plots-and-videos" class="nav-link" data-scroll-target="#use-lots-of-code-examples-pictures-plots-and-videos">Use lots of code examples, pictures, plots, and videos</a></li>
+  <li><a href="#keep-docstrings-short-elaborate-in-separate-cells" id="toc-keep-docstrings-short-elaborate-in-separate-cells" class="nav-link" data-scroll-target="#keep-docstrings-short-elaborate-in-separate-cells">Keep docstrings short; elaborate in separate cells</a></li>
+  <li><a href="#document-parameters-with-docments" id="toc-document-parameters-with-docments" class="nav-link" data-scroll-target="#document-parameters-with-docments">Document parameters with docments</a></li>
+  <li><a href="#make-code-cells-short-and-demonstrate-them-immediately" id="toc-make-code-cells-short-and-demonstrate-them-immediately" class="nav-link" data-scroll-target="#make-code-cells-short-and-demonstrate-them-immediately">Make code cells short, and demonstrate them immediately</a></li>
+  <li><a href="#consider-turning-code-examples-into-tests-by-adding-assertions" id="toc-consider-turning-code-examples-into-tests-by-adding-assertions" class="nav-link" data-scroll-target="#consider-turning-code-examples-into-tests-by-adding-assertions">Consider turning code examples into tests by adding assertions</a></li>
+  <li><a href="#document-error-cases-as-tests" id="toc-document-error-cases-as-tests" class="nav-link" data-scroll-target="#document-error-cases-as-tests">Document error-cases as tests</a></li>
+  <li><a href="#reference-related-symbols-with-doclinks" id="toc-reference-related-symbols-with-doclinks" class="nav-link" data-scroll-target="#reference-related-symbols-with-doclinks">Reference related symbols with doclinks</a></li>
+  <li><a href="#add-rich-representations-to-your-classes" id="toc-add-rich-representations-to-your-classes" class="nav-link" data-scroll-target="#add-rich-representations-to-your-classes">Add rich representations to your classes</a></li>
+  <li><a href="#document-class-methods-with-show_doc-or-fastcore.basics.patch" id="toc-document-class-methods-with-show_doc-or-fastcore.basics.patch" class="nav-link" data-scroll-target="#document-class-methods-with-show_doc-or-fastcore.basics.patch">Document class methods with <code>show_doc</code> or <code>fastcore.basics.patch</code></a></li>
+  <li><a href="#group-symbols-with-h2-sections" id="toc-group-symbols-with-h2-sections" class="nav-link" data-scroll-target="#group-symbols-with-h2-sections">Group symbols with H2 sections</a></li>
+  <li><a href="#split-long-explanations-with-h4-sections" id="toc-split-long-explanations-with-h4-sections" class="nav-link" data-scroll-target="#split-long-explanations-with-h4-sections">Split long explanations with H4 sections</a></li>
+  <li><a href="#putting-it-all-together-an-annotated-example" id="toc-putting-it-all-together-an-annotated-example" class="nav-link" data-scroll-target="#putting-it-all-together-an-annotated-example">Putting it all together: an annotated example</a>
+  <ul>
+  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="best_practices.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/index.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/best_practices.html">Notebook Best Practices</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Notebook Best Practices</h1>
+</div>
+
+<div>
+  <div class="description">
+    How to write great nbdev notebooks
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>The flexibility offered by notebooks can be overwhelming. While there are industry standards for writing Python packages—like <a href="https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard">numpy</a> and <a href="https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html">sphinx</a> docstrings, and <a href="https://docs.pytest.org/">pytest</a> and <a href="https://docs.python.org/3/library/unittest.html">unittest</a> testing frameworks—they weren’t designed for notebooks.</p>
+<p>This article walks you through the practices we’ve learned to leverage the full power of notebooks with nbdev<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Our approach weaves code, tests, and docs into a single interactive context that invites experimentation. If you prefer to learn by example, you might want to start with <a href="#putting-it-all-together-an-annotated-example">the annotated example</a> and branch out from there.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/marie-curie-notebook.jpg" class="rounded preview-image img-fluid figure-img"></p>
+<figcaption>Marie Curie’s research notebook dated 19-21 January 1900 (<a href="https://commons.wikimedia.org/wiki/File:Marie_Curie;_Holograph_Notebook._Wellcome_L0021265.jpg">source</a>).</figcaption>
+</figure>
+</div>
+<section id="know-which-form-of-notebook-youre-writing" class="level2">
+<h2 class="anchored" data-anchor-id="know-which-form-of-notebook-youre-writing">Know which form of notebook you’re writing</h2>
+<p>First of all, decide which form of notebook you’re writing. We’re fans of the <a href="https://diataxis.fr/">Diátaxis system</a> which classifies documentation into four forms: tutorials, how-to guides, explanations, and references. They’ve laid this out beautifully in the following diagram:</p>
+<p><a href="../images/divio-overview.webp"><img src="../images/divio-overview.webp" class="rounded img-fluid" alt="A 2x2 matrix, from top-left to bottom-right, 'Tutorials (learning-oriented)', 'How-to guides (problem-oriented)', 'Explanation (understanding-oriented), and 'Reference (information-oriented)'. Horizontal axis reads 'Most useful when we're studying' on the left, and 'Most useful when we're working' on the right. Vertical axis reads 'Practical steps' on top, and 'Theoretical knowledge' below."></a></p>
+</section>
+<section id="start-with-a-great-title-and-subtitle" class="level2">
+<h2 class="anchored" data-anchor-id="start-with-a-great-title-and-subtitle">Start with a great title and subtitle</h2>
+<p>Start with a markdown cell at the top of your notebook with its title in an H1 header, and subtitle in a blockquote. For example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Great title</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; And an even better subtitle</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The title will also be used to reference your page in the sidebar. You can also optionally add <a href="../api/frontmatter.html">frontmatter</a> to this cell to customize nbdev and Quarto.</p>
+</section>
+<section id="introduce-your-notebook" class="level2">
+<h2 class="anchored" data-anchor-id="introduce-your-notebook">Introduce your notebook</h2>
+<p>Introduce your notebook with markdown cells below the title. We recommend a slightly different approach depending on the <a href="#know-which-form-of-notebook-youre-writing">form of documentation</a>:</p>
+<ul>
+<li><strong>Reference:</strong> Start with a brief description of the technical component, and an overview that links to the main symbols in the page (you might want to <a href="#reference-related-symbols-with-doclinks">use doclinks</a>)</li>
+<li><strong>Tutorials and how-to guides:</strong> Describe what the reader will learn and how. Keep it short and get to the subject matter quickly</li>
+<li><strong>Explanations:</strong> Since these are typically very focused, a short description of the topic is often sufficient.</li>
+</ul>
+<div class="callout callout-style-simple callout-tip">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>Note that Markdown lists such as the one above require a blank line above them to be rendered as lists in the documentation, even though the notebook viewer will render lists that are not preceded by a blank line.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="use-lots-of-code-examples-pictures-plots-and-videos" class="level2">
+<h2 class="anchored" data-anchor-id="use-lots-of-code-examples-pictures-plots-and-videos">Use lots of code examples, pictures, plots, and videos</h2>
+<p>Take advantage of the richness of notebooks by including code examples, pictures, plots, and videos.</p>
+<p>Here are a few examples to get you started:</p>
+<ul>
+<li>fastai’s documentation makes extensive use of code examples, plots, images, and tables, for example, the <a href="https://docs.fast.ai/tutorial.vision.html">computer vision intro</a></li>
+<li><a href="../api/release.html"><code>nbdev.release</code></a> opens with a terminal screencast demo in SVG format created with <a href="https://asciinema.org/">asciinema</a> and <a href="https://github.com/marionebl/svg-term-cli">svg-term-cli</a></li>
+<li>The <a href="../explanations/docs.html#overview">documentation explanation</a> describes a complex data pipeline using a <a href="https://quarto.org/docs/authoring/diagrams.html">Mermaid diagram</a></li>
+<li>The <a href="../explanations/directives.html">directives explanation</a> showcases all of nbdev’s directives with executable examples in call-out cards (and makes great use of emojis too!)</li>
+<li><a href="https://www.rdkit.org/docs/Cookbook.html#drawing-molecules-jupyter">RDKit</a> renders beautiful molecule diagrams</li>
+</ul>
+</section>
+<section id="keep-docstrings-short-elaborate-in-separate-cells" class="level2">
+<h2 class="anchored" data-anchor-id="keep-docstrings-short-elaborate-in-separate-cells">Keep docstrings short; elaborate in separate cells</h2>
+<p>While nbdev renders docstrings as markdown, they aren’t rendered correctly when using <code>symbol?</code> or <code>help(symbol)</code> and they can’t include executed code. By splitting longer docstrings across separate code and markdown cells you can <a href="#use-lots-of-code-examples-pictures-plots-and-videos">use code examples, pictures, plots, and videos</a>.</p>
+<p>We find a single-line summary sufficient for most docstrings.</p>
+</section>
+<section id="document-parameters-with-docments" class="level2">
+<h2 class="anchored" data-anchor-id="document-parameters-with-docments">Document parameters with docments</h2>
+<p><a href="https://fastcore.fast.ai/docments.html"><code>fastcore.docments</code></a> is a concise way to document parameters that is beautifully rendered by nbdev. For example, this function:</p>
+<div id="08b3fc52" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_n(n:<span class="bu">int</span>, <span class="co"># Number of cards to draw</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>           replace:<span class="bu">bool</span><span class="op">=</span><span class="va">True</span> <span class="co"># Draw with replacement?</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>          )<span class="op">-&gt;</span><span class="bu">list</span>: <span class="co"># List of cards</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Draw `n` cards."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>…would include the following table as part of its documentation:</p>
+<div class="py-2 px-3 mb-4 border rounded shadow-sm">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td>int</td>
+<td></td>
+<td>Number of cards to draw</td>
+</tr>
+<tr class="even">
+<td>replace</td>
+<td>bool</td>
+<td>True</td>
+<td>Draw with replacement?</td>
+</tr>
+<tr class="odd">
+<td><strong>Returns</strong></td>
+<td><strong>list</strong></td>
+<td></td>
+<td><strong>List of cards</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>nbdev also supports some numpy docstring sections. For example, this code snippet would produce the same table (there’s no need to include types like in the docstring if you already have annotations):</p>
+<div id="3d89283a" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_n(n:<span class="bu">int</span>, replace:<span class="bu">bool</span><span class="op">=</span><span class="va">True</span>) <span class="op">-&gt;</span> Cards:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Draw `n` cards.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">    n</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">        Number of cards to draw</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">    replace</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">        Draw with replacement?</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">    -------</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">    cards</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">        List of cards</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-simple callout-tip">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>You can render a symbol’s parameters table directly with <a href="https://nbdev.fast.ai/api/showdoc.html#docmenttbl"><code>DocmentTbl</code></a>. In fact, that’s how we rendered the table above.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="make-code-cells-short-and-demonstrate-them-immediately" class="level2">
+<h2 class="anchored" data-anchor-id="make-code-cells-short-and-demonstrate-them-immediately">Make code cells short, and demonstrate them immediately</h2>
+<p>In notebooks, do not create long functions and classes with comments interspersed throughout them. Instead, split your code up into small separate cells with explanations and working examples after each. This lets the user understand how each part works and experiment with them straight away. It also helps you during development because you can explore the behavior of every part of your code interactively.</p>
+<p>In non-notebook coding, the documentation, tests, code, and examples are all separate. This is not the case with nbdev. Take advantage of this by keeping all of these things as close together as possible. This is helpful both for exploration and for documentation.</p>
+<p>For example, consider the section of the Claudette source notebook for <a href="https://claudette.answer.ai/core.html#images">implementing image support</a>. The section immediately imports an image and displays it, showing how to work with a file format. It then creates a number of helper functions, describes and demonstrates them, and finally puts it all together to show how to use the complete feature in practice with real inputs and outputs running directly in the notebook.</p>
+<p>In order to avoid long class definitions caused by many methods, consider using fastcore’s <code>patch</code> decorator to implement each method separately, and immediately document, demonstrate, and test it.</p>
+</section>
+<section id="consider-turning-code-examples-into-tests-by-adding-assertions" class="level2">
+<h2 class="anchored" data-anchor-id="consider-turning-code-examples-into-tests-by-adding-assertions">Consider turning code examples into tests by adding assertions</h2>
+<p>nbdev blurs the lines between code, docs, and tests. <em>Every</em> code cell is run as a test (unless it’s explicitly marked otherwise), and any error in the cell fails the test.</p>
+<p>Consider turning your code examples into tests by adding assertions – if they would make valuable tests and if it doesn’t hurt readability. <a href="https://fastcore.fast.ai/test.html"><code>fastcore.test</code></a> provides a set of light wrappers around <code>assert</code> for better notebook tests (for example, they print both objects on error if they differ).</p>
+<p>Here’s an example using <a href="https://fastcore.fast.ai/test.html#test_eq"><code>fastcore.test.test_eq</code></a>:</p>
+<div id="f42cf559" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> inc(x): <span class="cf">return</span> x <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>test_eq(inc(<span class="dv">3</span>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="document-error-cases-as-tests" class="level2">
+<h2 class="anchored" data-anchor-id="document-error-cases-as-tests">Document error-cases as tests</h2>
+<p>Docstring-driven approaches typically document the errors raised by an object using plaintext descriptions, for example, in a “raises” section.</p>
+<p>In nbdev, we recommend documenting errors with actual failing code using <a href="https://fastcore.fast.ai/test.html#test_fail"><code>fastcore.test.test_fail</code></a>. For example:</p>
+<div id="a2cd0a74" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> divide(x, y): <span class="cf">return</span> x <span class="op">/</span> y</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: divide(<span class="dv">1</span>, <span class="dv">0</span>), contains<span class="op">=</span><span class="st">"division by zero"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The first argument is a <code>lambda</code> since we need to allow <code>test_fail</code> to control its execution and catch any errors.</p>
+</section>
+<section id="reference-related-symbols-with-doclinks" class="level2">
+<h2 class="anchored" data-anchor-id="reference-related-symbols-with-doclinks">Reference related symbols with doclinks</h2>
+<p>If you surround a symbol with backticks, nbdev will automatically link to that symbol’s reference page. We call these <a href="../api/doclinks.html">doclinks</a>.</p>
+<p>Prefer fully qualified symbol paths, like <code>package.module.symbol</code> instead of <code>symbol</code>. It may be more verbose but it helps users know which module a symbol originates from, which is especially important for third-party packages.</p>
+<p>Any package created with nbdev will automatically support doclinks. Non-nbdev packages can be supported by creating a minimal nbdev-index package. <a href="https://github.com/fastai/nbdev-index"><code>nbdev-index</code></a> is a collection of such packages, which already supports django, numpy, pandas, pytorch, scipy, sphinx, the Python standard library, and even other programming languages like APL!</p>
+</section>
+<section id="add-rich-representations-to-your-classes" class="level2">
+<h2 class="anchored" data-anchor-id="add-rich-representations-to-your-classes">Add rich representations to your classes</h2>
+<p>This is another way to take advantage of the <a href="https://ipython.readthedocs.io/en/stable/config/integrating.html#rich-display">rich display feature of notebooks</a>. You can provide rich representations to your object by defining a <code>_repr_markdown_</code> method that returns markdown text (which may also include HTML/CSS).</p>
+<p>Here’s a simple example to get you started:</p>
+<div id="2428f2a5" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Color:</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, color): <span class="va">self</span>.color <span class="op">=</span> color</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _repr_markdown_(<span class="va">self</span>):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        style <span class="op">=</span> <span class="ss">f'background-color: </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>color<span class="sc">}</span><span class="ss">; width: 50px; height: 50px; margin: 10px'</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f'&lt;div style="</span><span class="sc">{</span>style<span class="sc">}</span><span class="ss">"&gt;&lt;/div&gt;'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="a1bd9c61" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Color(<span class="st">'green'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display cell-output-markdown">
+<div style="background-color: green; width: 50px; height: 50px; margin: 10px">
+
+</div>
+</div>
+</div>
+<div id="1e7332e1" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Color(<span class="st">'blue'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display cell-output-markdown">
+<div style="background-color: blue; width: 50px; height: 50px; margin: 10px">
+
+</div>
+</div>
+</div>
+<p>Also see <a href="#use-lots-of-code-examples-pictures-plots-and-videos">the earlier list of example projects</a> that make use of beautiful visual representations.</p>
+</section>
+<section id="document-class-methods-with-show_doc-or-fastcore.basics.patch" class="level2">
+<h2 class="anchored" data-anchor-id="document-class-methods-with-show_doc-or-fastcore.basics.patch">Document class methods with <a href="https://nbdev.fast.ai/api/showdoc.html#show_doc"><code>show_doc</code></a> or <a href="https://fastcore.fast.ai/basics.html#patch"><code>fastcore.basics.patch</code></a></h2>
+<p>nbdev automatically documents exported function and class definitions with <a href="https://nbdev.fast.ai/api/showdoc.html#show_doc"><code>show_doc</code></a>. However, it’s up to you to document class methods. There are two ways to do that: calling <a href="https://nbdev.fast.ai/api/showdoc.html#show_doc"><code>show_doc</code></a> on the method, or defining the method with the <a href="https://fastcore.fast.ai/basics.html#patch"><code>fastcore.basics.patch</code></a> decorator.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Notebook (show_doc)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Notebook (<span class="citation" data-cites="patch">@patch</span>)</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">Docs</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<p>If your class is defined in a single cell, use <a href="https://nbdev.fast.ai/api/showdoc.html#show_doc"><code>show_doc</code></a>. Here’s what your notebook might look like:</p>
+<div class="pt-4 pb-1 px-3 mb-2 border rounded shadow-sm">
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| export</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Number:</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"A number."</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, num): <span class="va">self</span>.num <span class="op">=</span> num</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__add__</span>(<span class="va">self</span>, other):</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Sum of this and `other`."</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> Number(<span class="va">self</span>.num <span class="op">+</span> other.num)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__repr__</span>(<span class="va">self</span>): <span class="cf">return</span> <span class="ss">f'Number(</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>num<span class="sc">}</span><span class="ss">)'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For example, here is the number 5:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Number(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>show_doc(Number.<span class="fu">__add__</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For example:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>Number(<span class="dv">3</span>) <span class="op">+</span> Number(<span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<p>If you split your class definition across cells with <a href="https://fastcore.fast.ai/basics.html#patch"><code>fastcore.basics.patch</code></a>, here’s what your notebook might look like:</p>
+<div class="pt-4 pb-1 px-3 mb-2 border rounded shadow-sm">
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| export</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Number:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"A number."</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, num): <span class="va">self</span>.num <span class="op">=</span> num</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__repr__</span>(<span class="va">self</span>): <span class="cf">return</span> <span class="ss">f'Number(</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>num<span class="sc">}</span><span class="ss">)'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For example, here is the number 5:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Number(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| export</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">@patch</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="fu">__add__</span>(<span class="va">self</span>:Number, other):</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Sum of this and `other`."</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Number(<span class="va">self</span>.num <span class="op">+</span> other.num)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For example:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>Number(<span class="dv">3</span>) <span class="op">+</span> Number(<span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<p>In either case, this is how the documentation would be rendered:</p>
+<div>
+<hr>
+<section id="number" class="level3">
+<h3 class="anchored" data-anchor-id="number">Number</h3>
+<blockquote class="blockquote">
+<pre><code> Number (num)</code></pre>
+</blockquote>
+<p>A number.</p>
+<p>For example, here is the number 5:</p>
+<div id="e11b7da9" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>Number(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Number(5)</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="number.__add__" class="level3">
+<h3 class="anchored" data-anchor-id="number.__add__">Number.__add__</h3>
+<blockquote class="blockquote">
+<pre><code> Number.__add__ (other)</code></pre>
+</blockquote>
+<p>Sum of this and <code>other</code>.</p>
+<p>For example:</p>
+<div id="f27b5cc0" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>Number(<span class="dv">3</span>) <span class="op">+</span> Number(<span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Number(7)</code></pre>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="group-symbols-with-h2-sections" class="level2">
+<h2 class="anchored" data-anchor-id="group-symbols-with-h2-sections">Group symbols with H2 sections</h2>
+<p>As your notebooks grow, consider grouping related symbols using markdown cells with level 2 headers. Since nbdev displays documented symbols as level 3 headers, this would group all symbols below your level 2 header.</p>
+<p>Here is the markdown syntax:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Section title</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="split-long-explanations-with-h4-sections" class="level2">
+<h2 class="anchored" data-anchor-id="split-long-explanations-with-h4-sections">Split long explanations with H4 sections</h2>
+<p>Similar to the previous section, as a symbol’s explanation grows, consider grouping its cells using level 4 headers. This is the recommended way to structure your reference docs, for example, to achieve numpy-style structures with sections like notes, examples, methods, and so on.</p>
+<p>Here’s the markdown syntax:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Section title</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="putting-it-all-together-an-annotated-example" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="putting-it-all-together-an-annotated-example">Putting it all together: an annotated example</h2>
+<p>In this section, we’ll guide you through a full example of writing a documented and tested function in a notebook using all of the principles described above. We’ll use the <a href="https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all"><code>numpy.all</code></a> function since it follows the widely-known numpy-docstring standard for .py files.</p>
+<p>Below is the definition of the <a href="https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all"><code>numpy.all</code></a> function. Take note of how all of the information is included in the docstring. While this works well for .py files, it doesn’t let us weave executable code with rich markdown as we can in notebooks:</p>
+<div id="a6a40d5e" class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">all</span>(a, axis<span class="op">=</span><span class="va">None</span>, out<span class="op">=</span><span class="va">None</span>, keepdims<span class="op">=</span>np._NoValue, <span class="op">*</span>, where<span class="op">=</span>np._NoValue):</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Test whether all array elements along a given axis evaluate to True.</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co">    a : array_like</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co">        Input array or object that can be converted to an array.</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co">    axis : None or int or tuple of ints, optional</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co">        Axis or axes along which a logical AND reduction is performed.</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co">        The default (``axis=None``) is to perform a logical AND over all</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co">        the dimensions of the input array. `axis` may be negative, in</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="co">        which case it counts from the last to the first axis.</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="co">        .. versionadded:: 1.7.0</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="co">        If this is a tuple of ints, a reduction is performed on multiple</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="co">        axes, instead of a single axis or all the axes as before.</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="co">    out : ndarray, optional</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a><span class="co">        Alternate output array in which to place the result.</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co">        It must have the same shape as the expected output and its</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="co">        type is preserved (e.g., if ``dtype(out)`` is float, the result</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a><span class="co">        will consist of 0.0's and 1.0's). See :ref:`ufuncs-output-type` for more</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a><span class="co">        details.</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="co">    keepdims : bool, optional</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="co">        If this is set to True, the axes which are reduced are left</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a><span class="co">        in the result as dimensions with size one. With this option,</span></span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a><span class="co">        the result will broadcast correctly against the input array.</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a><span class="co">        If the default value is passed, then `keepdims` will not be</span></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a><span class="co">        passed through to the `all` method of sub-classes of</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a><span class="co">        `ndarray`, however any non-default value will be.  If the</span></span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a><span class="co">        sub-class' method does not implement `keepdims` any</span></span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a><span class="co">        exceptions will be raised.</span></span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a><span class="co">    where : array_like of bool, optional</span></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a><span class="co">        Elements to include in checking for all `True` values.</span></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a><span class="co">        See `~numpy.ufunc.reduce` for details.</span></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="co">        .. versionadded:: 1.20.0</span></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a><span class="co">    -------</span></span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a><span class="co">    all : ndarray, bool</span></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a><span class="co">        A new boolean or array is returned unless `out` is specified,</span></span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a><span class="co">        in which case a reference to `out` is returned.</span></span>
+<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a><span class="co">    See Also</span></span>
+<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a><span class="co">    --------</span></span>
+<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a><span class="co">    ndarray.all : equivalent method</span></span>
+<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a><span class="co">    any : Test whether any element along a given axis evaluates to True.</span></span>
+<span id="cb25-44"><a href="#cb25-44" aria-hidden="true" tabindex="-1"></a><span class="co">    Notes</span></span>
+<span id="cb25-45"><a href="#cb25-45" aria-hidden="true" tabindex="-1"></a><span class="co">    -----</span></span>
+<span id="cb25-46"><a href="#cb25-46" aria-hidden="true" tabindex="-1"></a><span class="co">    Not a Number (NaN), positive infinity and negative infinity</span></span>
+<span id="cb25-47"><a href="#cb25-47" aria-hidden="true" tabindex="-1"></a><span class="co">    evaluate to `True` because these are not equal to zero.</span></span>
+<span id="cb25-48"><a href="#cb25-48" aria-hidden="true" tabindex="-1"></a><span class="co">    Examples</span></span>
+<span id="cb25-49"><a href="#cb25-49" aria-hidden="true" tabindex="-1"></a><span class="co">    --------</span></span>
+<span id="cb25-50"><a href="#cb25-50" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; np.all([[True,False],[True,True]])</span></span>
+<span id="cb25-51"><a href="#cb25-51" aria-hidden="true" tabindex="-1"></a><span class="co">    False</span></span>
+<span id="cb25-52"><a href="#cb25-52" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; np.all([[True,False],[True,True]], axis=0)</span></span>
+<span id="cb25-53"><a href="#cb25-53" aria-hidden="true" tabindex="-1"></a><span class="co">    array([ True, False])</span></span>
+<span id="cb25-54"><a href="#cb25-54" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; np.all([-1, 4, 5])</span></span>
+<span id="cb25-55"><a href="#cb25-55" aria-hidden="true" tabindex="-1"></a><span class="co">    True</span></span>
+<span id="cb25-56"><a href="#cb25-56" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; np.all([1.0, np.nan])</span></span>
+<span id="cb25-57"><a href="#cb25-57" aria-hidden="true" tabindex="-1"></a><span class="co">    True</span></span>
+<span id="cb25-58"><a href="#cb25-58" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; np.all([[True, True], [False, True]], where=[[True], [False]])</span></span>
+<span id="cb25-59"><a href="#cb25-59" aria-hidden="true" tabindex="-1"></a><span class="co">    True</span></span>
+<span id="cb25-60"><a href="#cb25-60" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; o=np.array(False)</span></span>
+<span id="cb25-61"><a href="#cb25-61" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; z=np.all([-1, 4, 5], out=o)</span></span>
+<span id="cb25-62"><a href="#cb25-62" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; id(z), id(o), z</span></span>
+<span id="cb25-63"><a href="#cb25-63" aria-hidden="true" tabindex="-1"></a><span class="co">    (28293632, 28293632, array(True)) # may vary</span></span>
+<span id="cb25-64"><a href="#cb25-64" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb25-65"><a href="#cb25-65" aria-hidden="true" tabindex="-1"></a>    ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Alternatively, Here is how we’d write <a href="https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all"><code>numpy.all</code></a> in a notebook using nbdev. The first step is to define the function:</p>
+<div class="column-screen-inset-right">
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| export</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">all</span>(a, <span class="co"># Input array or object that can be converted to an array.</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>        axis:<span class="bu">int</span><span class="op">|</span><span class="bu">tuple</span><span class="op">|</span><span class="va">None</span><span class="op">=</span><span class="va">None</span>, <span class="co"># Axis or axes along which a logical AND reduction is performed (default: all).</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        out:np.ndarray<span class="op">|</span><span class="va">None</span><span class="op">=</span><span class="va">None</span>, <span class="co"># Alternate output array in which to place the result.</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>        keepdims:<span class="bu">bool</span><span class="op">=</span>np._NoValue, <span class="co"># Leave reduced one-dimensional axes in the result?</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>        where<span class="op">=</span>np._NoValue, <span class="co"># Elements to include in reduction. See `numpy.ufunc.reduce` for details. New in version 1.20.0.</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>        ) <span class="op">-&gt;</span> np.ndarray<span class="op">|</span><span class="bu">bool</span>: <span class="co"># A new boolean or array, or a reference to `out` if its specified.</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Test whether all array elements along a given axis evaluate to `True`."</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can observe the following differences between this code and numpy-docstrings:</p>
+<ul>
+<li>The definition uses simple type annotations, which will be rendered in the function’s parameters table below</li>
+<li>Parameters are described with a short comment, called <a href="#document-parameters-with-docments">docments</a> – a concise alternative to numpy and sphinx docstring formats (although nbdev does support numpy docstrings see <a href="#document-parameters-with-docments">this example</a>)</li>
+<li>The docstring and parameter descriptions are all short, single-line summaries. We prefer to <a href="#keep-docstrings-short-elaborate-in-separate-cells">keep docstrings short and instead elaborate in separate cells</a>, where we can use markdown and real code examples.</li>
+</ul>
+<p>Note: the use of <code>|</code> syntax for unions e.g.&nbsp;<code>int|tuple|None</code> (equivalent to <code>Union[int, tuple, None]</code>) requires using Python 3.10 or by treating all annotations as strings using <code>from __future__ import annotations</code> which is available from Python 3.7.</p>
+<p>Our function definition is automatically rendered in the docs like this. Note that parameter names, types, defaults, and details are all parsed from the definition which means you don’t have to repeat yourself.</p>
+<div class="pt-2 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm overflow-auto">
+<hr>
+<section id="all" class="level3">
+<h3 class="anchored" data-anchor-id="all">all</h3>
+<blockquote class="blockquote">
+<pre><code> all (a, axis:Union[int,tuple,NoneType]=None,
+      out:Optional[numpy.ndarray]=None, keepdims:bool=&lt;no value&gt;,
+      where=&lt;no value&gt;)</code></pre>
+</blockquote>
+<p>Test whether all array elements along a given axis evaluate to <code>True</code>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>a</td>
+<td></td>
+<td></td>
+<td>Input array or object that can be converted to an array.</td>
+</tr>
+<tr class="even">
+<td>axis</td>
+<td>int | tuple | None</td>
+<td>None</td>
+<td>Axis or axes along which a logical AND reduction is performed (default: all).</td>
+</tr>
+<tr class="odd">
+<td>out</td>
+<td>np.ndarray | None</td>
+<td>None</td>
+<td>Alternate output array in which to place the result.</td>
+</tr>
+<tr class="even">
+<td>keepdims</td>
+<td>bool</td>
+<td><no value=""></no></td>
+<td>Leave reduced one-dimensional axes in the result?</td>
+</tr>
+<tr class="odd">
+<td>where</td>
+<td>_NoValueType</td>
+<td><no value=""></no></td>
+<td>Elements to include in reduction. See <a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.reduce.html#numpy.ufunc.reduce"><code>numpy.ufunc.reduce</code></a> for details. New in version 1.20.0.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>np.ndarray | bool</strong></td>
+<td></td>
+<td><strong>A new boolean or array, or a reference to <code>out</code> if its specified.</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+</div>
+<p>Next, describe how to use your function using markdown cells and <a href="#use-lots-of-code-examples-pictures-plots-and-videos">lots of code examples</a>. This is the biggest benefit to developing in notebooks: instead of copying and pasting code examples into plaintext, you can include real executeable code examples.</p>
+<p>We start with basic usage first:</p>
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+<p>For example:</p>
+<div id="5cbee86a" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> [[<span class="va">True</span>,<span class="va">False</span>],[<span class="va">True</span>,<span class="va">True</span>]]</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>(x), <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>Our code examples <a href="#consider-turning-code-examples-into-tests-by-adding-assertions">use assertion functions from <code>fastcore.test</code></a>, so that they serve as both docs and tests. <a href="https://nbdev.fast.ai/api/test.html#nbdev_test"><code>nbdev_test</code></a> runs every code cell as a test (unless it’s explicitly marked otherwise), and any error in the cell fails the test.</p>
+<p>Having described basic usage, we now elaborate on more advanced functionality for each parameter. This differs from numpy’s approach which includes all parameter docs in the table and where not all parameters have code examples.</p>
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+<p>With <code>axis</code>:</p>
+<div id="c3e82a98" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>(x, axis<span class="op">=</span><span class="dv">0</span>), [<span class="va">True</span>,<span class="va">False</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>axis</code> may be negative, in which case it counts from the last to the first axis:</p>
+<div id="b5eeac7d" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>(x, axis<span class="op">=-</span><span class="dv">1</span>), [<span class="va">False</span>,<span class="va">True</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If <code>axis</code> is a tuple of ints, a reduction is performed on multiple axes, instead of a single axis or all the axes as before.</p>
+<div id="d88ff8f7" class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>(x, axis<span class="op">=</span>(<span class="dv">0</span>,<span class="dv">1</span>)), <span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Integers, floats, not a number (nan), and infinity all evaluate to <code>True</code> because they’re not equal to zero:</p>
+<div id="140f54ff" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>([<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="op">-</span><span class="fl">1.0</span>, <span class="fl">1.0</span>, np.nan, np.inf, <span class="op">-</span>np.inf]), <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can use <code>where</code> to test specific elements. For example, this tests only the second column:</p>
+<div id="77791ed8" class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>(x, where<span class="op">=</span>[[<span class="va">False</span>],[<span class="va">True</span>]]), <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The output can be stored in an optional <code>out</code> array. If provided, a reference to <code>out</code> will be returned:</p>
+<div id="a54a5c79" class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>o <span class="op">=</span> np.array(<span class="va">False</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>z <span class="op">=</span> np.<span class="bu">all</span>([<span class="op">-</span><span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">5</span>], out<span class="op">=</span>o)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>test_is(z, o)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>test_eq(z, <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>out</code> must have the same shape as the expected output and its type is preserved (e.g., if <code>dtype(out)</code> is float, the result will consist of 0.0’s and 1.0’s). See <a href="https://numpy.org/doc/stable/user/basics.ufuncs.html#ufuncs-output-type">Output type determination</a> for more details.</p>
+<p>With <code>keepdims</code>, the result will broadcast correctly against the input array.</p>
+<div id="6f585fea" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">all</span>(x, axis<span class="op">=</span><span class="dv">0</span>, keepdims<span class="op">=</span><span class="va">True</span>), [[<span class="va">True</span>, <span class="va">False</span>]]) <span class="co"># Note the nested list</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If the default value is passed, then <code>keepdims</code> will not be passed through to the <code>all</code> method of sub-classes of <code>ndarray</code>, however any non-default value will be. If the sub-class’ method does not implement <code>keepdims</code> any exceptions will be raised.</p>
+<div id="4f05c8e8" class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyArray(np.ndarray):</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="bu">all</span>(<span class="va">self</span>, axis<span class="op">=</span><span class="va">None</span>, out<span class="op">=</span><span class="va">None</span>): ...</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> MyArray((<span class="dv">2</span>,<span class="dv">2</span>))</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>y[:] <span class="op">=</span> x</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">all</span>(y) <span class="co"># No TypeError since `keepdims` isn't passed</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: np.<span class="bu">all</span>(y, keepdims<span class="op">=</span><span class="va">True</span>), contains<span class="op">=</span><span class="st">"all() got an unexpected keyword argument 'keepdims'"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>Since we prefer to document via code examples, we also document error-cases with assertions using <a href="https://fastcore.fast.ai/test.html#test_fail"><code>fastcore.test.test_fail</code></a>. This differs from docstring-based approaches which usually document error-cases in prose, usually in a “raises” section of the docstring.</p>
+<p>Finally, we link to related symbols with <a href="#reference-related-symbols-with-doclinks">doclinks</a> (symbols surrounded in backticks are automatically linked) and describe their relation using code examples.</p>
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+<p>The <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.all.html#numpy.ndarray.all"><code>numpy.ndarray.all</code></a> method is equivalent to calling <a href="https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all"><code>numpy.all</code></a> with the array:</p>
+<div id="3370e60e" class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.array(x).<span class="bu">all</span>(), np.<span class="bu">all</span>(x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In contrast, <a href="https://numpy.org/doc/stable/reference/generated/numpy.any.html#numpy.any"><code>numpy.any</code></a> tests whether <em>any</em> element evaluates to <code>True</code> (rather than <em>all</em> elements):</p>
+<div id="e6b24e25" class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>test_eq(np.<span class="bu">any</span>(x), <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<section id="recap" class="level3">
+<h3 class="anchored" data-anchor-id="recap">Recap</h3>
+<p>In summary, here is how the nbdev version of <a href="https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all"><code>numpy.all</code></a> differs from the numpy docstring. nbdev uses:</p>
+<ul>
+<li>Type annotations and docments instead of the numpy docstring format (although nbdev supports numpy docstrings too)</li>
+<li>Short parameter descriptions, with details in separate cells with markdown and code example</li>
+<li>Doclinks to related symbols instead of a “See also” section</li>
+<li>Lots of code examples (which are also tests) mixed with prose to describe how to use the function</li>
+<li>Code examples with assertions to document error-cases instead of a “Raises” section.</li>
+</ul>
+
+
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>We’re always open to improving our workflows and don’t like to be too prescriptive about style. If you have any ideas, please feel free to post them in the <a href="https://forums.fast.ai/c/nbdev/48">forum</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nbdev\.fast\.ai\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

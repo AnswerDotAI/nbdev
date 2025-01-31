@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Hamel Husain">
+<meta name="author" content="Jeremy Howard">
+<meta name="dcterms.date" content="2022-07-28">
+<meta name="description" content="Our favorite tool for software engineering productivity–nbdev, now re-written with Quarto">
+
+<title>nbdev+Quarto: A new secret weapon for productivity – nbdev</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../favicon.png" rel="icon" type="image/png">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="nbdev+Quarto: A new secret weapon for productivity – nbdev">
+<meta property="og:description" content="Our favorite tool for software engineering productivity–nbdev, now re-written with Quarto">
+<meta property="og:image" content="https://nbdev.fast.ai//images/card.png">
+<meta property="og:site_name" content="nbdev">
+<meta property="og:image:height" content="1009">
+<meta property="og:image:width" content="2198">
+<meta name="twitter:title" content="nbdev+Quarto: A new secret weapon for productivity – nbdev">
+<meta name="twitter:description" content="Our favorite tool for software engineering productivity–nbdev, now re-written with Quarto">
+<meta name="twitter:image" content="https://nbdev.fast.ai//images/card.png">
+<meta name="twitter:image-height" content="1009">
+<meta name="twitter:image-width" content="2198">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">nbdev</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../../getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../tutorials/tutorial.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/fastai/nbdev/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://forums.fast.ai/"><i class="bi bi-chat-right-text" role="img">
+</i> 
+ <span class="dropdown-text">Fast.ai Forum</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../getting_started.html#faq"><i class="bi bi-question-circle" role="img">
+</i> 
+ <span class="dropdown-text">FAQ</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/nbdev"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">nbdev+Quarto: A new secret weapon for productivity</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../../tutorials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">End-To-End Walkthrough</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/best_practices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notebook Best Practices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/qmd_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Qmd Documents</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/renderscript.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RenderScripts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/git_friendly_jupyter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Git-Friendly Jupyter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/blogging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blogging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/pre_commit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pre-Commit Hooks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/docs_only.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Documentation Only Sites</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/extensions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Writing nbdev plugins</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/migrating.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nbdev1 Migration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../tutorials/modular_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modular nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../../explanations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explanations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../explanations/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings.ini</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../explanations/directives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../explanations/docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docs Website</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../explanations/why_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Why nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../../api/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/maker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">maker</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/process.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">process</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/export.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">export</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/doclinks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">doclinks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/sync.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sync</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/merge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/showdoc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">showdoc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/frontmatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">frontmatter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/processors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">processors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/clean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">clean</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/cli.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cli</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/quarto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">quarto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/qmd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">qmd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/migrate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">migrate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/serve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">serve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../api/release.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">release</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#our-new-secret-weapon-for-productivity" id="toc-our-new-secret-weapon-for-productivity" class="nav-link active" data-scroll-target="#our-new-secret-weapon-for-productivity">Our new secret weapon for productivity</a></li>
+  <li><a href="#nbdev-in-industry" id="toc-nbdev-in-industry" class="nav-link" data-scroll-target="#nbdev-in-industry">nbdev in industry</a></li>
+  <li><a href="#whats-nbdev" id="toc-whats-nbdev" class="nav-link" data-scroll-target="#whats-nbdev">What’s nbdev?</a></li>
+  <li><a href="#what-we-learned-after-three-years-of-using-nbdev" id="toc-what-we-learned-after-three-years-of-using-nbdev" class="nav-link" data-scroll-target="#what-we-learned-after-three-years-of-using-nbdev">What we learned after three years of using nbdev</a></li>
+  <li><a href="#enter-quarto-a-pandoc-super-processor" id="toc-enter-quarto-a-pandoc-super-processor" class="nav-link" data-scroll-target="#enter-quarto-a-pandoc-super-processor">Enter Quarto: A pandoc super-processor</a></li>
+  <li><a href="#a-blazing-fast-notebook-kernel-execnb" id="toc-a-blazing-fast-notebook-kernel-execnb" class="nav-link" data-scroll-target="#a-blazing-fast-notebook-kernel-execnb">A blazing fast notebook kernel: execnb</a></li>
+  <li><a href="#towards-a-dialect-of-python-that-embraces-its-dynamic-nature" id="toc-towards-a-dialect-of-python-that-embraces-its-dynamic-nature" class="nav-link" data-scroll-target="#towards-a-dialect-of-python-that-embraces-its-dynamic-nature">Towards a dialect of python that embraces its dynamic nature</a></li>
+  <li><a href="#the-future-of-nbdev" id="toc-the-future-of-nbdev" class="nav-link" data-scroll-target="#the-future-of-nbdev">The future of nbdev</a></li>
+  <li><a href="#how-you-can-get-started-with-nbdev" id="toc-how-you-can-get-started-with-nbdev" class="nav-link" data-scroll-target="#how-you-can-get-started-with-nbdev">How you can get started with nbdev</a></li>
+  <li><a href="#thank-you" id="toc-thank-you" class="nav-link" data-scroll-target="#thank-you">Thank You</a></li>
+  <li><a href="#a-conversation-with-jj-allaire" id="toc-a-conversation-with-jj-allaire" class="nav-link" data-scroll-target="#a-conversation-with-jj-allaire">A conversation with JJ Allaire</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">nbdev+Quarto: A new secret weapon for productivity</h1>
+</div>
+
+<div>
+  <div class="description">
+    Our favorite tool for software engineering productivity–nbdev, now re-written with Quarto
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Hamel Husain </p>
+             <p>Jeremy Howard </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 28, 2022</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><em><a href="https://www.fast.ai/2022/07/28/nbdev-v2/">Originally posted</a> on the fast.ai blog</em></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../../../images/card.png" class="img-fluid figure-img"></p>
+<figcaption>A single notebook can create a python module, tests, CI, pypi/conda packages, and more.</figcaption>
+</figure>
+</div>
+<section id="our-new-secret-weapon-for-productivity" class="level2">
+<h2 class="anchored" data-anchor-id="our-new-secret-weapon-for-productivity">Our new secret weapon for productivity</h2>
+<p>Today we’re excited to announce that we’ve teamed up with Quarto to give <a href="https://nbdev.fast.ai">nbdev</a> superpowers. nbdev offers Python programmers a common set of tools for using Jupyter notebooks to:</p>
+<ul>
+<li>Write &amp; distribute software packages</li>
+<li>Test code, and</li>
+<li>Author documentation and technical articles</li>
+</ul>
+<p>Although notebooks are already widely used for once-off exploratory work, it’s less well-known that they are perfectly capable of writing quality software. In fact, we’ve used nbdev for a wide range of software projects over the last three years, including <a href="https://github.com/fastai/fastai">deep learning libraries,</a> <a href="https://github.com/fastai/ghapi">API clients</a>, <a href="https://github.com/fastai/fastcore">Python language extensions</a>, <a href="https://github.com/nat/ghtop">terminal user interfaces</a>, and more. We discovered that it is not only capable of writing great software but that it <strong>has also increased our productivity by 300% or more</strong>. With nbdev, developers simply write notebooks with lightweight markup and get high-quality documentation, tests, continuous integration, and packaging for free! Nbdev has allowed us to maintain and scale many <a href="https://github.com/fastai">open source projects</a>. Pull requests are often accompanied by detailed documentation and tests–contributors simply write notebooks.</p>
+<p>This is why we’re excited to share nbdev v2. It’s rewritten from the ground up, with much-anticipated features including:</p>
+<ul>
+<li>Interoperation with non-nbdev codebases for tasks like documentation</li>
+<li>Support for any static site generator</li>
+<li>Wide variety of output mediums such as blogs, papers, slides, and websites</li>
+<li>A faster Jupyter kernel, which also means faster tests</li>
+<li>Cleaner and more extensible API, which supports custom directives, custom module exporters, and more</li>
+</ul>
+</section>
+<section id="nbdev-in-industry" class="level2">
+<h2 class="anchored" data-anchor-id="nbdev-in-industry">nbdev in industry</h2>
+<p>We have piloted nbdev at several companies. We were delighted to receive the following feedback, which fits our own experience using and developing nbdev:</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://www.linkedin.com/in/david-j-berg/">David Berg</a>, on using nbdev for internal documentation at Netflix:</strong> “Prior to using nbdev, documentation was the most cumbersome aspect of our software development process… Using nbdev allows us to spend more time creating rich prose around the many code snippets guaranteeing the whole experience is robust. nbdev has turned what was once a chore into a natural extension of the notebook-based testing we were already doing.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="logo_netflix.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-width="200" data-fig-pos="center"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://news.ycombinator.com/item?id=25165306">Erik Gaasedelen</a>, on using nbdev in production at Lyft:</strong> “I use this in production at my company. It’s an awesome tool… nbdev streamlines everything so I can write docs, tests, and code all in one place… The packaging is also really well thought out. From my point of view it is close to a Pareto improvement over traditional Python library development.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="logo_lyft.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-width="200"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://twitter.com/hugobowne">Hugo Bowne-Anderson</a>, on using nbdev for <a href="https://outerbounds.com/docs">Outerbounds</a>:</strong> “nbdev has transformed the way we write documentation. Gone are the days of worrying about broken code examples when our API changes or [due to] human errors associated with copying &amp; pasting code into markdown files. The authoring experience of nbdev… [allows] us to write prose and live code in a unified interface, which allows more experimentation… On top of this, nbdev allows us to include unit tests in our documentation which mitigates the burden of maintaining the docs over time.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="logo_ob.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-width="200"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[70,30]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 70.0%;justify-content: flex-start;">
+<p><strong><a href="https://www.linkedin.com/in/roxanna-pourzand-445a3035/">Roxanna Pourzand</a>, on using nbdev for <a href="https://docs.transform.co/">Transform</a>:</strong> “We’re so excited about using nbdev. Our product is technical so our resulting documentation includes a lot of code-based examples. Before nbdev, we had no way of maintaining our code examples and ensuring that it was up-to-date for both command inputs and outputs. It was all manual. With nbdev, we now have this under control in a sustainable way. Since we’ve deployed these docs, we also had a situation where we were able to identify a bug in one of our interfaces, which we found by seeing the error that was output in the documentation.”</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 30.0%;justify-content: center;">
+<p><img src="logo_transform.png" class="img-fluid" width="200"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="whats-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="whats-nbdev">What’s nbdev?</h2>
+<p>Nbdev embraces the dynamic nature of python and REPL-driven development in ways that traditional IDEs and software development workflows cannot. We thoroughly discussed the motivation, history, and goals of nbdev in this <a href="https://www.fast.ai/posts/2019-11-27-nbdev.html#software-development-tools">initial launch post</a> three years ago. The creator of Jupyter, Fernando Pérez, told us:</p>
+<blockquote class="blockquote">
+<p>[Nbdev] should be celebrated and used a lot more - I have kept a tab with your original nbdev blog post open for months in Chrome because of how often I refer to it and point others to this work</p>
+</blockquote>
+<p>In short, nbdev embraces ideas from <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a> and <a href="https://en.wikipedia.org/wiki/Exploratory_programming">exploratory programming</a>. These paradigms have been revisited in platforms like XCode <a href="https://en.wikipedia.org/wiki/Swift_Playgrounds">Playgrounds</a> and languages like Smalltalk, LISP, and Mathematica. With nbdev, we sought to push these paradigms even further by enabling it for one of the most popular dynamic programming languages in the world: Python.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lang_rank.png" class="img-fluid figure-img"></p>
+<figcaption>State of the Octoverse 2021, GitHub</figcaption>
+</figure>
+</div>
+<p>Even though nbdev is most widely used in scientific computing communities due to its integration with Jupyter Notebooks, we’ve found that nbdev is well suited for a much wider range of software. We have used nbdev to write <a href="https://github.com/fastai/fastai">deep learning libraries,</a> <a href="https://github.com/fastai/ghapi">API clients</a>, <a href="https://github.com/fastai/fastcore">python language extensions</a>, <a href="https://github.com/nat/ghtop">terminal user interfaces</a>, and more!</p>
+<p><em>Hamel: When I use nbdev, my colleagues are often astounded by how quickly I can create and distribute high-quality python packages. I consider nbdev to be a superpower that allows me to create tests and documentation without any additional friction, which makes all of my projects more maintainable. I also find writing software with nbdev to be more fun and productive as I can iterate very fast on ideas relative to more traditional software engineering workflows. Lastly, with nbdev I can also use traditional text-based IDEs if I want to, so I get the best of both worlds.</em></p>
+</section>
+<section id="what-we-learned-after-three-years-of-using-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="what-we-learned-after-three-years-of-using-nbdev">What we learned after three years of using nbdev</h2>
+<p>While nbdev was originally developed to simplify the software development workflow for various <a href="https://github.com/fastai">fast.ai projects</a>, we found that users wanted to extend nbdev to:</p>
+<ul>
+<li>Write and publish blog posts, books, papers, and other types of documents with Jupyter Notebooks</li>
+<li>Document existing codebases not written in nbdev</li>
+<li>Accommodate traditional Python conventions–for those constrained in how their code is organized and formatted</li>
+<li>Publish content using <em>any</em> static site generator</li>
+</ul>
+<p>While we created projects such as <a href="https://github.com/fastai/fastpages">fastpages</a> and <a href="https://github.com/fastai/fastdoc">fastdoc</a> to accomplish some of these tasks, we realized that it would be better to have a single set of flexible tools to accomplish all of them. To this end, we were extremely excited to discover <a href="https://quarto.org/">Quarto</a>, an open-source technical publishing system built on pandoc.</p>
+<p><em>Hamel: The more I used nbdev for creating Python modules, the more I wanted to use it for writing blogs and documenting existing codebases. The ability to customize the way notebooks are rendered (hiding vs.&nbsp;showing cells, stripping output, etc.), along with the facilities for including unit tests, made it my go-to authoring tool for all technical content. I’m excited that nbdev2 unlocks all of these possibilities for everyone!</em></p>
+</section>
+<section id="enter-quarto-a-pandoc-super-processor" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="enter-quarto-a-pandoc-super-processor">Enter Quarto: A pandoc super-processor</h2>
+<p><a href="https://quarto.org/">Quarto</a> is a project that enables technical publishing with support for Jupyter Notebook, VSCode, Observable, and plaintext editors. Furthermore, Quarto enables the publishing of high-quality articles, reports, websites, and blogs in HTML, PDF, ePub, PowerPoint slides, and more. Quarto is maintained by <a href="https://www.rstudio.com/">RStudio</a>, a company with a long history of products supporting literate programming, such as RMarkdown and RStudio.</p>
+<p>Quarto is built on top of <a href="https://pandoc.org/">Pandoc</a>, a universal document converter that supports nearly any format you can think of. Pandoc achieves this seemingly magical feat by representing documents in a common abstract syntax tree (AST) that serves as the medium through which different formats can be translated. By extension, Quarto allows you to generate content in almost any format you wish! You can use <a href="https://pandoc.org/filters%202.html#summary">pandoc filters</a> to modify the AST and the output format, which allows you to use any static site generator you want, and programmatically modify and generate content.</p>
+<p>Quarto allows you to <a href="https://quarto.org/docs/extensions/filters.html#activating-filters">compose pandoc filters in a processing pipeline</a> and apply them to specific documents or entire projects. You can also <a href="https://quarto.org/docs/extensions/filters.html#distribution">distribute filters as Quarto extensions</a>, which makes Quarto extremely customizable.</p>
+<p>We also find Quarto compelling because user interfaces such as <a href="https://quarto.org/docs/reference/cells/cells-jupyter.html#overview">comment directives</a> (comments that start with <code>#|</code>) correlate with nbdev. In fact, we even learned that nbdev inspired Quarto in this regard! In general, Quarto and nbdev share many goals, and the Quarto team has been incredibly responsive to our suggestions. For example, the ability to create <a href="https://quarto.org/docs/extensions/nbfilter.html">notebook filters</a> to modify notebooks before rendering. Below is a screenshot of a Jupyter notebook rendered with Quarto and nbdev.</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="nb_quarto.png" class="img-fluid figure-img column-page-inset"></p>
+<figcaption>Quarto rendering a Jupyter notebook written with nbdev</figcaption>
+</figure>
+</div>
+</div>
+<p>Finally, Quarto supports more programming languages than just Python and has been adding new features and fixing bugs at an impressive speed. This gives us confidence that we will be able to expand nbdev to support more use cases in the future. We discuss some of these future directions in the closing section.</p>
+</section>
+<section id="a-blazing-fast-notebook-kernel-execnb" class="level2">
+<h2 class="anchored" data-anchor-id="a-blazing-fast-notebook-kernel-execnb">A blazing fast notebook kernel: execnb</h2>
+<p>A core component of nbdev is executing and testing notebooks programmatically. It is important that this notebook runner executes with minimal overhead to maintain our goal of providing a delightful developer experience. This is why we built <a href="https://github.com/fastai/execnb">execnb</a>, a lightweight notebook runner for Python kernels, which executes notebooks blazingly fast. Furthermore, execnb allows parameterized execution of notebooks.</p>
+<p><em>Hamel: I have been an enthusiastic user of tools like papermill that programmatically run notebooks for use-cases like <a href="https://github.com/github/covid19-dashboard">creating dashboards</a> or enabling <a href="https://outerbounds.com/blog/notebooks-in-production-with-metaflow">new kinds of machine learning workflows</a>. I believe execnb unlocks even more possibilities with its ability to inject arbitrary code at any place in a notebook, as well as the ability to pass callbacks that run before and/or after cells are executed. This opens up possibilities to create new types of workflows with notebooks that I am excited about exploring in the near future.</em></p>
+</section>
+<section id="towards-a-dialect-of-python-that-embraces-its-dynamic-nature" class="level2">
+<h2 class="anchored" data-anchor-id="towards-a-dialect-of-python-that-embraces-its-dynamic-nature">Towards a dialect of python that embraces its dynamic nature</h2>
+<p>One way to understand nbdev is part of an ecosystem that is designed to embrace Python’s dynamic properties for REPL-driven software engineering. <a href="https://clojure.org/guides/repl/enhancing_your_repl_workflow">Similar to Clojure</a>, our goal is to provide tools that remove all friction from using the REPL in your programming workflow. We believe that the REPL enhances developer workflows thanks to context-sensitive auto-completion, signature inspection, and documentation–all based on the actual state of your code, and none of which are available in IDEs that depend solely on static analysis. We have found that for this reason, nbdev, with its Jupyter notebook foundation, makes programming significantly more productive and enjoyable.</p>
+<p>Our efforts to support REPL-driven development and literate programming are not limited to nbdev. We maintain a number of libraries that extend python to bolster this programming experience. The most notable of these libraries is <a href="https://github.com/fastai/fastcore">fastcore</a>, which extends Python in terms of <a href="https://fastcore.fast.ai/test.html">testing</a>, <a href="https://fastcore.fast.ai/docments.html">documenting code</a>, <a href="https://fastcore.fast.ai/meta.html#Metaprogramming">metaprogramming</a>, <a href="https://fastcore.fast.ai/basics.html#Attribute-Helpers">attribute helpers</a>, <a href="https://fastcore.fast.ai/basics.html#basic_repr">enhanced representations of objects</a>, and notebook-friendly <a href="https://fastcore.fast.ai/basics.html#Patching">patching</a>. This <a href="https://fastpages.fast.ai/fastcore/">blog post</a> offers a gentle introduction to fastcore. In addition to literate programming, fastcore encourages conventions such as brevity and efficient use of vertical space so you can accomplish more with significantly less code. For example, below is a simple decorator that enables notebook-friendly <a href="https://fastcore.fast.ai/basics.html#Patching">patching</a>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="patch.png" class="img-fluid figure-img" width="600"></p>
+<figcaption><code>@patch</code> decorator from fastcore</figcaption>
+</figure>
+</div>
+<p>We believe that this combination of a new developer workflow (nbdev), Python extensions (fastcore), and associated norms form a new dialect of Python that is centered on leveraging its dynamic nature–in contrast to an ever-growing trend toward <a href="https://mypy.readthedocs.io/en/stable/">static analysis</a>. We suspect that this dialect of Python will be more productive for programmers in many scenarios. We are framing this ecosystem as a “dialect” as it is still very much Python and is approachable by anyone who is familiar with the language. Furthermore, despite nbdev’s notebook workflow, our tools generate plaintext modules that can be navigated and edited with text-based IDEs, allowing programmers to experience the best of both worlds, if they desire.</p>
+<p><em>Hamel: I believe this framing of a Python dialect is key to properly understanding what nbdev is. While it may be tempting to get stuck on specific features or technical details of nbdev, it is useful to zoom out to understand the overall intent of creating a better workflow rather than conforming too rigidly to existing ones. A good analogy is TypeScript’s relationship with JavaScript: it is an extension of an existing programming language that supports a new way of programming. I encourage you to treat nbdev in a similar fashion: be willing to try new ways of programming and observe which tradeoffs resonate with you. At the very least, I believe nbdev is a fun way to experience a different way of writing software, which will broaden your horizons about programming in general, all without having to learn an entirely new programming language!</em></p>
+</section>
+<section id="the-future-of-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="the-future-of-nbdev">The future of nbdev</h2>
+<p>While we are excited about nbdev2, we believe we have only scratched the surface of what’s possible. We are considering the following features:</p>
+<ul>
+<li>Supporting more languages beyond Python, such as Julia, R and JavaScript</li>
+<li>Offering interfaces for executing parameterized notebooks that mimic Python scripts</li>
+<li>Extensions for more static site generators and filters</li>
+<li>Supporting alternate testing backends, such as pytest</li>
+<li>Supporting a greater number of docstring formats, such as <a href="https://google.github.io/styleguide/pyguide.html#381-docstrings">Google-style</a> docstrings</li>
+<li>More options to use plain-text or human readable notebook backends other than JSON</li>
+</ul>
+<p>If you have interesting ideas about how nbdev can be extended, please drop and chat with us on <a href="https://discord.com/invite/xnpeRdg">discord</a> or post a message in the <a href="https://forums.fast.ai/">forums</a>.</p>
+</section>
+<section id="how-you-can-get-started-with-nbdev" class="level2">
+<h2 class="anchored" data-anchor-id="how-you-can-get-started-with-nbdev">How you can get started with nbdev</h2>
+<p>Our project’s website is at <a href="https://nbdev.fast.ai/">nbdev.fast.ai</a>, where we will be posting tutorials, examples, and more documentation in the coming days.</p>
+</section>
+<section id="thank-you" class="level2">
+<h2 class="anchored" data-anchor-id="thank-you">Thank You</h2>
+<p>This new version of nbdev was a team effort by many wonderful people. We want to highlight two people who have made outstanding contributions:</p>
+<ul>
+<li><p><a href="https://twitter.com/wasimlorgat">Wasim Lorgat</a> was instrumental across different areas, including significant contributions to fastcore, execnb, and nbdev, as well as the implementation of the new nbdev <a href="https://nbdev.fast.ai/">home page</a>. With Wasim’s help, we were able to push nbdev to a new level of functionality and quality.</p></li>
+<li><p><a href="https://en.wikipedia.org/wiki/Joseph_J._Allaire">JJ Allaire</a> is not only the CEO of RStudio but also the steward of Quarto. JJ was incredibly responsive and eager to work with us on nbdev and added many features to Quarto specifically with nbdev in mind, such as <a href="https://quarto.org/docs/extensions/nbfilter.html">notebook filters</a>. We were also astounded by the attention to detail and the pace at which bugs are addressed. This new version of nbdev would not have been possible without JJ’s help, and we are excited to continue to work with him.</p></li>
+</ul>
+<p>We also want to thank the amazing fastai community, notably <a href="https://twitter.com/isaac_flath">Isaac Flath</a>, <a href="https://mobile.twitter.com/benjamin_warner">Benjamin Warner</a> and <a href="https://twitter.com/TheZachMueller">Zach Mueller</a> for their tireless work on this project.</p>
+</section>
+<section id="a-conversation-with-jj-allaire" class="level2">
+<h2 class="anchored" data-anchor-id="a-conversation-with-jj-allaire">A conversation with JJ Allaire</h2>
+<p>To celebrate the launch of nbdev v2 and Quarto, Jeremy sat down with the CEO of Posit (previously known as RStudio, the company behind Quarto), JJ Allaire, to talk about software development, scientific publishing, R, Python, literate programming, and much more.</p>
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xxVVSxcjNQs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="">
+</iframe>
+</center>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nbdev\.fast\.ai\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

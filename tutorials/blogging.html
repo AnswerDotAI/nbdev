@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Creating a blog with notebooks">
+
+<title>Blogging – nbdev</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Blogging – nbdev">
+<meta property="og:description" content="Creating a blog with notebooks">
+<meta property="og:site_name" content="nbdev">
+<meta name="twitter:title" content="Blogging – nbdev">
+<meta name="twitter:description" content="Creating a blog with notebooks">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed slimcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">nbdev</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../tutorials/tutorial.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/fastai/nbdev/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://forums.fast.ai/"><i class="bi bi-chat-right-text" role="img">
+</i> 
+ <span class="dropdown-text">Fast.ai Forum</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../getting_started.html#faq"><i class="bi bi-question-circle" role="img">
+</i> 
+ <span class="dropdown-text">FAQ</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/nbdev"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/index.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/blogging.html">Blogging</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../tutorials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">End-To-End Walkthrough</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/best_practices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notebook Best Practices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/qmd_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Qmd Documents</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/renderscript.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RenderScripts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/git_friendly_jupyter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Git-Friendly Jupyter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/blogging.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Blogging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/pre_commit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pre-Commit Hooks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/docs_only.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Documentation Only Sites</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/extensions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Writing nbdev plugins</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/migrating.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nbdev1 Migration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/modular_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modular nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../explanations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explanations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings.ini</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/directives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docs Website</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/why_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Why nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../api/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/maker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">maker</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/process.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">process</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/export.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">export</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/doclinks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">doclinks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/sync.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sync</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/merge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/showdoc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">showdoc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/frontmatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">frontmatter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/processors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">processors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/clean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">clean</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/cli.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cli</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/quarto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">quarto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/qmd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">qmd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/migrate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">migrate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/serve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">serve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/release.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">release</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
+  <li><a href="#enter-quarto" id="toc-enter-quarto" class="nav-link" data-scroll-target="#enter-quarto">Enter Quarto</a></li>
+  <li><a href="#migrating-from-fastpages" id="toc-migrating-from-fastpages" class="nav-link" data-scroll-target="#migrating-from-fastpages">Migrating from fastpages</a>
+  <ul>
+  <li><a href="#configuration-options-fastpages-vs.-quarto" id="toc-configuration-options-fastpages-vs.-quarto" class="nav-link" data-scroll-target="#configuration-options-fastpages-vs.-quarto">Configuration options: fastpages vs.&nbsp;Quarto</a>
+  <ul class="collapse">
+  <li><a href="#post-level-options" id="toc-post-level-options" class="nav-link" data-scroll-target="#post-level-options">Post-level options</a></li>
+  <li><a href="#site-level-options" id="toc-site-level-options" class="nav-link" data-scroll-target="#site-level-options">Site-level options</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#publishing-your-blog" id="toc-publishing-your-blog" class="nav-link" data-scroll-target="#publishing-your-blog">Publishing your blog</a></li>
+  <li><a href="#creating-a-blog-within-a-nbdev-project" id="toc-creating-a-blog-within-a-nbdev-project" class="nav-link" data-scroll-target="#creating-a-blog-within-a-nbdev-project">Creating a blog within a nbdev project</a>
+  <ul>
+  <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">Folder structure</a></li>
+  <li><a href="#special-considerations-for-nbdev-blogs" id="toc-special-considerations-for-nbdev-blogs" class="nav-link" data-scroll-target="#special-considerations-for-nbdev-blogs">Special considerations for nbdev blogs</a></li>
+  </ul></li>
+  <li><a href="#using-nbdev-features-in-blogs-outside-nbdev-projects" id="toc-using-nbdev-features-in-blogs-outside-nbdev-projects" class="nav-link" data-scroll-target="#using-nbdev-features-in-blogs-outside-nbdev-projects">Using nbdev features in blogs outside nbdev projects</a></li>
+  <li><a href="#creating-a-new-blog-site-from-scratch" id="toc-creating-a-new-blog-site-from-scratch" class="nav-link" data-scroll-target="#creating-a-new-blog-site-from-scratch">Creating A New Blog Site From Scratch</a></li>
+  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="blogging.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/index.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/blogging.html">Blogging</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Blogging</h1>
+</div>
+
+<div>
+  <div class="description">
+    Creating a blog with notebooks
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>Blogging with notebooks can offer a dramatic quality of life improvement over writing in Markdown, especially for blog posts that contain code. Previously, there were no static site generators that supported Jupyter Notebooks as a first-class authoring medium. This previously led us to create <a href="https://github.com/fastai/fastpages">fastpages</a> (now deprecated), which extended <a href="https://jekyllrb.com/">Jekyll</a> to enable blogging directly with Jupyter.</p>
+</section>
+<section id="enter-quarto" class="level2">
+<h2 class="anchored" data-anchor-id="enter-quarto">Enter Quarto</h2>
+<p>However, there now exists <a href="https://quarto.org/">Quarto</a>, a wonderful publishing system with rich support for authoring via Jupyter Notebooks.</p>
+<p>Some helpful resources on getting started with Quarto:</p>
+<ul>
+<li><a href="https://quarto.org/">The Quarto Homepage</a></li>
+<li><a href="https://quarto.org/docs/websites/website-blog.html">Creating A Blog With Quarto</a>: This page helps you get started with creating a blog.</li>
+<li><a href="https://quarto.org/docs/gallery/">A Gallery of Quarto Sites</a>: Good reference examples of using Quarto.</li>
+<li><a href="https://github.com/quarto-dev/quarto-web">The Quarto Website</a>: The Quarto website is built with Quarto and they use some of its advanced functionality. It is instructive to look through this project to understand how Quarto works.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+You don’t need nbdev to blog with notebooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You do not need to use nbdev to create a blog with notebooks. However, you may wish to:</p>
+<ul>
+<li>Incorporate a blog in your nbdev project’s website</li>
+<li>Use some nbdev functionality in your blog (testing, exporting etc)</li>
+</ul>
+<p>We will discuss these subjects in this article.</p>
+</div>
+</div>
+</section>
+<section id="migrating-from-fastpages" class="level2">
+<h2 class="anchored" data-anchor-id="migrating-from-fastpages">Migrating from fastpages</h2>
+<p>If you previously had a fastpages site, we offer some utilities to help migrate you to Quarto. <strong>The migration is not holistic: you will likely have to manually correct some things that we are not able to automate.</strong></p>
+<p>Instructions:</p>
+<ol type="1">
+<li><p><a href="https://quarto.org/docs/get-started/">Install Quarto</a></p></li>
+<li><p>Create a new repo or directory to migrate your blog to</p></li>
+<li><p>In this new repo, create a quarto blog and install required extensions with the following terminal commands. This will create a minimal project structure for you:</p></li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> create-project <span class="at">--type</span> website:blog .</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> install extension quarto-ext/video</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="5" type="1">
+<li>Your new repo will have a <code>posts/</code> directory. This is where you will copy all of your notebook and markdown posts from fastpages. For example, let’s say your fastpages blog repo is in a sibling directory located at <code>../blog/</code>, you would copy all the relevant posts like this:</li>
+</ol>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Make sure you are in root of your quarto directory before executing the below commands. Furthermore, change the commands as appropriate depending on the location of your fastpages repo relative to your current directory.</p>
+</div>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> ../blog/_notebooks/<span class="pp">*</span> posts</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> ../blog/_posts/<span class="pp">*</span> posts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="6" type="1">
+<li>Copy all images associated with your posts into the <code>posts/</code> directory. We have to get our images from several places (due to the way Jekyll and fastpages work):</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> ../blog/images/<span class="pp">*</span> posts</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> ../blog/images/copied_from_nb/<span class="pp">*</span> posts/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="7" type="1">
+<li>Make your posts Quarto compatible with the following command:</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nbdev_migrate</span> <span class="at">--path</span> posts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+What does <a href="https://nbdev.fast.ai/api/migrate.html#nbdev_migrate"><code>nbdev_migrate</code></a> do?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><a href="https://nbdev.fast.ai/api/migrate.html#nbdev_migrate"><code>nbdev_migrate</code></a> does the following things:</p>
+<section id="for-notebooks" class="level4">
+<h4 class="anchored" data-anchor-id="for-notebooks">For notebooks</h4>
+<ul>
+<li>Migrates markdown front matter to raw cell front matter <a href="../api/migrate.ipynb#migrateproc">as described here</a>.</li>
+<li>nbdev v1 directives are automatically converted to <a href="../explanations/directives.html">Quarto directives</a>. Note that we convert everything to Quarto directives (nbdev-specific directives are not relevant for this context)</li>
+<li>Markdown shortcut for embedding youtube videos and callouts are automatically converted to work with Quarto.</li>
+</ul>
+</section>
+<section id="for-markdown-and-notebooks" class="level4">
+<h4 class="anchored" data-anchor-id="for-markdown-and-notebooks">For markdown and notebooks</h4>
+<ul>
+<li>Automatically creates <a href="https://quarto.org/docs/reference/formats/html.html#website">link aliases</a> so that old links will not break. Jekyll automatically generates URLs differently than Quarto, so this ensures that the Jekyll way is aliased.</li>
+<li>Automatically corrects image paths</li>
+<li>Makes front matter compatible with Quarto by changing field names and values where necessary</li>
+</ul>
+</section>
+</div>
+</div>
+</div>
+<ol start="8" type="1">
+<li>Update the following files:</li>
+</ol>
+<ul>
+<li><code>./.gitignore</code>: we suggest adding<code>_site/</code> as well as dot files <code>.*</code></li>
+<li><code>./about.qmd</code>: Add some information about yourself.</li>
+<li><code>./profile.jpg</code>: optionally change the profile picture.</li>
+</ul>
+<ol start="9" type="1">
+<li>Preview your site with the command <code>quarto preview</code>, and make any necessary adjustments and fix for broken links or Jekyll shortcodes (things with <code>{% ... %}</code>) that need to be converted to Quarto. Search the <a href="https://quarto.org/">the Quarto documentation</a> if you need help locating specific Quarto features.</li>
+</ol>
+<section id="configuration-options-fastpages-vs.-quarto" class="level3">
+<h3 class="anchored" data-anchor-id="configuration-options-fastpages-vs.-quarto">Configuration options: fastpages vs.&nbsp;Quarto</h3>
+<p>fastpages (which is based on Jekyll) and Quarto offer different options and configurations for individual posts and at a site level. The tables below enumerate some of the most important features of fastpages and how they map to Quarto. Each link in the last column is specific to the relevant feature.</p>
+<section id="post-level-options" class="level4">
+<h4 class="anchored" data-anchor-id="post-level-options">Post-level options</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Jekyll Front Matter</th>
+<th>Quarto</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>toc: false</td>
+<td>Same</td>
+<td>There are more options in the <a href="https://quarto.org/docs/reference/formats/pdf.html#table-of-contents">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>badges: true</td>
+<td>n/a</td>
+<td>No support yet</td>
+</tr>
+<tr class="odd">
+<td>comments: true</td>
+<td>see notes</td>
+<td><a href="https://quarto.org/docs/output-formats/html-basics.html#commenting">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>categories: [fastpages, jupyter]</td>
+<td>Same</td>
+<td><a href="https://quarto.org/docs/websites/website-listings.html#categories">Quarto docs</a></td>
+</tr>
+<tr class="odd">
+<td>image: images/some_folder/your_image.png</td>
+<td>Same</td>
+<td><a href="https://quarto.org/docs/websites/website-listings.html#listing-fields">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>hide: false</td>
+<td>draft: true</td>
+<td><a href="https://quarto.org/docs/websites/website-blog.html#drafts">Quarto docs</a></td>
+</tr>
+<tr class="odd">
+<td>search_exclude: true</td>
+<td>see notes</td>
+<td><a href="https://quarto.org/docs/websites/website-search.html#disabling-search">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>title</td>
+<td>Same</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="odd">
+<td>description</td>
+<td>Same</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="even">
+<td>sticky_rank</td>
+<td>Not supported</td>
+<td><a href="https://quarto.org/docs/websites/website-listings.html#sorting-items">Quarto docs</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="site-level-options" class="level4">
+<h4 class="anchored" data-anchor-id="site-level-options">Site-level options</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Jekyll site config</th>
+<th>Quarto</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>title</td>
+<td>see notes</td>
+<td><a href="https://quarto.org/docs/websites/#getting-started">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>description</td>
+<td>see notes</td>
+<td><a href="https://quarto.org/docs/websites/website-tools.html">Quarto docs</a></td>
+</tr>
+<tr class="odd">
+<td>github_repo</td>
+<td>see notes</td>
+<td><a href="https://quarto.org/docs/websites/website-navigation.html#top-navigation">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>url</td>
+<td>n/a</td>
+<td>Don’t need this</td>
+</tr>
+<tr class="odd">
+<td>baseurl</td>
+<td>n/a</td>
+<td>Don’t need this</td>
+</tr>
+<tr class="even">
+<td>twitter_username</td>
+<td>search page in notes for “twitter”</td>
+<td><a href="https://quarto.org/docs/websites/website-navigation.html#top-navigation">Quarto docs</a></td>
+</tr>
+<tr class="odd">
+<td>use_math</td>
+<td>see notes&nbsp;</td>
+<td><a href="https://quarto.org/docs/output-formats/html-basics.html#latex-equations">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>google_analytics</td>
+<td>website: google-analytics: “UA-XXXXXXXX”</td>
+<td><a href="https://quarto.org/docs/websites/website-tools.html#google-analytics">Quarto docs</a></td>
+</tr>
+<tr class="odd">
+<td>show_image</td>
+<td>n/a</td>
+<td><a href="https://quarto.org/docs/reference/formats/html.html#layout">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>show_tags</td>
+<td>see title-block-categories of page in notes</td>
+<td><a href="https://quarto.org/docs/reference/formats/html.html#layout">Quarto docs</a></td>
+</tr>
+<tr class="odd">
+<td>pagination</td>
+<td>website: page-navigation: true</td>
+<td><a href="https://quarto.org/docs/websites/website-navigation.html#page-navigation">Quarto docs</a></td>
+</tr>
+<tr class="even">
+<td>annotations</td>
+<td>comments: hypothesis: …</td>
+<td><a href="https://quarto.org/docs/output-formats/html-basics.html#commenting">Quarto docs</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="publishing-your-blog" class="level2">
+<h2 class="anchored" data-anchor-id="publishing-your-blog">Publishing your blog</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><em>This section is for stand-alone blogs that are not part of a nbdev documentation site. If you want to create a blog within a nbdev documentation site, see <a href="#creating-a-blog-within-a-nbdev-project">this section</a>.</em></p>
+</div>
+</div>
+<p>You can publish your site with the <code>quarto publish</code> command. See <a href="https://quarto.org/docs/publishing/">the docs</a> for more details.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+GitHub Pages
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If using GitHub Pages, commit your files to GitHub before publish your site. <strong>No GitHub Actions are needed</strong>, you can use <code>quarto publish</code> instead. If you want to automate your workflow with GitHub Actions, you can follow <a href="https://quarto.org/docs/publishing/quarto-pub.html#github-action">these instructions</a></p>
+</div>
+</div>
+</section>
+<section id="creating-a-blog-within-a-nbdev-project" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="creating-a-blog-within-a-nbdev-project">Creating a blog within a nbdev project</h2>
+<p>In addition to a stand-alone blog that you might build with Quarto, you might want to include a blogging site in your nbdev project. This website has <a href="../blog/">a blog</a> as well! The easiest way to implement a blog is to emulate the directory structure of <a href="https://github.com/fastai/nbdev/tree/master/nbs/blog">this folder</a>. The general steps are:</p>
+<ol type="1">
+<li><strong>Create a <code>blog/</code> directory in your notebooks folder.</strong></li>
+<li><strong>Create a <code>index.qmd</code> file in the root of the <code>blog/</code> directory.</strong> Here <a href="https://github.com/fastai/nbdev/blob/master/nbs/blog/index.qmd">is an example</a>.</li>
+</ol>
+<p>The frontmatter the <code>index.qmd</code> file signals to Quarto that you intend to create a blog. For example, here is <a href="https://github.com/fastai/nbdev/blob/master/nbs/blog/index.qmd">our front matter</a>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> nbdev Blog</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">subtitle</span><span class="kw">:</span><span class="at"> News, tips, and commentary about all things nbdev</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">listing</span><span class="kw">:</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sort</span><span class="kw">:</span><span class="at"> </span><span class="st">"date desc"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> </span><span class="st">"posts"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sort-ui</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">filter-ui</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">categories</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">feed</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">page-layout</span><span class="kw">:</span><span class="at"> full</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>listing:</code> field specifies how you want to structure your blog. Feel free to copy ours as-is, but we encourage you to <a href="https://quarto.org/docs/websites/website-blog.html">consult the documentation</a> for additional options.</p>
+<ol start="3" type="1">
+<li><strong>Create a link to your blog on your site’s navbar so people can find it</strong>: To add a link to your blog on your site’s navbar, you must edit the navbar section of <code>_quarto.yml</code> to include a link to your blog’s listing page, which is <code>blog/index.qmd</code> in our example. For nbdev, the relevant part of our <a href="https://github.com/fastai/nbdev/blob/master/nbs/_quarto.yml"><code>_quarto.yml</code></a> file looks like this: </li>
+</ol>
+<div class="no-row-height column-margin column-container"><span class="margin-aside">The yaml snippet shown below is an abbreviated version of nbdev’s <a href="#%20An%20abbreviated%20version%20of%20https://github.com/fastai/nbdev/blob/master/nbs/_quarto.yml"><code>_quarto.yml</code></a> file.</span></div><div class="sourceCode" id="cb6"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">website</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">navbar</span><span class="kw">:</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">left</span><span class="kw">:</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">text</span><span class="kw">:</span><span class="at"> </span><span class="st">"Blog"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">href</span><span class="kw">:</span><span class="at"> blog/index.qmd</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can read more about the navbar in the <a href="https://quarto.org/docs/websites/website-navigation.html#top-navigation">Quarto docs</a>.</p>
+<ol start="4" type="1">
+<li><p><strong>Create a folder for each blog post</strong>: This is not strictly required, but we recommend this as a way to keep your blog posts and related assets (pictures, videos etc) organized.</p></li>
+<li><p><strong>Create your first blog post</strong>: You can emulate our example or create your own. In each folder, create a <code>index.qmd</code> or <code>index.ipynb</code> file. You can also put images and related assets in the same folder.</p></li>
+</ol>
+<section id="folder-structure" class="level3">
+<h3 class="anchored" data-anchor-id="folder-structure">Folder structure</h3>
+<p>Below is an overview of the general folder structure for a blog within a nbdev site:</p>
+<pre><code>nbs/blog
+├── index.qmd
+└── posts
+    ├── 2022-07-28-nbdev2
+    │&nbsp;&nbsp; ├── cover.png
+    │&nbsp;&nbsp; ├── index.qmd
+    │&nbsp;&nbsp; ├── ...
+    └── 2022-08-25-jupyter-git
+        ├── friendly-conflict.png
+        ├── index.qmd
+        └── ...
+    ...</code></pre>
+<ul>
+<li><code>nbs/blog</code>: this is the folder inside your notebook folder that contains the blog.</li>
+<li><code>index.qmd</code>: this is at the root of your blog folder and is the listings page for your blog.</li>
+<li><code>posts/</code>: this a subdirectory for each blog post.</li>
+<li><code>YYYY-MM-DD-.../index.{qmd,ipynb}</code>: this is where you author the content of each individual blog post.</li>
+</ul>
+</section>
+<section id="special-considerations-for-nbdev-blogs" class="level3">
+<h3 class="anchored" data-anchor-id="special-considerations-for-nbdev-blogs">Special considerations for nbdev blogs</h3>
+<p>In contrast to standalone Quarto blogs, when you embed a blog in a nbdev website there are the following differences:</p>
+<ul>
+<li>You can use all <a href="../explanations/directives.html">nbdev directives</a> in addition to Quarto ones. All nbdev features will be available in your nbdev blog in the same way they work for other pages.</li>
+<li>Your site will automatically deploy with GitHub Actions or whatever deployment mechanism you have for your nbdev site, so you do not have to use <code>quarto publish</code>.</li>
+</ul>
+</section>
+</section>
+<section id="using-nbdev-features-in-blogs-outside-nbdev-projects" class="level2">
+<h2 class="anchored" data-anchor-id="using-nbdev-features-in-blogs-outside-nbdev-projects">Using nbdev features in blogs outside nbdev projects</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><em>This section is for stand-alone blogs that are not part of a nbdev documentation site. If you create a blog within a nbdev documentation site, all nbdev features will automatically work.</em></p>
+</div>
+</div>
+<p>If you create a standalone blog with Quarto, a limited number of nbdev features can still assist you. For example, we recommend installing <a href="../tutorials/pre_commit.html">Jupyter git hooks</a>. A list of nbdev features available to you are listed in <a href="../tutorials/modular_nbdev.html">this article</a>.</p>
+</section>
+<section id="creating-a-new-blog-site-from-scratch" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-new-blog-site-from-scratch">Creating A New Blog Site From Scratch</h2>
+<p>You can use the <a href="https://quarto.org/docs/get-started/">quarto CLI</a> to setup a new blog project called <code>myblog</code> with the following command:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> create-project myblog <span class="at">--type</span> website:blog</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can then preview your blog project with <code>quarto preview</code>. You can also publish your blog using the <a href="https://quarto.org/docs/publishing/quarto-pub.html#publish-command"><code>quarto publish</code></a> command.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Adding a notebook blog post
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To add a notebook blog post to a blog project created with the above commands, you can add an additional folder under <code>posts/</code> and name the notebook <code>index.ipynb</code>. You will see existing example blog posts that are <code>index.qmd</code> files in sibling folders you can look at for examples. You will need to add <a href="https://quarto.org/docs/tools/jupyter-lab.html#yaml-front-matter">yaml front matter</a> to the first cell of your notebook in the form of a raw cell.</p>
+</div>
+</div>
+<p>For more information about creating a blog with Quarto, see <a href="https://quarto.org/docs/websites/website-blog.html">this guide</a>.</p>
+</section>
+<section id="faq" class="level1">
+<h1>FAQ</h1>
+<ol type="1">
+<li><p><strong>Do I need to migrate from fastpages?</strong></p>
+<p>No you do not. However we will not be actively supporting fastpages going forward.</p></li>
+<li><p><strong>Will migrating from fastpages to Quarto take lots of manual effort?</strong></p>
+<p>You will have to do some manual work to make sure everything looks and works the same, including converting Jekyll shortcodes to equivalent Quarto commands. However, we have automated the biggest aspects for you. Please see <a href="#migrating-from-fastpages">Migrating from fastpages</a> for instructions.</p></li>
+<li><p><strong>I cannot find something in Quarto that does what <code>#collapse_output</code> did in fastpages</strong></p>
+<p>Correct, this is a feature that isn’t supported in Quarto yet.</p></li>
+<li><p><strong>Why am I seeing <code>{% twitter ...%}</code> and <code>{% fn_detail ... %}</code> and other <code>{%...%}</code> commands in my Quarto blog posts?</strong></p>
+<p>These are Jekyll shortcodes that you will have to manually migrate to Quarto. For example with the twitter embeds, you can insert the appropriate HTML as <a href="https://help.twitter.com/en/using-twitter/how-to-embed-a-tweet#:~:text=Click%20the%20icon%20located%20within,by%20clicking%20set%20customization%20options">recommended by Twitter</a>. For footnotes, you can see <a href="https://quarto.org/docs/authoring/footnotes-and-citations.html">these docs</a>. For other items, you should search the <a href="https://quarto.org/docs/websites/website-blog.html">Quarto docs</a> for how to enable your desired result.</p></li>
+<li><p><strong>I created a new blog post and used <code>#| hide</code> but the cell is still showing. What is wrong?</strong></p>
+<p>You must use Quarto directives, not nbdev-specific ones. See the difference between the two <a href="../explanations/directives.html">in these docs</a>. This is because you are blogging with Quarto, not nbdev. The exception to this is you have a blog site in your nbdev project – in that case, nbdev-specific directives will work.</p></li>
+<li><p><strong>How do I enable comments on my blog posts?</strong></p>
+<p>In general, Quarto offers all of the same features and much more than fastpages did, including comments. If you search the <a href="https://quarto.org/">Quarto docs</a> for comments, you will see a <a href="https://quarto.org/docs/output-formats/html-basics.html#commenting">page for enabling comments</a>.</p></li>
+<li><p><strong>How do I sort and hide posts? What about the publishing date since that’s not in the filename?</strong></p>
+<p>See the Quarto docs on <a href="https://quarto.org/docs/websites/website-blog.html">creating a blog</a> as well as <a href="https://quarto.org/docs/websites/website-listings.html">listing pages</a>.</p></li>
+<li><p><strong>How do I customize my site?</strong></p>
+<p>See the <a href="https://quarto.org/docs/websites/website-blog.html">Quarto docs</a></p></li>
+<li><p><strong>How do I do set up RSS Feeds and add particular features to my site?</strong></p>
+<p>See the <a href="https://quarto.org/docs/websites/website-blog.html">Quarto docs</a></p></li>
+<li><p><strong>What does nbdev have to do with Quarto?</strong>.</p>
+<p>For just blogging, nothing! You can use Quarto for blogging without worrying about nbdev. In the past, we maintained a nbdev related project called <a href="https://github.com/fastai/fastpages">fastpages</a>, and are recommending that people migrate to Quarto if possible. Furthermore, nbdev is built on top of Quarto which means much of the functionality is similar. Finally, you can incorporate blogs into a nbdev project site, which we discuss in <a href="#creating-a-blog-within-a-nbdev-project">this section</a>.</p></li>
+<li><p><strong>For stand alone blogs, why are you directing us to Quarto, can I just use nbdev?</strong></p>
+<p>nbdev is built on top of Quarto. For the purposes of blogging, adding nbdev is of little additional benefit if all you want to do is to blog. We decided to keep things simple and let people use Quarto directly instead of trying to abstract aspects of Quarto for blogging. Furthermore, having some knowledge of Quarto can be very helpful in using nbdev!. Lastly, you can still use some nbdev features in your blog, which are listed in <a href="../tutorials/modular_nbdev.html">this article</a>.</p></li>
+</ol>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nbdev\.fast\.ai\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

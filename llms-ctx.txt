@@ -1,0 +1,2497 @@
+<project title="nbdev">nbdev makes exploration an integral part of your workflow, all while promoting software engineering best practices. It allows you to write, test, document, and distribute software packages and technical articles — all in one place, your notebook.
+
+Here are some of nbdev's features:
+
+- **Supports literate programming**: write prose, code, and tests in notebooks — no context-switching
+- **Git-friendly notebooks**: human-readable merge conflicts; no unwanted metadata
+- **Two-way sync between notebooks and plaintext source code**: allows you to use your IDE for code navigation or quick edits
+- **Beautiful technical documentation**: documentation is automatically generated using Quarto and hosted on GitHub Pages; docs support LaTeX, are searchable, and are automatically hyperlinked (including out-of-the-box support for many packages via nbdev-index)
+- **Seamless testing**: write tests as ordinary notebook cells, run them in parallel with a single command; out-of-the-box continuous integration with GitHub Actions to ensure tests pass before every merge
+- **Simplified package release**: publish packages to PyPI and conda; Python best practices are automatically followed (e.g. only exported objects are included in `__all__`)<tutorials><doc title="Getting started"># Getting Started
+
+
+
+<figure>
+<img
+src="https://github.com/fastai/nbdev/actions/workflows/test.yaml/badge.svg"
+alt="CI" />
+<figcaption aria-hidden="true">CI</figcaption>
+</figure>
+
+`nbdev` is a notebook-driven development platform. Simply write
+notebooks with lightweight markup and get high-quality documentation,
+tests, continuous integration, and packaging for free!
+
+`nbdev` makes debugging and refactoring your code much easier than in
+traditional programming environments since you always have live objects
+at your fingertips. `nbdev` also promotes software engineering best
+practices because tests and documentation are first class.
+
+- **Documentation** is automatically generated using
+  [Quarto](https://quarto.org/) and hosted on [GitHub
+  Pages](https://pages.github.com/). Docs support LaTeX, are searchable,
+  and are automatically hyperlinked (including out-of-the-box support
+  for many packages via
+  [`nbdev-index`](https://github.com/fastai/nbdev-index))
+- **Publish packages to PyPI and conda** as well as tools to simplify
+  package releases. Python best practices are automatically followed,
+  for example, only exported objects are included in `__all__`
+- **Two-way sync between notebooks and plaintext source code** allowing
+  you to use your IDE for code navigation or quick edits
+- **Tests** written as ordinary notebook cells are run in parallel with
+  a single command
+- **Continuous integration** out-of-the-box with [GitHub
+  Actions](https://github.com/features/actions) that run your tests and
+  rebuild your docs
+- **Git-friendly notebooks** with [Jupyter/Git
+  hooks](https://nbdev.fast.ai/tutorials/git_friendly_jupyter.html) that
+  clean unwanted metadata and render merge conflicts in a human-readable
+  format
+- … and much more!
+
+## Install
+
+nbdev works on macOS, Linux, and most Unix-style operating systems. It
+works on Windows under WSL, but not under cmd or Powershell.
+
+You can install nbdev with pip:
+
+``` sh
+pip install nbdev
+```
+
+… or with conda (or mamba):
+
+``` sh
+conda install -c fastai nbdev
+```
+
+Note that `nbdev` must be installed into the same Python environment
+that you use for both Jupyter and your project.
+
+## How to use nbdev
+
+The best way to learn how to use nbdev is to complete either the
+[written walkthrough](https://nbdev.fast.ai/tutorials/tutorial.html) or
+video walkthrough:
+
+<a href="http://www.youtube.com/watch?v=l7zS8Ld4_iA" target="_blank"
+title="nbdev walkthrough"><img
+src="https://github.com/fastai/logos/raw/main/nbdev_walkthrough.png"
+style="border-radius: 10px" width="560" height="315" /></a>
+
+Alternatively, there’s a [shortened version of the video
+walkthrough](https://youtu.be/67FdzLSt4aA) with coding sections sped up
+using the `unsilence` Python library – it’s 27 minutes faster, but a bit
+harder to follow.
+
+You can also run `nbdev_help` from the terminal to see the full list of
+available commands:
+
+``` python
+!nbdev_help
+```
+
+    nbdev_bump_version        Increment version in settings.ini by one
+    nbdev_changelog           Create a CHANGELOG.md file from closed and labeled GitHub issues
+    nbdev_clean               Clean all notebooks in `fname` to avoid merge conflicts
+    nbdev_conda               Create a `meta.yaml` file ready to be built into a package, and optionally build and upload it
+    nbdev_create_config       Create a config file.
+    nbdev_docs                Create Quarto docs and README.md
+    nbdev_export              Export notebooks in `path` to Python modules
+    nbdev_filter              A notebook filter for Quarto
+    nbdev_fix                 Create working notebook from conflicted notebook `nbname`
+    nbdev_help                Show help for all console scripts
+    nbdev_install             Install Quarto and the current library
+    nbdev_install_hooks       Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks
+    nbdev_install_quarto      Install latest Quarto on macOS or Linux, prints instructions for Windows
+    nbdev_merge               Git merge driver for notebooks
+    nbdev_migrate             Convert all markdown and notebook files in `path` from v1 to v2
+    nbdev_new                 Create an nbdev project.
+    nbdev_prepare             Export, test, and clean notebooks, and render README if needed
+    nbdev_preview             Preview docs locally
+    nbdev_proc_nbs            Process notebooks in `path` for docs rendering
+    nbdev_pypi                Create and upload Python package to PyPI
+    nbdev_readme              Create README.md from readme_nb (index.ipynb by default)
+    nbdev_release_both        Release both conda and PyPI packages
+    nbdev_release_gh          Calls `nbdev_changelog`, lets you edit the result, then pushes to git and calls `nbdev_release_git`
+    nbdev_release_git         Tag and create a release in GitHub for the current version
+    nbdev_requirements        Writes a `requirements.txt` file to `directory` based on settings.ini.
+    nbdev_sidebar             Create sidebar.yml
+    nbdev_test                Test in parallel notebooks matching `path`, passing along `flags`
+    nbdev_trust               Trust notebooks matching `fname`
+    nbdev_update              Propagate change in modules matching `fname` to notebooks that created them
+    nbdev_update_license      Allows you to update the license of your project.
+
+## FAQ
+
+### Q: What is the warning “Found a cell containing mix of imports and computations. Please use separate cells”?
+
+A: You should not have cells that are not exported, *and* contain a mix
+of `import` statements along with other code. For instance, don’t do
+this in a single cell:
+
+``` python
+import some_module
+some_module.something()
+```
+
+Instead, split this into two cells, one which does `import some_module`,
+and the other which does `some_module.something()`.
+
+The reason for this is that when we create your documentation website,
+we ensure that all of the signatures for functions you document are up
+to date, by running the imports, exported cells, and
+[`show_doc`](https://nbdev.fast.ai/api/showdoc.html#show_doc) functions
+in your notebooks. When you mix imports with other code, that other code
+will be run too, which can cause errors (or at least slowdowns) when
+creating your website.
+
+### Q: Why is nbdev asking for root access? How do I install Quarto without root access?
+
+A: When you setup your first project, nbdev will attempt to
+automatically download and install [Quarto](https://quarto.org/) for
+you. This is the program that we use to create your documentation
+website.
+
+Quarto’s standard installation process requires root access, and nbdev
+will therefore ask for your root password during installation. For most
+people, this will work fine and everything will be handled automatically
+– if so, you can skip over the rest of this section, which talks about
+installing without root access.
+
+If you need to install Quarto without root access on Linux, first `cd`
+to wherever you want to store it, then [download
+Quarto](https://quarto.org/docs/get-started/), and type:
+
+``` bash
+dpkg -x quarto*.deb .
+mv opt/quarto ./
+rmdir opt
+mkdir -p ~/.local/bin
+ln -s "$(pwd)"/quarto/bin/quarto ~/.local/bin
+```
+
+To use this non-root version of Quarto, you’ll need `~/.local/bin` in
+your [`PATH` environment
+variable](https://linuxize.com/post/how-to-add-directory-to-path-in-linux/).
+(Alternatively, change the `ln -s` step to place the symlink somewhere
+else in your path.)
+
+### Q: Someone told me not to use notebooks for “serious” software development!
+
+A: [Watch this video](https://youtu.be/9Q6sLbz37gk). Don’t worry, we
+still get this too, despite having used `nbdev` for a wide range of
+“very serious” software projects over the last three years, including
+[deep learning libraries](https://github.com/fastai/fastai), [API
+clients](https://github.com/fastai/ghapi), [Python language
+extensions](https://github.com/fastai/fastcore), [terminal user
+interfaces](https://github.com/nat/ghtop), and more!
+
+## Contributing
+
+If you want to contribute to `nbdev`, be sure to review the
+[contributions
+guidelines](https://github.com/fastai/nbdev/blob/master/CONTRIBUTING.md).
+This project adheres to fastai’s [code of
+conduct](https://github.com/fastai/nbdev/blob/master/CODE_OF_CONDUCT.md).
+By participating, you are expected to uphold this code. In general, we
+strive to abide by generally accepted best practices in open-source
+software development.
+
+Make sure you have `nbdev`’s git hooks installed by running
+[`nbdev_install_hooks`](https://nbdev.fast.ai/api/clean.html#nbdev_install_hooks)
+in the cloned repository.
+
+## Copyright
+
+Copyright © 2019 onward fast.ai, Inc. Licensed under the Apache License,
+Version 2.0 (the “License”); you may not use this project’s files except
+in compliance with the License. A copy of the License is provided in the
+LICENSE file in this repository.</doc><doc title="Tutorial"># End-To-End Walkthrough
+
+
+
+The written tutorial below shows you how to create a Python package from
+scratch using nbdev.
+
+Alternatively, you can watch this video tutorial where Jeremy Howard and
+Hamel Husain guide you through a similar process step by step:
+
+<div class="text-center">
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/l7zS8Ld4_iA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="max-width: 100%; margin: auto" class="rounded">
+
+</iframe>
+
+</div>
+
+## Installation
+
+You’ll need the following software to complete the tutorial, read on for
+specific installation instructions:
+
+1.  Python
+2.  A Python package manager: we recommend conda or pip
+3.  Jupyter Notebook
+4.  nbdev
+5.  Quarto
+
+If you haven’t worked with Python before, we recommend getting started
+with the [Anaconda Individual
+Edition](https://www.anaconda.com/products/individual) and using the
+conda package manager.
+
+Note that you will only need to follow the steps in the installation
+section once per environment. If you create a new repo, you won’t need
+to redo these.
+
+### Install JupyterLab
+
+Launch a terminal and install JupyterLab by entering:
+
+``` sh
+conda install -c conda-forge -y jupyterlab
+```
+
+…or
+
+``` sh
+pip install jupyterlab
+```
+
+…if you’re using the pip package manager.
+
+You can now launch Jupyter by entering:
+
+``` sh
+jupyter lab
+```
+
+This should open JupyterLab in a new browser tab:
+
+<img src="images/jupyter-welcome.png" data-fig-align="center" />
+
+### Install nbdev
+
+The next step is to install nbdev itself. JupyterLab comes with its own
+terminal, so we’ll use that moving forward.
+
+In the Launcher, scroll down to the “Other” section, then click
+“Terminal”. If the Launcher isn’t opened, you can open it by clicking
+“File” → “New Launcher”.
+
+A new tab should open with a blank terminal – it might not look exactly
+the same, depending on how your shell is configured:
+
+<img src="images/jupyter-blank-terminal.png" data-fig-align="center" />
+
+For Mac and Linux, enter:
+
+``` sh
+conda install -c fastai -y nbdev
+```
+
+…or for Mac, Linux and Windows:
+
+``` sh
+pip install nbdev
+```
+
+…if you’re using pip.
+
+### Install Quarto
+
+nbdev provides a command to install the latest version of Quarto. In the
+terminal, enter:
+
+``` sh
+nbdev_install_quarto
+```
+
+Your password may be requested at this point. Since nbdev is open
+source, you can read [the source
+code](https://github.com/fastai/nbdev/blob/master/nbdev/quarto.py) of
+this command to verify that it isn’t doing anything malicious. Or, if
+you prefer, you may instead follow [Quarto’s official installation
+instructions](https://quarto.org/docs/get-started/).
+
+### Install Quarto JupyterLab extension
+
+Quarto provides its own [JupyterLab
+extension](https://quarto.org/docs/tools/jupyter-lab-extension.html)
+that allows it to render Quarto markdown content.
+
+For example, here is their notebook demonstrating some of its features:
+
+![](https://user-images.githubusercontent.com/261654/230087634-d5027ebc-8508-43b4-81c9-c4b7d6cfa738.png)
+
+Install the extension by entering:
+
+``` sh
+pip install jupyterlab-quarto
+```
+
+Note that the `jupyterlab-quarto` package is not currently available via
+conda.
+
+------------------------------------------------------------------------
+
+You’re all setup and ready to go! Installing these tools may take some
+time, but you’ll only need to do it once. Next, we’ll setup an nbdev
+repo for your specific project.
+
+## First steps
+
+By the end of this section you’ll have your own nbdev repo with tests,
+continuous integration, streamlined PyPI & conda packaging, and a
+documentation website.
+
+### Create an empty GitHub repo
+
+Create an empty GitHub repo using the convenient link
+[github.com/new](https://github.com/new). If you get stuck, you might
+find GitHub’s [*Create a
+repo*](https://docs.github.com/en/get-started/quickstart/create-a-repo)
+page helpful.
+
+Remember to add a description, since nbdev will use that later. Don’t
+add a README file, .gitignore, or license just yet.
+
+If you’re using the web interface, it should look something like this
+(with your own repository name and description) before you click “Create
+Repository”:
+
+<img src="images/github-create-new-repo.png"
+class="p-2 pb-3 border rounded shadow-sm" data-fig-align="center"
+width="600" />
+
+You should then be redirected to your new repo:
+
+<img src="images/github-repo-empty.png"
+class="pb-2 border rounded shadow-sm" data-fig-align="center" />
+
+<div>
+
+> **Try GitHub’s powerful CLI**
+>
+> GitHub’s web interface is a great way to get started. As you grow more
+> experienced, you might want to explore [the GitHub
+> CLI](https://github.com/cli/cli) (command line interface). We often
+> prefer to use command line tools for repetitive tasks where we’re
+> likely to make mistakes. Having those tasks written as small scripts
+> in your terminal means that you can repeat them with little effort.
+
+</div>
+
+### Initialise your repo with nbdev
+
+Now clone your repo from the Jupyter terminal you started
+[earlier](#install-nbdev) (or create a new terminal following those
+instructions if needed). If you get stuck here, you might find GitHub’s
+[*Cloning a
+repository*](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+page helpful.
+
+Since we created a repo named `nbev-hello-world` with the `fastai` user,
+we can clone it as follows:
+
+``` sh
+git clone https://github.com/fastai/nbdev-hello-world.git
+```
+
+Then `cd` (change directory) to our repo:
+
+``` sh
+cd nbdev-hello-world
+```
+
+You may have seen this message while cloning:
+
+    You appear to have cloned an empty repository.
+
+…since the repo is completely empty. Let’s add some files!
+
+nbdev provides the
+[`nbdev_new`](https://nbdev.fast.ai/api/cli.html#nbdev_new) command to
+initialise an empty git repository. It’ll infer information about your
+project from git and GitHub, and ask you to input anything remaining. It
+will create files in your repo that:
+
+- Streamline publishing Python packages to PyPI and conda.
+- Configure Quarto for publication-grade technical documentation.
+- Setup GitHub actions to test notebooks and build and deploy Quarto
+  docs to GitHub pages.
+
+Initialise your nbdev repo by entering:
+
+``` sh
+nbdev_new
+```
+
+It may ask you to enter information that it couldn’t infer from git or
+GitHub.
+
+<div>
+
+> **Note**
+>
+> [`nbdev_new`](https://nbdev.fast.ai/api/cli.html#nbdev_new) assumes
+> that your package name is the same as your repo name (with `-`
+> replaced by `_`). Use the `--lib_name` option if that isn’t the case.
+
+</div>
+
+Double-check your `settings.ini` file to ensure that it has all of the
+correct information. Then commit and push your additions to GitHub:
+
+``` sh
+git add .
+git commit -m'Initial commit'
+git push
+```
+
+### Enable GitHub Pages
+
+nbdev hosts your docs on GitHub Pages—an excellent (and free!) way to
+host websites.
+
+<div>
+
+> **Note**
+>
+> nbdev uses GitHub Pages by default because its easily accessible.
+> However, you can use any host you like. See [these
+> docs](../explanations/docs.ipynb#deploying-your-docs-on-other-platforms)
+> for more information.
+
+</div>
+
+You need to enable GitHub Pages for your repo by clicking on the
+“Settings” tab near the top-right of your repo page, then “Pages” on the
+left, then setting the “Branch” to “gh-pages”, and finally clicking
+“Save”.
+
+It should look similar to this after you click “Save”:
+
+<img src="images/github-enable-pages.png"
+class="pb-2 border rounded shadow-sm" data-fig-align="center" />
+
+If you don’t see a “gh-pages” branch, wait a few minutes and reload the
+page. It should automatically be set up for you.
+
+Now it’s time to see all of the goodies nbdev gives you!
+
+### Check out your workflows
+
+Open GitHub Actions by clicking the “Actions” tab near the top of your
+repo page. You should see two workflow runs:
+
+<img src="images/github-actions-initial.png"
+class="border rounded shadow-sm" data-fig-align="center" />
+
+If you opened this page shortly after pushing your initial commit, the
+runs may not have a green check (✅) because they’re still “In progress”
+or “Queued”. That’s no problem, they shouldn’t take much more than a
+minute to complete.
+
+If you see a red cross (❌), that means something failed. Click on the
+cross, then click “Details”, and you’ll be able to see what failed. If
+you can’t figure out what’s wrong, search [the
+forum](https://forums.fast.ai/c/nbdev/48) in case someone else resolved
+the same issue, otherwise create a new post describing your issue in as
+much detail as you can, and we’ll try our best to help you. Remember
+that including a link to an actual repo and/or GitHub Action is the best
+way for us to quickly identify what’s wrong.
+
+What do these workflows do?
+
+- **CI** – The CI (continuous integration) workflow streamlines your
+  developer workflow, particularly with multiple collaborators. Every
+  time you push to GitHub, it ensures that:
+  - Your notebooks and libraries are in sync
+  - Your notebooks are cleaned of unwanted metadata (which pollute pull
+    requests and git histories and lead to merge conflicts)
+  - Your notebook tests all pass
+- **Deploy to GitHub Pages** – Builds your docs with Quarto and deploys
+  it to GitHub Pages.
+
+We provide these basic workflows out-of-the-box, however, you can edit
+their corresponding YAML files in the `.github/workflows/` folder to
+your liking.
+
+### Check out your docs
+
+When you [enable GitHub Pages](#enable-github-pages) you should see a
+new workflow run: “pages build and deployment”. As the name suggests,
+this workflow deploys your website contents to GitHub Pages.
+
+<img src="images/github-actions-pages.png"
+class="border rounded shadow-sm" data-fig-align="center" />
+
+Wait for the workflow run to complete, then open your website. By
+default it should be available at: `https://{user}.github.io/{repo}`.
+For example, you can view `fastai`’s `nbdev-hello-world` docs at
+<https://fastai.github.io/nbdev-hello-world>.
+
+<img src="images/nbdev-hello-world-site-initial.png"
+class="border rounded shadow-sm" data-fig-align="center" />
+
+### Recap
+
+You now have a base nbdev repo with continuous integration and hosted
+documentation! Here’s a recap of the steps you took:
+
+- Created a GitHub repo (with GitHub Pages enabled)
+- Initialised your repo with
+  [`nbdev_new`](https://nbdev.fast.ai/api/cli.html#nbdev_new)
+- Pushed to GitHub.
+
+## Make your first edit
+
+In this section, you’ll make your first edit to the repo you created in
+[*First steps*](#first-steps).
+
+### Install hooks for git-friendly notebooks
+
+Step one when working with Jupyter notebooks in a new repo is to install
+nbdev’s hooks (you can think of “hooks” as plugins or extensions to an
+application).
+
+Install them by entering this command in your terminal:
+
+``` sh
+nbdev_install_hooks
+```
+
+<div>
+
+> **Note**
+>
+> The [clean hook](#nbdev_clean-on-saving-notebooks-in-jupyter)
+> currently only supports Jupyter Notebook and JupyterLab. If you’re
+> using VSCode, you can try the [experimental nbdev VSCode
+> extension](https://github.com/fastai/nbdev-vscode). Otherwise, you
+> might also want to try [nbdev’s pre-commit
+> hooks](../tutorials/pre_commit.ipynb).
+
+</div>
+
+See [*Git-friendly Jupyter*](git_friendly_jupyter.html) for more about
+how nbdev hooks work and how to customise them. Here’s a short summary:
+
+- Fix broken notebooks due to git merge conflicts so that they can be
+  opened and resolved directly in Jupyter.
+- Each time you save a Jupyter notebook, automatically clean unwanted
+  metadata to remove unnecessary changes in pull requests and reduce the
+  chance of git merge conflicts.
+- Automatically trust notebooks in the repo so that you can view widgets
+  from collaborators’ commits. For this reason, **you should not install
+  hooks into a repo you don’t trust**.
+
+<div>
+
+> **Tip**
+>
+> nbdev’s git hooks work on *any* git repo, even if it doesn’t use the
+> broader nbdev system.
+
+</div>
+
+### Build your library
+
+You should now create your package from your notebook by running:
+
+``` sh
+nbdev_export
+```
+
+This will create Python modules for your notebooks. These modules will
+make up the contents of your Python package.
+
+### Install your package
+
+You might have noticed that
+[`nbdev_new`](https://nbdev.fast.ai/api/cli.html#nbdev_new) created a
+Python package in your repo. In our case, it was automatically named
+`nbdev_hello_world` by using our repo name `nbdev-hello-world` and
+replacing `-` with `_` to make it a valid Python package.
+
+The next step is to install your package by entering this into your
+terminal:
+
+``` sh
+pip install -e '.[dev]'
+```
+
+This is the recommended way to make a Python package importable from
+anywhere in your current environment:
+
+- `-e` – short for “editable”, lets you immediately use changes made to
+  your package without having to reinstall, which is convenient for
+  development.
+- `.` – refers to the current directory.
+- `[dev]` – includes “development” requirements: other packages that
+  your notebooks use solely for documentation or testing.
+
+### Preview your docs
+
+nbdev is an interactive programming environment that values fast
+feedback loops. The
+[`nbdev_preview`](https://nbdev.fast.ai/api/quarto.html#nbdev_preview)
+command helps achieve this by using Quarto to render your docs on your
+computer and keep them updated as your edit your notebooks.
+
+Start the preview by entering this into your terminal:
+
+``` sh
+nbdev_preview
+```
+
+It may say `Preparing to preview` for a few seconds while it gets
+started, and will eventually display something like:
+
+    Watching files for changes
+    Browse at http://localhost:3000/
+
+Click the link to open the preview in a new browser tab. It should look
+exactly like your online docs.
+
+<div>
+
+> **Tip**
+>
+> We often find it useful to keep a preview window open on the side
+> while we’re editing our notebooks in Jupyter.
+
+</div>
+
+### Edit 00_core.ipynb
+
+Now, open the `nbs/00_core.ipynb` file (generated by running
+[`nbdev_new`](https://nbdev.fast.ai/api/cli.html#nbdev_new) earlier) in
+Jupyter. You don’t *have* to start your notebook names with a number,
+but we find it helpful to show the order that your project should be
+read in – even though it could have been created in a different order.
+
+#### Add your own frontmatter
+
+You’ll see something that looks a bit like this:
+
+<div class="py-2 px-3 mb-4 border rounded shadow-sm" fig-align="center">
+
+**core**
+
+> Fill in a module description here
+
+``` python
+#| default_exp core
+```
+
+</div>
+
+Let’s explain what these special cells means:
+
+- The first is a markdown cell with nbdev’s markdown *frontmatter*
+  syntax that defines notebook metadata used by Quarto, our
+  documentation engine (see the
+  [frontmatter](../api/09_frontmatter.ipynb) reference page for more).
+  It contains:
+  - H1 header (“core”) – defining the page title
+  - Quote (“Fill in a module description here”) – defining the page
+    description
+- The second is a code cell with a *directive* `default_exp` which
+  decides which module this notebook will export to (see the
+  [Directives](../explanations/directives.ipynb) explanation for more).
+  Currently, it exports to the `core` module.
+
+Next, rename the notebook, replace the title and description, and change
+the default export module for your own project.
+
+Once you’re done, save the notebook. The live preview started in the
+previous section should update with your latest changes.
+
+Rerun all cells in your notebook to ensure that they work, and to export
+the updated modules.
+
+<div>
+
+> **Tip**
+>
+> We find the “restart kernel and run all cells” Jupyter command (the ⏩
+> button) so invaluable that we bind it to a keyboard shortcut. A common
+> criticism of notebooks is that out-of-order execution leads to
+> irreproducible notebooks. In our experience, making “restart and
+> rerun” a habit solves this problem.
+
+</div>
+
+Running the notebook exports Python modules because of the last cell
+which contains:
+
+``` python
+#| hide
+import nbdev; nbdev.nbdev_export()
+```
+
+What does this mean?
+
+- `#| hide` is a directive (like `#| default_exp`) which excludes a cell
+  from both your exported module and docs
+- [`nbdev_export`](https://nbdev.fast.ai/api/doclinks.html#nbdev_export)
+  is the command used to export your notebooks to Python modules.
+
+We recommend including a cell like this at the bottom of all of the
+notebooks you want to export.
+
+<div>
+
+> **Warning**
+>
+> Remember to delete any unused modules that aren’t exported by a
+> notebook or otherwise needed by your package. This is likely to happen
+> if you change the default export of a notebook – nbdev doesn’t remove
+> the old module. This is intended, since nbdev is designed to work with
+> hybrid packages that use .py modules (with no corresponding notebook)
+> as well as those exported from notebooks.
+
+</div>
+
+#### Add your own function
+
+Add a new code cell below the `#| default_exp` cell with a function. For
+example:
+
+``` python
+#| export
+def say_hello(to):
+    "Say hello to somebody"
+    return f'Hello {to}!'
+```
+
+Notice how it includes `#| export` at the top – this is a directive
+(like `#| default_exp`) that tells nbdev to include the cell in your
+exported module and in your documentation.
+
+The documentation should look like this:
+
+<div class="py-2 px-3 mb-4 border rounded shadow-sm">
+
+------------------------------------------------------------------------
+
+### say_hello
+
+>  say_hello (to)
+
+Say hello to somebody
+
+</div>
+
+#### Add your own examples, tests, and docs
+
+One of the superpowers of notebook-driven development is that you can
+very easily add examples, tests, and documentation right below your
+code.
+
+Include regular code cells, and they’ll appear (with output) in your
+docs, for example:
+
+``` python
+say_hello("Isaac")
+```
+
+    'Hello Isaac!'
+
+This is a test too! When you run
+[`nbdev_test`](https://nbdev.fast.ai/api/test.html#nbdev_test) it will
+execute this cell (and all other test cells) and fail if they raise any
+exceptions.
+
+For tests, it’s preferred to use more explicit `assert`s:
+
+``` python
+assert say_hello("Hamel") == "Hello Hamel!"
+```
+
+…or functions from
+[`fastcore.test`](https://fastcore.fast.ai/test.html), which behave like
+`assert` but also display the actual and expected values if they differ:
+
+``` python
+from fastcore.test import *
+```
+
+``` python
+test_eq(say_hello("Hamel"), "Hello Hamel!")
+```
+
+Another superpower of notebook-driven development is that your examples
+can include plots, images, and even JavaScript widgets. For example,
+here’s an SVG circle:
+
+``` python
+from IPython.display import display,SVG
+```
+
+``` python
+display(SVG('<svg height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40"/></svg>'))
+```
+
+![](tutorial_files/figure-commonmark/cell-8-output-1.svg)
+
+### Prepare your changes
+
+Before commiting your changes to GitHub we recommend running
+`nbdev_prepare` in the terminal, which bundles the following commands:
+
+- [`nbdev_export`](https://nbdev.fast.ai/api/doclinks.html#nbdev_export):
+  Builds the `.py` modules from Jupyter notebooks
+- [`nbdev_test`](https://nbdev.fast.ai/api/test.html#nbdev_test): Tests
+  your notebooks
+- [`nbdev_clean`](https://nbdev.fast.ai/api/clean.html#nbdev_clean):
+  Cleans your notebooks to get rid of extreanous output for git
+- [`nbdev_readme`](https://nbdev.fast.ai/api/quarto.html#nbdev_readme):
+  Updates your repo’s `README.md` file from your index notebook.
+
+### Edit index.ipynb
+
+Now you’re ready to personalize your documentation home page and
+`README.md` file; these are both generated automatically from
+index.ipynb. Open Jupyter, then click on `nbs/index.ipynb` to open it.
+
+We recommend including a longer description about what your package
+does, how to install it, and how to use it (with a few examples which
+import and use your package). Remember, examples can be code cells with
+real outputs rather than plain markdown text – they’ll double as tests
+too!
+
+### Push to Github
+
+You can now commit and push your changes to GitHub. As we mentioned
+before, always remember to run `nbdev_prepare` before you commit to
+ensure your modules are exported and your tests pass. You can use
+`git status` to check which files have been generated or changed. Then:
+
+``` sh
+git add .
+git commit -m 'Add `say_hello`; update index' # Update this text with your own message
+git push
+```
+
+This will kick-off your GitHub Actions. Wait a minute or two for those
+to complete, then check your updated repo and documentation.
+
+### Recap
+
+Congratulations, you’ve used all of the basics needed to build
+delightful projects with nbdev! Here’s a recap of the steps you took:
+
+- Installed hooks for git-friendly notebooks with
+  [`nbdev_install_hooks`](https://nbdev.fast.ai/api/clean.html#nbdev_install_hooks)
+- Installed your package with `pip install -e '.[dev]'`
+- Previewed your docs with
+  [`nbdev_preview`](https://nbdev.fast.ai/api/quarto.html#nbdev_preview)
+- Added your own frontmatter, function, tests, and docs to
+  `nbs/00_core.ipynb`
+- Prepared your changes with `nbdev_prepare`
+- Updated `nbs/index.ipynb` with your own information
+- Pushed to GitHub.
+
+Read on to learn about more advanced nbdev functionality. Also see our
+[explanations](../explanations) for deep-dives on specific topics, as
+well as our other [tutorials](../tutorials).
+
+## Advanced functionality
+
+### Add a class
+
+Create a class in `00_core.ipynb` as follows:
+
+``` python
+#| export
+class HelloSayer:
+    "Say hello to `to` using `say_hello`"
+    def __init__(self, to): self.to = to
+        
+    def say(self):
+        "Do the saying"
+        return say_hello(self.to)
+```
+
+This will automatically appear in the docs like this:
+
+------------------------------------------------------------------------
+
+### HelloSayer
+
+>  HelloSayer (to)
+
+*Say hello to `to` using `say_hello`*
+
+#### Document with show_doc
+
+However, methods aren’t automatically documented. To add method docs,
+use [`show_doc`](https://nbdev.fast.ai/api/showdoc.html#show_doc):
+
+``` python
+show_doc(HelloSayer.say)
+```
+
+------------------------------------------------------------------------
+
+### HelloSayer.say
+
+>  HelloSayer.say ()
+
+*Do the saying*
+
+And add some examples and/or tests:
+
+``` python
+o = HelloSayer("Alexis")
+o.say()
+```
+
+    'Hello Alexis!'
+
+### Add links with backticks
+
+Notice above there is a link from our new class documentation to our
+function. That’s because we used backticks in the docstring:
+
+``` python
+    "Say hello to `to` using `say_hello`"
+```
+
+These are automatically converted to hyperlinks wherever possible. For
+instance, here are hyperlinks to `HelloSayer` and `say_hello` created
+using backticks.
+
+### Set up autoreload
+
+Since you’ll be often updating your modules from one notebook, and using
+them in another, it’s helpful if your notebook automatically reads in
+the new modules as soon as the Python file changes. To make this happen,
+just add these lines to the top of your notebook:
+
+    %load_ext autoreload
+    %autoreload 2
+
+### Set up prerequisites
+
+If your module requires other modules as dependencies, you can add those
+prerequisites to your `settings.ini` in the `requirements` section. The
+requirements should be separated by a space and if the module requires
+at least or at most a specific version of the requirement this may be
+specified here, too.
+
+For example if your module requires the `fastcore` module of at least
+version 1.0.5, the `torchvision` module of at most version 0.7 and any
+version of `matplotlib`, then the prerequisites would look like this:
+
+``` python
+requirements = fastcore>=1.0.5 torchvision<0.7 matplotlib
+```
+
+In addition to `requirements` you can specify dependencies with other
+keywords that have different scopes. Below is a list of all possible
+dependency keywords:
+
+- `requirements`: Passed to both pip and conda setup
+- `pip_requirements`: Passed to pip setup only
+- `conda_requirements`: Passed to conda setup only
+- `dev_requirements`: Passed to pip setup as a development requirement
+
+For more information about the format of dependencies, see the pypi and
+conda docs on creating specifications in
+[setup.py](https://packaging.python.org/tutorials/packaging-projects/#creating-setup-py)
+and
+[meta.yaml](https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html),
+respectively.
+
+### Set up console scripts
+
+Behind the scenes, nbdev uses that standard package `setuptools` for
+handling installation of modules. One very useful feature of
+`setuptools` is that it can automatically create [cross-platform console
+scripts](https://python-packaging.readthedocs.io/en/latest/command-line-scripts.html#the-console-scripts-entry-point).
+nbdev surfaces this functionality; to use it, use the same format as
+`setuptools`, with whitespace between each script definition (if you
+have more than one).
+
+    console_scripts = nbdev_export=nbdev.cli:nbdev_export
+
+### Upload to pypi
+
+If you want people to be able to install your project by just typing
+`pip install your-project` then you need to upload it to
+[pypi](https://pypi.org/). The good news is, we’ve already created a
+fully pypi compliant installer for your project! So all you need to do
+is register at pypi (click “Register” on pypi) if you haven’t previously
+done so, generate an API token (go to [Account
+settings](https://pypi.org/manage/account/) and click “Add API token”)
+and then create a file called `~/.pypirc` with your token details. It
+should have these contents:
+
+    [pypi]
+    username = __token__
+    password = your_pypi_token
+
+Another thing you will need is `twine`, so you should run once
+
+    pip install twine
+
+To upload your project to pypi, just type `nbdev_pypi` in your project
+root directory. Once it’s complete, a link to your project on pypi is
+displayed.
+
+### Upload to conda
+
+Similar to `pip install` support, we have provided an anaconda compliant
+installer to upload your project to [anaconda](https://anaconda.org).
+Once uploaded, your package can be installed by typing
+`conda install -c your_anaconda_username your-project`.
+
+You need to register at anaconda (fill out the form to `Sign Up`) which
+will create a username and password. You will then need to install the
+following packages
+
+    pip install anaconda-client conda-build conda-verify
+
+Before running the anaconda uploader, you need to login to conda using
+the CLI command (you will be prompted to enter your username and
+password)
+
+    anaconda login
+
+To upload to anaconda, just type `nbdev_conda` in your project root
+directory.
+
+### Upload to pypi and conda
+
+The command `nbdev_release_both` from the root of your nbdev repo will
+upload your project to both conda and pypi.
+
+### Install collapsible headings and toc2
+
+There are two jupyter notebook extensions that I highly recommend when
+working with projects like this. They are:
+
+- [Collapsible
+  headings](https://jupyter-contrib-nbextensions.readthedocs.io/en/latest/nbextensions/collapsible_headings/readme.html):
+  This lets you fold and unfold each section in your notebook, based on
+  its markdown headings. You can also hit <kbd>left</kbd> to go to the
+  start of a section, and <kbd>right</kbd> to go to the end
+- [TOC2](https://jupyter-contrib-nbextensions.readthedocs.io/en/latest/nbextensions/toc2/README.html):
+  This adds a table of contents to your notebooks, which you can
+  navigate either with the `Navigate` menu item it adds to your
+  notebooks, or the TOC sidebar it adds. These can be modified and/or
+  hidden using its settings.
+
+### Math equation support
+
+nbdev supports equations (using [Quarto](https://quarto.org/)). You can
+include math in your notebook’s documentation using the following
+methods.
+
+Using `$$`, e.g.:
+
+    \sum_{i=1}^{k+1}i
+
+Which is rendered as:
+
+> \_{i=1}^{k+1}i
+
+Using `$`, e.g.:
+
+    This version is displayed inline: \sum_{i=1}^{k+1}i . You can include text before and after.
+
+Which is rendered as:
+
+> This version is displayed inline: \_{i=1}^{k+1}i . You can include
+> text before and after.
+
+For more information, see [the Quarto
+Docs](https://quarto.org/docs/visual-editor/technical.html)
+
+### Look at nbdev “source” for more ideas
+
+Don’t forget that nbdev itself is written in nbdev! It’s a good place to
+look to see how fast.ai uses it in practice, and get a few tips. You’ll
+find the nbdev notebooks here in the [nbs
+folder](https://github.com/fastai/nbdev/tree/master/nbs) on Github.
+
+### Quarto Features
+
+nbdev supports most Quarto features. We encourage you to read the
+[Quarto documentation](https://quarto.org/) to discover all the features
+available to you. For example you can [incorporate
+Graphviz](https://quarto.org/docs/authoring/diagrams.html#graphviz).
+
+It is worth taking a look at the documentation for
+[figures](https://quarto.org/docs/authoring/figures.html),
+[callouts](https://quarto.org/docs/authoring/callouts.html),
+[markdown](https://quarto.org/docs/authoring/markdown-basics.html),
+[widgets](https://quarto.org/docs/interactive/widgets/jupyter.html),
+[layouts](https://quarto.org/docs/interactive/layout.html), [conditional
+content](https://quarto.org/docs/authoring/conditional.html) and [quarto
+extensions](https://quarto.org/docs/extensions/) to name a few useful
+things we have encountered.</doc><doc title="Best practices"># Notebook Best Practices
+
+
+
+The flexibility offered by notebooks can be overwhelming. While there
+are industry standards for writing Python packages—like
+[numpy](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
+and
+[sphinx](https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html)
+docstrings, and [pytest](https://docs.pytest.org/) and
+[unittest](https://docs.python.org/3/library/unittest.html) testing
+frameworks—they weren’t designed for notebooks.
+
+This article walks you through the practices we’ve learned to leverage
+the full power of notebooks with nbdev[1]. Our approach weaves code,
+tests, and docs into a single interactive context that invites
+experimentation. If you prefer to learn by example, you might want to
+start with [the annotated
+example](#putting-it-all-together-an-annotated-example) and branch out
+from there.
+
+<figure>
+<img src="images/marie-curie-notebook.jpg" class="rounded preview-image"
+alt="Photo of an opened research notebook with diagrams and writing in French" />
+<figcaption>Marie Curie’s research notebook dated 19-21 January 1900 (<a
+href="https://commons.wikimedia.org/wiki/File:Marie_Curie;_Holograph_Notebook._Wellcome_L0021265.jpg">source</a>).</figcaption>
+</figure>
+
+## Know which form of notebook you’re writing
+
+First of all, decide which form of notebook you’re writing. We’re fans
+of the [Diátaxis system](https://diataxis.fr/) which classifies
+documentation into four forms: tutorials, how-to guides, explanations,
+and references. They’ve laid this out beautifully in the following
+diagram:
+
+<a href="/images/divio-overview.webp"><img src="../images/divio-overview.webp" class="rounded"
+alt="A 2x2 matrix, from top-left to bottom-right, &#39;Tutorials (learning-oriented)&#39;, &#39;How-to guides (problem-oriented)&#39;, &#39;Explanation (understanding-oriented), and &#39;Reference (information-oriented)&#39;. Horizontal axis reads &#39;Most useful when we&#39;re studying&#39; on the left, and &#39;Most useful when we&#39;re working&#39; on the right. Vertical axis reads &#39;Practical steps&#39; on top, and &#39;Theoretical knowledge&#39; below." /></a>
+
+## Start with a great title and subtitle
+
+Start with a markdown cell at the top of your notebook with its title in
+an H1 header, and subtitle in a blockquote. For example:
+
+``` markdown
+# Great title
+
+> And an even better subtitle
+```
+
+The title will also be used to reference your page in the sidebar. You
+can also optionally add [frontmatter](../api/09_frontmatter.ipynb) to
+this cell to customize nbdev and Quarto.
+
+## Introduce your notebook
+
+Introduce your notebook with markdown cells below the title. We
+recommend a slightly different approach depending on the [form of
+documentation](#know-which-form-of-notebook-youre-writing):
+
+- **Reference:** Start with a brief description of the technical
+  component, and an overview that links to the main symbols in the page
+  (you might want to [use
+  doclinks](#reference-related-symbols-with-doclinks))
+- **Tutorials and how-to guides:** Describe what the reader will learn
+  and how. Keep it short and get to the subject matter quickly
+- **Explanations:** Since these are typically very focused, a short
+  description of the topic is often sufficient.
+
+<div>
+
+> **Tip**
+>
+> Note that Markdown lists such as the one above require a blank line
+> above them to be rendered as lists in the documentation, even though
+> the notebook viewer will render lists that are not preceded by a blank
+> line.
+
+</div>
+
+## Use lots of code examples, pictures, plots, and videos
+
+Take advantage of the richness of notebooks by including code examples,
+pictures, plots, and videos.
+
+Here are a few examples to get you started:
+
+- fastai’s documentation makes extensive use of code examples, plots,
+  images, and tables, for example, the [computer vision
+  intro](https://docs.fast.ai/tutorial.vision.html)
+- [`nbdev.release`](../api/18_release.ipynb) opens with a terminal
+  screencast demo in SVG format created with
+  [asciinema](https://asciinema.org/) and
+  [svg-term-cli](https://github.com/marionebl/svg-term-cli)
+- The [documentation explanation](../explanations/docs.ipynb#overview)
+  describes a complex data pipeline using a [Mermaid
+  diagram](https://quarto.org/docs/authoring/diagrams.html)
+- The [directives explanation](../explanations/directives.ipynb)
+  showcases all of nbdev’s directives with executable examples in
+  call-out cards (and makes great use of emojis too!)
+- [RDKit](https://www.rdkit.org/docs/Cookbook.html#drawing-molecules-jupyter)
+  renders beautiful molecule diagrams
+
+## Keep docstrings short; elaborate in separate cells
+
+While nbdev renders docstrings as markdown, they aren’t rendered
+correctly when using `symbol?` or `help(symbol)` and they can’t include
+executed code. By splitting longer docstrings across separate code and
+markdown cells you can [use code examples, pictures, plots, and
+videos](#use-lots-of-code-examples-pictures-plots-and-videos).
+
+We find a single-line summary sufficient for most docstrings.
+
+## Document parameters with docments
+
+[`fastcore.docments`](https://fastcore.fast.ai/docments.html) is a
+concise way to document parameters that is beautifully rendered by
+nbdev. For example, this function:
+
+``` python
+def draw_n(n:int, # Number of cards to draw
+           replace:bool=True # Draw with replacement?
+          )->list: # List of cards
+    "Draw `n` cards."
+```
+
+…would include the following table as part of its documentation:
+
+<div class="py-2 px-3 mb-4 border rounded shadow-sm">
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n</td>
+<td>int</td>
+<td></td>
+<td>Number of cards to draw</td>
+</tr>
+<tr>
+<td>replace</td>
+<td>bool</td>
+<td>True</td>
+<td>Draw with replacement?</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><strong>list</strong></td>
+<td></td>
+<td><strong>List of cards</strong></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+nbdev also supports some numpy docstring sections. For example, this
+code snippet would produce the same table (there’s no need to include
+types like in the docstring if you already have annotations):
+
+``` python
+def draw_n(n:int, replace:bool=True) -> Cards:
+    """
+    Draw `n` cards.
+    
+    Parameters
+    ----------
+    n
+        Number of cards to draw
+    replace
+        Draw with replacement?
+        
+    Returns
+    -------
+    cards
+        List of cards
+    """
+```
+
+<div>
+
+> **Tip**
+>
+> You can render a symbol’s parameters table directly with
+> [`DocmentTbl`](https://nbdev.fast.ai/api/showdoc.html#docmenttbl). In
+> fact, that’s how we rendered the table above.
+
+</div>
+
+## Make code cells short, and demonstrate them immediately
+
+In notebooks, do not create long functions and classes with comments
+interspersed throughout them. Instead, split your code up into small
+separate cells with explanations and working examples after each. This
+lets the user understand how each part works and experiment with them
+straight away. It also helps you during development because you can
+explore the behavior of every part of your code interactively.
+
+In non-notebook coding, the documentation, tests, code, and examples are
+all separate. This is not the case with nbdev. Take advantage of this by
+keeping all of these things as close together as possible. This is
+helpful both for exploration and for documentation.
+
+For example, consider the section of the Claudette source notebook for
+[implementing image
+support](https://claudette.answer.ai/core.html#images). The section
+immediately imports an image and displays it, showing how to work with a
+file format. It then creates a number of helper functions, describes and
+demonstrates them, and finally puts it all together to show how to use
+the complete feature in practice with real inputs and outputs running
+directly in the notebook.
+
+In order to avoid long class definitions caused by many methods,
+consider using fastcore’s `patch` decorator to implement each method
+separately, and immediately document, demonstrate, and test it.
+
+## Consider turning code examples into tests by adding assertions
+
+nbdev blurs the lines between code, docs, and tests. *Every* code cell
+is run as a test (unless it’s explicitly marked otherwise), and any
+error in the cell fails the test.
+
+Consider turning your code examples into tests by adding assertions – if
+they would make valuable tests and if it doesn’t hurt readability.
+[`fastcore.test`](https://fastcore.fast.ai/test.html) provides a set of
+light wrappers around `assert` for better notebook tests (for example,
+they print both objects on error if they differ).
+
+Here’s an example using
+[`fastcore.test.test_eq`](https://fastcore.fast.ai/test.html#test_eq):
+
+``` python
+def inc(x): return x + 1
+test_eq(inc(3), 4)
+```
+
+## Document error-cases as tests
+
+Docstring-driven approaches typically document the errors raised by an
+object using plaintext descriptions, for example, in a “raises” section.
+
+In nbdev, we recommend documenting errors with actual failing code using
+[`fastcore.test.test_fail`](https://fastcore.fast.ai/test.html#test_fail).
+For example:
+
+``` python
+def divide(x, y): return x / y
+test_fail(lambda: divide(1, 0), contains="division by zero")
+```
+
+The first argument is a `lambda` since we need to allow `test_fail` to
+control its execution and catch any errors.
+
+## Reference related symbols with doclinks
+
+If you surround a symbol with backticks, nbdev will automatically link
+to that symbol’s reference page. We call these
+[doclinks](../api/05_doclinks.ipynb).
+
+Prefer fully qualified symbol paths, like `package.module.symbol`
+instead of `symbol`. It may be more verbose but it helps users know
+which module a symbol originates from, which is especially important for
+third-party packages.
+
+Any package created with nbdev will automatically support doclinks.
+Non-nbdev packages can be supported by creating a minimal nbdev-index
+package. [`nbdev-index`](https://github.com/fastai/nbdev-index) is a
+collection of such packages, which already supports django, numpy,
+pandas, pytorch, scipy, sphinx, the Python standard library, and even
+other programming languages like APL!
+
+## Add rich representations to your classes
+
+This is another way to take advantage of the [rich display feature of
+notebooks](https://ipython.readthedocs.io/en/stable/config/integrating.html#rich-display).
+You can provide rich representations to your object by defining a
+`_repr_markdown_` method that returns markdown text (which may also
+include HTML/CSS).
+
+Here’s a simple example to get you started:
+
+``` python
+class Color:
+    def __init__(self, color): self.color = color
+    def _repr_markdown_(self):
+        style = f'background-color: {self.color}; width: 50px; height: 50px; margin: 10px'
+        return f'<div style="{style}"></div>'
+```
+
+``` python
+Color('green')
+```
+
+<div style="background-color: green; width: 50px; height: 50px; margin: 10px">
+
+</div>
+
+``` python
+Color('blue')
+```
+
+<div style="background-color: blue; width: 50px; height: 50px; margin: 10px">
+
+</div>
+
+Also see [the earlier list of example
+projects](#use-lots-of-code-examples-pictures-plots-and-videos) that
+make use of beautiful visual representations.
+
+## Document class methods with [`show_doc`](https://nbdev.fast.ai/api/showdoc.html#show_doc) or [`fastcore.basics.patch`](https://fastcore.fast.ai/basics.html#patch)
+
+nbdev automatically documents exported function and class definitions
+with [`show_doc`](https://nbdev.fast.ai/api/showdoc.html#show_doc).
+However, it’s up to you to document class methods. There are two ways to
+do that: calling
+[`show_doc`](https://nbdev.fast.ai/api/showdoc.html#show_doc) on the
+method, or defining the method with the
+[`fastcore.basics.patch`](https://fastcore.fast.ai/basics.html#patch)
+decorator.
+
+<div class="panel-tabset">
+
+### Notebook (show_doc)
+
+If your class is defined in a single cell, use
+[`show_doc`](https://nbdev.fast.ai/api/showdoc.html#show_doc). Here’s
+what your notebook might look like:
+
+<div class="pt-4 pb-1 px-3 mb-2 border rounded shadow-sm">
+
+``` python
+#| export
+class Number:
+    "A number."
+    def __init__(self, num): self.num = num
+    def __add__(self, other):
+        "Sum of this and `other`."
+        return Number(self.num + other.num)
+    def __repr__(self): return f'Number({self.num})'
+```
+
+For example, here is the number 5:
+
+``` python
+Number(5)
+```
+
+``` python
+show_doc(Number.__add__)
+```
+
+For example:
+
+``` python
+Number(3) + Number(4)
+```
+
+</div>
+
+### Notebook (@patch)
+
+If you split your class definition across cells with
+[`fastcore.basics.patch`](https://fastcore.fast.ai/basics.html#patch),
+here’s what your notebook might look like:
+
+<div class="pt-4 pb-1 px-3 mb-2 border rounded shadow-sm">
+
+``` python
+#| export
+class Number:
+    "A number."
+    def __init__(self, num): self.num = num
+    def __repr__(self): return f'Number({self.num})'
+```
+
+For example, here is the number 5:
+
+``` python
+Number(5)
+```
+
+``` python
+#| export
+@patch
+def __add__(self:Number, other):
+    "Sum of this and `other`."
+    return Number(self.num + other.num)
+```
+
+For example:
+
+``` python
+Number(3) + Number(4)
+```
+
+</div>
+
+### Docs
+
+In either case, this is how the documentation would be rendered:
+
+<div>
+
+------------------------------------------------------------------------
+
+### Number
+
+>  Number (num)
+
+A number.
+
+For example, here is the number 5:
+
+``` python
+Number(5)
+```
+
+    Number(5)
+
+------------------------------------------------------------------------
+
+### Number.\_\_add\_\_
+
+>  Number.__add__ (other)
+
+Sum of this and `other`.
+
+For example:
+
+``` python
+Number(3) + Number(4)
+```
+
+    Number(7)
+
+</div>
+
+</div>
+
+## Group symbols with H2 sections
+
+As your notebooks grow, consider grouping related symbols using markdown
+cells with level 2 headers. Since nbdev displays documented symbols as
+level 3 headers, this would group all symbols below your level 2 header.
+
+Here is the markdown syntax:
+
+``` markdown
+## Section title
+```
+
+## Split long explanations with H4 sections
+
+Similar to the previous section, as a symbol’s explanation grows,
+consider grouping its cells using level 4 headers. This is the
+recommended way to structure your reference docs, for example, to
+achieve numpy-style structures with sections like notes, examples,
+methods, and so on.
+
+Here’s the markdown syntax:
+
+``` markdown
+#### Section title
+```
+
+## Putting it all together: an annotated example
+
+In this section, we’ll guide you through a full example of writing a
+documented and tested function in a notebook using all of the principles
+described above. We’ll use the
+[`numpy.all`](https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all)
+function since it follows the widely-known numpy-docstring standard for
+.py files.
+
+Below is the definition of the
+[`numpy.all`](https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all)
+function. Take note of how all of the information is included in the
+docstring. While this works well for .py files, it doesn’t let us weave
+executable code with rich markdown as we can in notebooks:
+
+``` python
+def all(a, axis=None, out=None, keepdims=np._NoValue, *, where=np._NoValue):
+    """
+    Test whether all array elements along a given axis evaluate to True.
+    Parameters
+    ----------
+    a : array_like
+        Input array or object that can be converted to an array.
+    axis : None or int or tuple of ints, optional
+        Axis or axes along which a logical AND reduction is performed.
+        The default (``axis=None``) is to perform a logical AND over all
+        the dimensions of the input array. `axis` may be negative, in
+        which case it counts from the last to the first axis.
+        .. versionadded:: 1.7.0
+        If this is a tuple of ints, a reduction is performed on multiple
+        axes, instead of a single axis or all the axes as before.
+    out : ndarray, optional
+        Alternate output array in which to place the result.
+        It must have the same shape as the expected output and its
+        type is preserved (e.g., if ``dtype(out)`` is float, the result
+        will consist of 0.0's and 1.0's). See :ref:`ufuncs-output-type` for more
+        details.
+    keepdims : bool, optional
+        If this is set to True, the axes which are reduced are left
+        in the result as dimensions with size one. With this option,
+        the result will broadcast correctly against the input array.
+        If the default value is passed, then `keepdims` will not be
+        passed through to the `all` method of sub-classes of
+        `ndarray`, however any non-default value will be.  If the
+        sub-class' method does not implement `keepdims` any
+        exceptions will be raised.
+    where : array_like of bool, optional
+        Elements to include in checking for all `True` values.
+        See `~numpy.ufunc.reduce` for details.
+        .. versionadded:: 1.20.0
+    Returns
+    -------
+    all : ndarray, bool
+        A new boolean or array is returned unless `out` is specified,
+        in which case a reference to `out` is returned.
+    See Also
+    --------
+    ndarray.all : equivalent method
+    any : Test whether any element along a given axis evaluates to True.
+    Notes
+    -----
+    Not a Number (NaN), positive infinity and negative infinity
+    evaluate to `True` because these are not equal to zero.
+    Examples
+    --------
+    >>> np.all([[True,False],[True,True]])
+    False
+    >>> np.all([[True,False],[True,True]], axis=0)
+    array([ True, False])
+    >>> np.all([-1, 4, 5])
+    True
+    >>> np.all([1.0, np.nan])
+    True
+    >>> np.all([[True, True], [False, True]], where=[[True], [False]])
+    True
+    >>> o=np.array(False)
+    >>> z=np.all([-1, 4, 5], out=o)
+    >>> id(z), id(o), z
+    (28293632, 28293632, array(True)) # may vary
+    """
+    ...
+```
+
+Alternatively, Here is how we’d write
+[`numpy.all`](https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all)
+in a notebook using nbdev. The first step is to define the function:
+
+<div class="column-screen-inset-right">
+
+``` python
+#| export
+def all(a, # Input array or object that can be converted to an array.
+        axis:int|tuple|None=None, # Axis or axes along which a logical AND reduction is performed (default: all).
+        out:np.ndarray|None=None, # Alternate output array in which to place the result.
+        keepdims:bool=np._NoValue, # Leave reduced one-dimensional axes in the result?
+        where=np._NoValue, # Elements to include in reduction. See `numpy.ufunc.reduce` for details. New in version 1.20.0.
+        ) -> np.ndarray|bool: # A new boolean or array, or a reference to `out` if its specified.
+    "Test whether all array elements along a given axis evaluate to `True`."
+    ...
+```
+
+</div>
+
+We can observe the following differences between this code and
+numpy-docstrings:
+
+- The definition uses simple type annotations, which will be rendered in
+  the function’s parameters table below
+- Parameters are described with a short comment, called
+  [docments](#document-parameters-with-docments) – a concise alternative
+  to numpy and sphinx docstring formats (although nbdev does support
+  numpy docstrings see [this
+  example](#document-parameters-with-docments))
+- The docstring and parameter descriptions are all short, single-line
+  summaries. We prefer to [keep docstrings short and instead elaborate
+  in separate
+  cells](#keep-docstrings-short-elaborate-in-separate-cells), where we
+  can use markdown and real code examples.
+
+Note: the use of `|` syntax for unions e.g. `int|tuple|None` (equivalent
+to `Union[int, tuple, None]`) requires using Python 3.10 or by treating
+all annotations as strings using `from __future__ import annotations`
+which is available from Python 3.7.
+
+Our function definition is automatically rendered in the docs like this.
+Note that parameter names, types, defaults, and details are all parsed
+from the definition which means you don’t have to repeat yourself.
+
+<div class="pt-2 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm overflow-auto">
+
+------------------------------------------------------------------------
+
+### all
+
+>  all (a, axis:Union[int,tuple,NoneType]=None,
+>           out:Optional[numpy.ndarray]=None, keepdims:bool=<no value>,
+>           where=<no value>)
+
+Test whether all array elements along a given axis evaluate to `True`.
+
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 25%" />
+<col style="width: 34%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td></td>
+<td></td>
+<td>Input array or object that can be converted to an array.</td>
+</tr>
+<tr>
+<td>axis</td>
+<td>int | tuple | None</td>
+<td>None</td>
+<td>Axis or axes along which a logical AND reduction is performed
+(default: all).</td>
+</tr>
+<tr>
+<td>out</td>
+<td>np.ndarray | None</td>
+<td>None</td>
+<td>Alternate output array in which to place the result.</td>
+</tr>
+<tr>
+<td>keepdims</td>
+<td>bool</td>
+<td><no value></td>
+<td>Leave reduced one-dimensional axes in the result?</td>
+</tr>
+<tr>
+<td>where</td>
+<td>_NoValueType</td>
+<td><no value></td>
+<td>Elements to include in reduction. See <a
+href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.reduce.html#numpy.ufunc.reduce"><code>numpy.ufunc.reduce</code></a>
+for details. New in version 1.20.0.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><strong>np.ndarray | bool</strong></td>
+<td></td>
+<td><strong>A new boolean or array, or a reference to <code>out</code>
+if its specified.</strong></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+Next, describe how to use your function using markdown cells and [lots
+of code examples](#use-lots-of-code-examples-pictures-plots-and-videos).
+This is the biggest benefit to developing in notebooks: instead of
+copying and pasting code examples into plaintext, you can include real
+executeable code examples.
+
+We start with basic usage first:
+
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+
+For example:
+
+``` python
+x = [[True,False],[True,True]]
+test_eq(np.all(x), False)
+```
+
+</div>
+
+Our code examples [use assertion functions from
+`fastcore.test`](#consider-turning-code-examples-into-tests-by-adding-assertions),
+so that they serve as both docs and tests.
+[`nbdev_test`](https://nbdev.fast.ai/api/test.html#nbdev_test) runs
+every code cell as a test (unless it’s explicitly marked otherwise), and
+any error in the cell fails the test.
+
+Having described basic usage, we now elaborate on more advanced
+functionality for each parameter. This differs from numpy’s approach
+which includes all parameter docs in the table and where not all
+parameters have code examples.
+
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+
+With `axis`:
+
+``` python
+test_eq(np.all(x, axis=0), [True,False])
+```
+
+`axis` may be negative, in which case it counts from the last to the
+first axis:
+
+``` python
+test_eq(np.all(x, axis=-1), [False,True])
+```
+
+If `axis` is a tuple of ints, a reduction is performed on multiple axes,
+instead of a single axis or all the axes as before.
+
+``` python
+test_eq(np.all(x, axis=(0,1)), False)
+```
+
+Integers, floats, not a number (nan), and infinity all evaluate to
+`True` because they’re not equal to zero:
+
+``` python
+test_eq(np.all([-1, 1, -1.0, 1.0, np.nan, np.inf, -np.inf]), True)
+```
+
+You can use `where` to test specific elements. For example, this tests
+only the second column:
+
+``` python
+test_eq(np.all(x, where=[[False],[True]]), True)
+```
+
+The output can be stored in an optional `out` array. If provided, a
+reference to `out` will be returned:
+
+``` python
+o = np.array(False)
+z = np.all([-1, 4, 5], out=o)
+test_is(z, o)
+test_eq(z, True)
+```
+
+`out` must have the same shape as the expected output and its type is
+preserved (e.g., if `dtype(out)` is float, the result will consist of
+0.0’s and 1.0’s). See [Output type
+determination](https://numpy.org/doc/stable/user/basics.ufuncs.html#ufuncs-output-type)
+for more details.
+
+With `keepdims`, the result will broadcast correctly against the input
+array.
+
+``` python
+test_eq(np.all(x, axis=0, keepdims=True), [[True, False]]) # Note the nested list
+```
+
+If the default value is passed, then `keepdims` will not be passed
+through to the `all` method of sub-classes of `ndarray`, however any
+non-default value will be. If the sub-class’ method does not implement
+`keepdims` any exceptions will be raised.
+
+``` python
+class MyArray(np.ndarray):
+    def all(self, axis=None, out=None): ...
+
+y = MyArray((2,2))
+y[:] = x
+np.all(y) # No TypeError since `keepdims` isn't passed
+test_fail(lambda: np.all(y, keepdims=True), contains="all() got an unexpected keyword argument 'keepdims'")
+```
+
+</div>
+
+Since we prefer to document via code examples, we also document
+error-cases with assertions using
+[`fastcore.test.test_fail`](https://fastcore.fast.ai/test.html#test_fail).
+This differs from docstring-based approaches which usually document
+error-cases in prose, usually in a “raises” section of the docstring.
+
+Finally, we link to related symbols with
+[doclinks](#reference-related-symbols-with-doclinks) (symbols surrounded
+in backticks are automatically linked) and describe their relation using
+code examples.
+
+<div class="pt-3 pb-1 px-3 mt-2 mb-4 border rounded shadow-sm">
+
+The
+[`numpy.ndarray.all`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.all.html#numpy.ndarray.all)
+method is equivalent to calling
+[`numpy.all`](https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all)
+with the array:
+
+``` python
+test_eq(np.array(x).all(), np.all(x))
+```
+
+In contrast,
+[`numpy.any`](https://numpy.org/doc/stable/reference/generated/numpy.any.html#numpy.any)
+tests whether *any* element evaluates to `True` (rather than *all*
+elements):
+
+``` python
+test_eq(np.any(x), True)
+```
+
+</div>
+
+### Recap
+
+In summary, here is how the nbdev version of
+[`numpy.all`](https://numpy.org/doc/stable/reference/generated/numpy.all.html#numpy.all)
+differs from the numpy docstring. nbdev uses:
+
+- Type annotations and docments instead of the numpy docstring format
+  (although nbdev supports numpy docstrings too)
+- Short parameter descriptions, with details in separate cells with
+  markdown and code example
+- Doclinks to related symbols instead of a “See also” section
+- Lots of code examples (which are also tests) mixed with prose to
+  describe how to use the function
+- Code examples with assertions to document error-cases instead of a
+  “Raises” section.
+
+[1] We’re always open to improving our workflows and don’t like to be
+too prescriptive about style. If you have any ideas, please feel free to
+post them in the [forum](https://forums.fast.ai/c/nbdev/48).</doc></tutorials><api><doc title="API List" desc="A succint list of all functions and methods in nbdev."># nbdev Module Documentation
+
+## nbdev.clean
+
+> Strip superfluous metadata from notebooks
+
+- `@call_parse def nbdev_trust(fname, force_all)`
+    Trust notebooks matching `fname`
+
+- `def clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, clean_ids)`
+    Clean `nb` from superfluous metadata
+
+- `@call_parse def nbdev_clean(fname, clear_all, disp, stdin)`
+    Clean all notebooks in `fname` to avoid merge conflicts
+
+- `def clean_jupyter(path, model, **kwargs)`
+    Clean Jupyter `model` pre save to `path`
+
+- `@call_parse def nbdev_install_hooks()`
+    Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks
+
+## nbdev.cli
+
+> CLI commands
+
+- `@call_parse def nbdev_filter(nb_txt, fname, printit)`
+    A notebook filter for Quarto
+
+- `@call_parse @delegates(nbdev_create_config) def nbdev_new(**kwargs)`
+    Create an nbdev project.
+
+- `@call_parse def nbdev_update_license(to)`
+    Allows you to update the license of your project.
+
+- `@call_parse @delegates(nb_export, but=['procs', 'mod_maker']) def nb_export_cli(nbname, debug, **kwargs)`
+    Export a single nbdev notebook to a python script.
+
+- `@call_parse def watch_export(nbs, lib, force)`
+    Use `nb_export` on ipynb files in `nbs` directory on changes using nbdev config if available
+
+- `@call_parse def chelp()`
+    Show help for all console scripts
+
+## nbdev.config
+
+> Configuring nbdev and bootstrapping notebook export
+
+- `@call_parse @delegates(_apply_defaults, but='cfg') def nbdev_create_config(repo, branch, user, author, author_email, description, path, cfg_name, **kwargs)`
+    Create a config file.
+
+- `@functools.lru_cache(maxsize=None) def get_config(cfg_name, path)`
+    Return nbdev config.
+
+- `def config_key(c, default, path, missing_ok)`
+    Deprecated: use `get_config().get` or `get_config().path` instead.
+
+- `def create_output(txt, mime)`
+    Add a cell output containing `txt` of the `mime` text MIME sub-type
+
+- `def update_version(path)`
+    Add or update `__version__` in the main `__init__.py` of the library.
+
+- `def add_init(path)`
+    Add `__init__.py` in all subdirs of `path` containing python files if it's not there already.
+
+- `def write_cells(cells, hdr, file, offset, cell_number, solo_nb)`
+    Write `cells` to `file` along with header `hdr` starting at index `offset` (mainly for nbdev internal use).
+
+## nbdev.doclinks
+
+> Generating a documentation index from a module
+
+- `def patch_name(o)`
+    If `o` is decorated with `patch` or `patch_to`, return its class-prefix name
+
+- `@delegates(globtastic) def nbglob(path, skip_folder_re, file_glob, skip_file_re, key, as_path, **kwargs)`
+    Find all files in a directory matching an extension given a config key.
+
+- `def nbglob_cli(path, symlinks, file_glob, file_re, folder_re, skip_file_glob, skip_file_re, skip_folder_re)`
+    Find all files in a directory matching an extension given a config key.
+
+- `@call_parse @delegates(nbglob_cli) def nbdev_export(path, procs, **kwargs)`
+    Export notebooks in `path` to Python modules
+
+- `def create_index(url, pre)`
+    Create a documentation index from a sphinx inventory file at `url`, with optional prefix `pre`
+
+- `class NbdevLookup`
+    Mapping from symbol names to docs and source URLs
+
+    - `def __init__(self, strip_libs, incl_libs, skip_mods, ns)`
+    - `def __getitem__(self, s)`
+    - `def doc(self, sym)`
+        Link to docs for `sym`
+
+    - `def code(self, sym)`
+        Link to source code for `sym`
+
+    - `def link_line(self, l)`
+    - `def linkify(self, md)`
+
+## nbdev.export
+
+> Exporting a notebook to a library
+
+- `class ExportModuleProc`
+    A processor which exports code to a module
+
+    - `def begin(self)`
+    - `def __call__(self, cell)`
+
+- `def black_format(cell, force)`
+    Processor to format code with `black`
+
+- `def scrub_magics(cell)`
+    Processor to remove cell magics from exported code
+
+- `def optional_procs()`
+    An explicit list of processors that could be used by `nb_export`
+
+- `def nb_export(nbname, lib_path, procs, name, mod_maker, debug, solo_nb)`
+    Create module(s) from notebook
+
+## nbdev.extract_attachments
+
+> A preprocessor that extracts all of the attachments from the notebook file.
+> The extracted attachments are returned in the 'resources' dictionary.
+> 
+> Based on the ExtractOutputsProcessor in nbconvert... the license for nbconvert is:
+> 
+> # Licensing terms
+> 
+> This project is licensed under the terms of the Modified BSD License
+> (also known as New or Revised or 3-Clause BSD), as follows:
+> 
+> - Copyright (c) 2001-2015, IPython Development Team
+> - Copyright (c) 2015-, Jupyter Development Team
+> 
+> All rights reserved.
+
+- `class ExtractAttachmentsPreprocessor`
+    Extracts all of the outputs from the notebook file.
+
+    - `def preprocess_cell(self, cell, resources, cell_index)`
+
+## nbdev.frontmatter
+
+> A YAML and formatted-markdown frontmatter processor
+
+- `class FrontmatterProc`
+    A YAML and formatted-markdown frontmatter processor
+
+    - `def begin(self)`
+    - `def cell(self, cell)`
+    - `def end(self)`
+
+## nbdev.maker
+
+> Create one or more modules from selected notebook cells
+
+- `def find_var(lines, varname)`
+    Find the line numbers where `varname` is defined in `lines`
+
+- `def read_var(code, varname)`
+    Eval and return the value of `varname` defined in `code`
+
+- `def update_var(varname, func, fn, code)`
+    Update the definition of `varname` in file `fn`, by calling `func` with the current definition
+
+- `class ModuleMaker`
+    Helper class to create exported library from notebook source cells
+
+    - `def __init__(self, dest, name, nb_path, is_new, parse, solo_nb)`
+
+- `def decor_id(d)`
+    `id` attr of decorator, regardless of whether called as function or bare
+
+- `@patch def make_all(self, cells)`
+    Create `__all__` with all exports in `cells`
+
+- `def relative_import(name, fname, level)`
+    Convert a module `name` to a name relative to `fname`
+
+- `@patch def make(self, cells, all_cells, lib_path)`
+    Write module containing `cells` with `__all__` generated from `all_cells`
+
+## nbdev.merge
+
+> Fix merge conflicts in jupyter notebooks
+
+- `def unpatch(s)`
+    Takes a string with conflict markers and returns the two original files, and their branch names
+
+- `@call_parse def nbdev_fix(nbname, outname, nobackup, theirs, noprint)`
+    Create working notebook from conflicted notebook `nbname`
+
+- `@call_parse def nbdev_merge(base, ours, theirs, path)`
+    Git merge driver for notebooks
+
+## nbdev.migrate
+
+> Utilities for migrating to nbdev
+
+- `class MigrateProc`
+    Migrate fastpages front matter in notebooks to a raw cell.
+
+    - `def begin(self)`
+
+- `def fp_md_fm(path)`
+    Make fastpages front matter in markdown files quarto compliant.
+
+- `def migrate_nb(path, overwrite)`
+    Migrate Notebooks from nbdev v1 and fastpages.
+
+- `def migrate_md(path, overwrite)`
+    Migrate Markdown Files from fastpages.
+
+- `@call_parse def nbdev_migrate(path, no_skip)`
+    Convert all markdown and notebook files in `path` from v1 to v2
+
+## nbdev.process
+
+> A notebook processor
+
+- `def first_code_ln(code_list, re_pattern, lang)`
+    get first line number where code occurs, where `code_list` is a list of code
+
+- `def extract_directives(cell, remove, lang)`
+    Take leading comment directives from lines of code in `ss`, remove `#|`, and split
+
+- `def opt_set(var, newval)`
+    newval if newval else var
+
+- `class NBProcessor`
+    Process cells and nbdev comments in a notebook
+
+    - `def __init__(self, path, procs, nb, debug, rm_directives, process)`
+    - `def process(self)`
+        Process all cells with all processors
+
+
+- `class Processor`
+    Base class for processors
+
+    - `def __init__(self, nb)`
+    - `def cell(self, cell)`
+    - `def __call__(self, cell)`
+
+## nbdev.processors
+
+> Some processors for NBProcessor
+
+- `class populate_language`
+    Set cell language based on NB metadata and magics
+
+    - `def begin(self)`
+    - `def cell(self, cell)`
+
+- `class insert_warning`
+    Insert Autogenerated Warning Into Notebook after the first cell.
+
+    - `def begin(self)`
+
+- `class add_show_docs`
+    Add show_doc cells after exported cells, unless they are already documented
+
+    - `def begin(self)`
+
+- `def fdiv(attrs)`
+    Create a fenced div markdown cell in quarto
+
+- `def boxify(cells)`
+    Add a box around `cells`
+
+- `class mv_exports`
+    Move `exports` cells to after the `show_doc`
+
+    - `def begin(self)`
+
+- `def add_links(cell)`
+    Add links to markdown cells
+
+- `def add_fold(cell)`
+    Add `code-fold` to `exports` cells
+
+- `def strip_hidden_metadata(cell)`
+    Strips "hidden" metadata property from code cells so it doesn't interfere with docs rendering
+
+- `def hide_(cell)`
+    Hide cell from output
+
+- `def hide_line(cell)`
+    Hide lines of code in code cells with the directive `hide_line` at the end of a line of code
+
+- `def filter_stream_(cell, *words)`
+    Remove output lines containing any of `words` in `cell` stream output
+
+- `def ai_magics(cell)`
+    A preprocessor to convert AI magics to markdown
+
+- `def clean_magics(cell)`
+    A preprocessor to remove cell magic commands
+
+- `def rm_header_dash(cell)`
+    Remove headings that end with a dash -
+
+- `def rm_export(cell)`
+    Remove cells that are exported or hidden
+
+- `def clean_show_doc(cell)`
+    Remove ShowDoc input cells
+
+- `class exec_show_docs`
+    Execute cells needed for `show_docs` output, including exported cells and imports
+
+    - `def begin(self)`
+    - `def __call__(self, cell)`
+    - `def end(self)`
+
+- `class FilterDefaults`
+    Override `FilterDefaults` to change which notebook processors are used
+
+    - `def xtra_procs(self)`
+    - `def base_procs(self)`
+    - `def procs(self)`
+        Processors for export
+
+    - `def nb_proc(self, nb)`
+        Get an `NBProcessor` with these processors
+
+    - `def __call__(self, nb)`
+
+## nbdev.qmd
+
+> Basic qmd generation helpers (experimental)
+
+- `def meta(md, classes, style, **kwargs)`
+    A metadata section for qmd div in `{}`
+
+- `def div(txt, classes, style, **kwargs)`
+    A qmd div with optional metadata section
+
+- `def img(fname, classes, style, height, relative, link, **kwargs)`
+    A qmd image
+
+- `def btn(txt, link, classes, style, **kwargs)`
+    A qmd button
+
+- `def tbl_row(cols)`
+    Create a markdown table row from `cols`
+
+- `def tbl_sep(sizes)`
+    Create a markdown table separator with relative column size `sizes`
+
+## nbdev.quarto
+
+> Install and interact with Quarto from nbdev
+
+- `@call_parse def install_quarto()`
+    Install latest Quarto on macOS or Linux, prints instructions for Windows
+
+- `@call_parse def install()`
+    Install Quarto and the current library
+
+- `class IndentDumper`
+    - `def increase_indent(self, flow, indentless)`
+
+- `@call_parse @delegates(_nbglob_docs) def nbdev_sidebar(path, printit, force, skip_folder_re, **kwargs)`
+    Create sidebar.yml
+
+- `def refresh_quarto_yml()`
+    Generate `_quarto.yml` from `settings.ini`.
+
+- `@call_parse @delegates(proc_nbs) def nbdev_proc_nbs(**kwargs)`
+    Process notebooks in `path` for docs rendering
+
+- `@call_parse def nbdev_readme(path, chk_time)`
+    Create README.md from readme_nb (index.ipynb by default)
+
+- `@call_parse @delegates(_nbglob_docs) def nbdev_docs(path, n_workers, **kwargs)`
+    Create Quarto docs and README.md
+
+- `@call_parse def prepare()`
+    Export, test, and clean notebooks, and render README if needed
+
+- `@contextmanager def fs_watchdog(func, path, recursive)`
+    File system watchdog dispatching to `func`
+
+- `@call_parse @delegates(_nbglob_docs) def nbdev_preview(path, port, host, no_browser, n_workers, **kwargs)`
+    Preview docs locally
+
+## nbdev.release
+
+> Auto-generated tagged releases and release notes from GitHub issues
+
+- `class Release`
+    - `def __init__(self, owner, repo, token, **groups)`
+        Create CHANGELOG.md from GitHub issues
+
+
+- `@patch def changelog(self, debug)`
+    Create the CHANGELOG.md file, or return the proposed text if `debug` is `True`
+
+- `@patch def release(self)`
+    Tag and create a release in GitHub for the current version
+
+- `@patch def latest_notes(self)`
+    Latest CHANGELOG entry
+
+- `@call_parse def release_git(token)`
+    Tag and create a release in GitHub for the current version
+
+- `@call_parse def release_gh(token)`
+    Calls `nbdev_changelog`, lets you edit the result, then pushes to git and calls `nbdev_release_git`
+
+- `def pypi_json(s)`
+    Dictionary decoded JSON for PYPI path `s`
+
+- `def latest_pypi(name)`
+    Latest version of `name` on pypi
+
+- `def pypi_details(name)`
+    Version, URL, and SHA256 for `name` from pypi
+
+- `def conda_output_path(name, build)`
+    Output path for conda build
+
+- `def write_conda_meta(path)`
+    Writes a `meta.yaml` file to the `conda` directory of the current directory
+
+- `@call_parse def write_requirements(path)`
+    Writes a `requirements.txt` file to `directory` based on settings.ini.
+
+- `def anaconda_upload(name, loc, user, token, env_token)`
+    Upload `name` to anaconda
+
+- `@call_parse def release_conda(path, do_build, build_args, skip_upload, mambabuild, upload_user)`
+    Create a `meta.yaml` file ready to be built into a package, and optionally build and upload it
+
+- `def chk_conda_rel(nm, apkg, channel, force)`
+    Prints GitHub tag only if a newer release exists on Pypi compared to an Anaconda Repo.
+
+- `@call_parse def release_pypi(repository)`
+    Create and upload Python package to PyPI
+
+- `@call_parse def release_both(path, do_build, build_args, skip_upload, mambabuild, upload_user, repository)`
+    Release both conda and PyPI packages
+
+- `@call_parse def nbdev_bump_version(part, unbump)`
+    Increment version in settings.ini by one
+
+## nbdev.serve
+
+> A parallel ipynb processor (experimental)
+
+- `@delegates(nbglob_cli) def proc_nbs(path, n_workers, force, file_glob, file_re, **kwargs)`
+    Process notebooks in `path` for docs rendering
+
+## nbdev.showdoc
+
+> Display symbol documentation in notebook and website
+
+- `class DocmentTbl`
+    - `def __init__(self, obj, verbose, returns)`
+        Compute the docment table string
+
+    - `@property def has_docment(self)`
+    - `@property def has_return(self)`
+    - `@property def hdr_str(self)`
+        The markdown string for the header portion of the table
+
+    - `@property def params_str(self)`
+        The markdown string for the parameters portion of the table.
+
+    - `@property def return_str(self)`
+        The markdown string for the returns portion of the table.
+
+    - `def __eq__(self, other)`
+
+- `class ShowDocRenderer`
+    - `def __init__(self, sym, name, title_level)`
+        Show documentation for `sym`
+
+
+- `class BasicMarkdownRenderer`
+    Markdown renderer for `show_doc`
+
+
+- `def show_doc(sym, renderer, name, title_level)`
+    Show signature and docstring for `sym`
+
+- `class BasicHtmlRenderer`
+    HTML renderer for `show_doc`
+
+    - `def doc(self)`
+        Show `show_doc` info along with link to docs
+
+
+- `def doc(elt)`
+    Show `show_doc` info along with link to docs
+
+- `def showdoc_nm(tree)`
+    Get the fully qualified name for showdoc.
+
+- `def colab_link(path)`
+    Get a link to the notebook at `path` on Colab
+
+## nbdev.sync
+
+> Propagate small changes in the library back to notebooks
+
+- `def absolute_import(name, fname, level)`
+    Unwarps a relative import in `name` according to `fname`
+
+- `@call_parse def nbdev_update(fname)`
+    Propagate change in modules matching `fname` to notebooks that created them
+
+## nbdev.test
+
+> Run unit tests on notebooks in parallel
+
+- `def test_nb(fn, skip_flags, force_flags, do_print, showerr, basepath)`
+    Execute tests in notebook in `fn` except those with `skip_flags`
+
+- `@call_parse @delegates(nbglob_cli) def nbdev_test(path, flags, n_workers, timing, do_print, pause, ignore_fname, **kwargs)`
+    Test in parallel notebooks matching `path`, passing along `flags`
+</doc></api></project>

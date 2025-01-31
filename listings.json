@@ -1,0 +1,58 @@
+[
+  {
+    "listing": "/tutorials/index.html",
+    "items": [
+      "/tutorials/tutorial.html",
+      "/tutorials/best_practices.html",
+      "/tutorials/qmd_intro.html",
+      "/tutorials/renderscript.html",
+      "/tutorials/git_friendly_jupyter.html",
+      "/tutorials/blogging.html",
+      "/tutorials/pre_commit.html",
+      "/tutorials/docs_only.html",
+      "/tutorials/modular_nbdev.html",
+      "/tutorials/extensions.html",
+      "/tutorials/migrating.html"
+    ]
+  },
+  {
+    "listing": "/api/index.html",
+    "items": [
+      "/api/config.html",
+      "/api/maker.html",
+      "/api/process.html",
+      "/api/export.html",
+      "/api/doclinks.html",
+      "/api/sync.html",
+      "/api/merge.html",
+      "/api/showdoc.html",
+      "/api/frontmatter.html",
+      "/api/processors.html",
+      "/api/clean.html",
+      "/api/test.html",
+      "/api/cli.html",
+      "/api/quarto.html",
+      "/api/qmd.html",
+      "/api/migrate.html",
+      "/api/serve.html",
+      "/api/release.html"
+    ]
+  },
+  {
+    "listing": "/explanations/index.html",
+    "items": [
+      "/explanations/config.html",
+      "/explanations/directives.html",
+      "/explanations/docs.html",
+      "/explanations/why_nbdev.html"
+    ]
+  },
+  {
+    "listing": "/blog/index.html",
+    "items": [
+      "/blog/posts/2022-11-07-spaces/index.html",
+      "/blog/posts/2022-08-25-jupyter-git/index.html",
+      "/blog/posts/2022-07-28-nbdev2/index.html"
+    ]
+  }
+]

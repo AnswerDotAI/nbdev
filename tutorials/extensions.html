@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="How to customize nbdev processors to do what you want">
+
+<title>Writing nbdev plugins – nbdev</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../favicon.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-0652833b129a4aecb7d8777fd89a11f4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+<meta property="og:title" content="Writing nbdev plugins – nbdev">
+<meta property="og:description" content="How to customize nbdev processors to do what you want">
+<meta property="og:site_name" content="nbdev">
+<meta name="twitter:title" content="Writing nbdev plugins – nbdev">
+<meta name="twitter:description" content="How to customize nbdev processors to do what you want">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed slimcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">nbdev</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../getting_started.html" aria-current="page"> 
+<span class="menu-text">Get Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../tutorials/tutorial.html"> 
+<span class="menu-text">Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../blog/index.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-help" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Help</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-help">    
+        <li>
+    <a class="dropdown-item" href="https://github.com/fastai/nbdev/issues"><i class="bi bi-bug" role="img">
+</i> 
+ <span class="dropdown-text">Report an Issue</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://forums.fast.ai/"><i class="bi bi-chat-right-text" role="img">
+</i> 
+ <span class="dropdown-text">Fast.ai Forum</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../getting_started.html#faq"><i class="bi bi-question-circle" role="img">
+</i> 
+ <span class="dropdown-text">FAQ</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/nbdev"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/index.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/extensions.html">Writing nbdev plugins</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../tutorials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">End-To-End Walkthrough</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/best_practices.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notebook Best Practices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/qmd_intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Qmd Documents</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/renderscript.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RenderScripts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/git_friendly_jupyter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Git-Friendly Jupyter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/blogging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Blogging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/pre_commit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pre-Commit Hooks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/docs_only.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Documentation Only Sites</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/extensions.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Writing nbdev plugins</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/migrating.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nbdev1 Migration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../tutorials/modular_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modular nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../explanations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Explanations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Settings.ini</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/directives.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docs Website</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../explanations/why_nbdev.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Why nbdev</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../api/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/maker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">maker</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/process.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">process</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/export.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">export</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/doclinks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">doclinks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/sync.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sync</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/merge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/showdoc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">showdoc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/frontmatter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">frontmatter</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/processors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">processors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/clean.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">clean</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/cli.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cli</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/quarto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">quarto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/qmd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">qmd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/migrate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">migrate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/serve.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">serve</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../api/release.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">release</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-will-this-cover" id="toc-what-will-this-cover" class="nav-link active" data-scroll-target="#what-will-this-cover">What will this cover?</a></li>
+  <li><a href="#getting-started-how-does-nbdev-make-this-easy" id="toc-getting-started-how-does-nbdev-make-this-easy" class="nav-link" data-scroll-target="#getting-started-how-does-nbdev-make-this-easy">Getting started, how does <code>nbdev</code> make this easy?</a></li>
+  <li><a href="#bringing-in-what-we-need" id="toc-bringing-in-what-we-need" class="nav-link" data-scroll-target="#bringing-in-what-we-need">Bringing in what we need</a></li>
+  <li><a href="#writing-a-converter" id="toc-writing-a-converter" class="nav-link" data-scroll-target="#writing-a-converter">Writing a converter</a></li>
+  <li><a href="#writing-a-processor" id="toc-writing-a-processor" class="nav-link" data-scroll-target="#writing-a-processor">Writing a <code>Processor</code></a></li>
+  <li><a href="#how-to-enable-the-plugin-on-your-project" id="toc-how-to-enable-the-plugin-on-your-project" class="nav-link" data-scroll-target="#how-to-enable-the-plugin-on-your-project">How to enable the plugin on your project</a></li>
+  <li><a href="#conclusion-nbdev-extensions-and-a-bit-about-me" id="toc-conclusion-nbdev-extensions-and-a-bit-about-me" class="nav-link" data-scroll-target="#conclusion-nbdev-extensions-and-a-bit-about-me">Conclusion, nbdev-extensions and a bit about me!</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="extensions.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../tutorials/index.html">Tutorials</a></li><li class="breadcrumb-item"><a href="../tutorials/extensions.html">Writing nbdev plugins</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Writing nbdev plugins</h1>
+</div>
+
+<div>
+  <div class="description">
+    How to customize nbdev processors to do what you want
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="what-will-this-cover" class="level2">
+<h2 class="anchored" data-anchor-id="what-will-this-cover">What will this cover?</h2>
+<p>With <code>nbdev</code>, it’s possible to customize and extend it further beyond the standard capabilities through a well thoughtout and scalable framework. Does your particular library or need require you to inject custom quarto additives in certain cells? What about if you want to do something more trivial such as finding shortcuts to replace complicated quarto directives more easily (such as replacing <code>::: {.column-margin}</code> with <code>#| margin</code>)?</p>
+<p>Writing custom plugins with <code>nbdev</code> is the easiest method to achieve this, and with this tutorial we will bring you up to speed on how you can use this to create your own plugins to expand and simplify your literate-programming experience with <code>nbdev</code> and quarto.</p>
+<p>Specifically, we will be building a <em>processor</em> (something that processes a notebook cell) that will let us quickly write out any quarto-specific headers (that <code>::: {.some_annotation}</code>) and replace it with a <a href="https://nbdev.fast.ai/api/qmd.html#div"><code>div</code></a> shortcut. This is of course one example very specific to quarto that happens when building the documentation, but this technique can be used to have custom behaviors occur during library exportation as well.</p>
+<blockquote class="blockquote">
+<p>Note: We are using <a href="https://nbdev.fast.ai/api/qmd.html#div"><code>div</code></a> here is it more closely resembles how each of the related Quarto directives do and behave as they act like <code>&lt;div&gt;</code>s in HTML code</p>
+</blockquote>
+<p>This tutorial <em>won’t</em> cover some of the basics when it comes to nbdev, and instead comes with the understanding you know how to navigate nbdev (such as what are <a href="https://nbdev.fast.ai/explanations/directives.html">directives</a>, <a href="https://nbdev.fast.ai/explanations/directives.html#export-some.thing"><code>export</code></a>, etc).</p>
+</section>
+<section id="getting-started-how-does-nbdev-make-this-easy" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="getting-started-how-does-nbdev-make-this-easy">Getting started, how does <code>nbdev</code> make this easy?</h2>
+<p>First let’s visualize just what we’re trying to achieve.</p>
+<p>Instead of doing the following code which will add <code>"Some text"</code> to the sidebar (as shown off to the side currently):</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>Some text</p>
+</div></div><pre><code>::: {.column-margin}
+Some text
+:::</code></pre>
+<p>We will create a shorter way to write this out, making use of how nbdev and quarto writes their <em>directives</em></p>
+<p>By the end of this tutorial we will create something that looks like the following:</p>
+<pre><code>#| div column-margin
+
+Some text</code></pre>
+<p>And this will include cases where a <a href="https://nbdev.fast.ai/api/qmd.html#div"><code>div</code></a> should be put across <em>multiple</em> cells as well, by specifying a <code>start</code> and an <code>end</code>.</p>
+<blockquote class="blockquote">
+<p>Note: Check out the <a href="https://quarto.org/docs/authoring/article-layout.html">article layout</a> Quarto documentation to find the best examples of use cases for this custom directive, including the <a href="https://quarto.org/docs/authoring/article-layout.html#margin-content"><code>column-margin</code></a> just shown</p>
+</blockquote>
+<p>This can be achieved in under 50 lines of code!</p>
+<p><code>nbdev</code> let’s us create what are called <em>processors</em> (this is how <code>#| export</code> will shove code into modules, for example). These processors are acted on each <strong>cell</strong> of a notebook and can modify its contents. These can then be wrapped into a module the same way that nbdev will do <a href="https://nbdev.fast.ai/api/doclinks.html#nbdev_export"><code>nbdev_export</code></a> or <a href="https://nbdev.fast.ai/api/quarto.html#nbdev_docs"><code>nbdev_docs</code></a>. Thanks to the power of writing custom <code>nbdev</code> extensions, going deep into the inner-workings of the framework isn’t required!</p>
+</section>
+<section id="bringing-in-what-we-need" class="level2">
+<h2 class="anchored" data-anchor-id="bringing-in-what-we-need">Bringing in what we need</h2>
+<p>The actual imports we need to use from <code>nbdev</code> is truly not that many! We just need two: - <a href="https://nbdev.fast.ai/api/process.html#extract_directives"><code>extract_directives</code></a>, to read in the list of <code>#|</code> written - The <a href="https://nbdev.fast.ai/api/process.html#processor"><code>Processor</code></a> class that will actually perform what we want on notebook cells.</p>
+<p>The rest of the imports are there to make some of our lives easier as will be explained later</p>
+<div id="3600afb5-7c48-426b-8cfb-918a12f55488" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbdev.process <span class="im">import</span> extract_directives</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbdev.processors <span class="im">import</span> Processor</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.basics <span class="im">import</span> listify</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> string <span class="im">import</span> Template</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Lastly for <em>testing</em> purposes we’ll utilize <code>nbdev</code>’s <code>mk_cell</code> function and the <a href="https://nbdev.fast.ai/api/process.html#nbprocessor"><code>NBProcessor</code></a> class, which will let us mock running our processor on a “real” notebook!</p>
+<div id="510fa8bc-0cc7-425d-8afc-2f5479bfe93b" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbdev.processors <span class="im">import</span> mk_cell, NBProcessor</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="writing-a-converter" class="level2">
+<h2 class="anchored" data-anchor-id="writing-a-converter">Writing a converter</h2>
+<p>The first step is creating a quick and easy way to take the <code>nbdev</code> directive we want to use (such as <code>#| div column-margin</code>) and convert it quickly into something quarto will then read (such as <code>::: {.column-margin}</code>).</p>
+<p>We can create a string <code>Template</code> to perform this for us:</p>
+<div id="e624eb8c-3fde-413b-b453-3f5f842abcae" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>_LAYOUT_STR <span class="op">=</span> Template(<span class="st">"::: {.$layout}</span><span class="ch">\n</span><span class="st">$</span><span class="sc">{content}</span><span class="ch">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This doesn’t have to be a string template, I just found this the easiest to use!</p>
+</div>
+</div>
+<div id="e1a563bb-dcec-43ff-807d-ba017f95d39f" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>_LAYOUT_STR.substitute(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    layout<span class="op">=</span><span class="st">"column-margin"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    content<span class="op">=</span><span class="st">"Some text to go on the sidebar"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'::: {.column-margin}\nSome text to go on the sidebar\n'</code></pre>
+</div>
+</div>
+<p>Next we need to write a simple converter that operates at the <em>cell</em> level:</p>
+<div id="58f21e4f-e638-43ea-afd5-964330178bf6" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> convert_layout(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    cell:<span class="bu">dict</span>, <span class="co"># A single cell from a Jupyter Notebook</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    is_multicell<span class="op">=</span><span class="va">False</span> <span class="co"># Whether the div should be wrapped around multiple cells</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Takes a code cell that contains `div` in the directives and modifies the contents to the proper Quarto format"</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    content <span class="op">=</span> cell.source</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    code <span class="op">=</span> cell.source.splitlines(<span class="va">True</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    div_ <span class="op">=</span> cell.directives_[<span class="st">"div"</span>]</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We check if end is in the first line of the cell source</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"end"</span> <span class="kw">in</span> div_:</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># If it is, just fill the text with `:::` if no code exists there</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        cell.source <span class="op">=</span> <span class="st">":::"</span> <span class="cf">if</span> <span class="bu">len</span>(code) <span class="op">==</span> <span class="dv">1</span> <span class="cf">else</span> <span class="ss">f'</span><span class="sc">{</span>code<span class="sc">.</span>source<span class="sc">}</span><span class="ss">:::'</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Actually modify the code</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        cell.source <span class="op">=</span> _LAYOUT_STR.substitute(layout<span class="op">=</span><span class="st">" "</span>.join(div_), content<span class="op">=</span>content)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> is_multicell: cell.source <span class="op">+=</span> <span class="st">":::"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s go into detail on what’s happening here.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>    content <span class="op">=</span> cell.source</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The source text of whatever exists in a notebook cell will live in <code>.source</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    code <span class="op">=</span> cell.source.splitlines(<span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then I want to extract the content of the cell and split them into multiple lines, seperated by newlines. This let’s us check if a cell just contains <code>#| div end</code>, which means that the div that was started earlier should stop.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    div_ <span class="op">=</span> cell.directives_[<span class="st">"div"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Any directives (comments in any cell marked with <code>#|</code>) will exist in the <code>directives_</code> attribute as a dictionary. For our particular processor we only care about the <a href="https://nbdev.fast.ai/api/qmd.html#div"><code>div</code></a> directive</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="st">"end"</span> <span class="kw">in</span> div_:</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>        <span class="co"># If it is, just fill the text with `:::` if no code exists there</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        cell.source <span class="op">=</span> <span class="st">":::"</span> <span class="cf">if</span> <span class="bu">len</span>(code) <span class="op">==</span> <span class="dv">1</span> <span class="cf">else</span> <span class="ss">f'</span><span class="sc">{</span>code<span class="sc">.</span>source<span class="sc">}</span><span class="ss">:::'</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Actually modify the code</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        cell.source <span class="op">=</span> _LAYOUT_STR.substitute(layout<span class="op">=</span><span class="st">" "</span>.join(div_), content<span class="op">=</span>content)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> is_multicell: cell.source <span class="op">+=</span> <span class="st">":::"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>From there this last part checks whether to add the ending <code>:::</code> block to the cell or to use the <code>_LAYOUT_STR</code> and inject the boilerplate div CSS code in for Quarto.</p>
+<p>Let’s see it in action:</p>
+<div id="f35cff2d-46d5-4259-be65-913cd0ae207d" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> mk_cell(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"""#| div margin-column</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">Here is something for the sidebar!"""</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    cell_type<span class="op">=</span><span class="st">"markdown"</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>nbdev</code> will pull out those directives and store them in the cell’s <code>directives_</code> attribute using the <a href="https://nbdev.fast.ai/api/process.html#extract_directives"><code>extract_directives</code></a> function:</p>
+<div id="bafb13a9-7755-4324-84e5-21e31907039f" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>cell.directives_ <span class="op">=</span> extract_directives(cell, <span class="st">"#"</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>cell.directives_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>{'div': ['margin-column']}</code></pre>
+</div>
+</div>
+<p>And now we can test out if our <code>convert_layout</code> function works!</p>
+<div id="1d937adf-d52e-479d-8046-e1d722ccb318" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>convert_layout(cell)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(cell.source)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>::: {.margin-column}
+Here is something for the sidebar!
+:::</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Note: I print the <code>cell.source</code> here so that it’s text looks cleaner and what we would visually see in a <code>Markdown</code> cell</p>
+</blockquote>
+<p>Looks exactly like we wanted earlier! Great!</p>
+<p>How do we tell nbdev to use this and create this <a href="https://nbdev.fast.ai/api/process.html#processor"><code>Processor</code></a> class mentioned earlier?</p>
+</section>
+<section id="writing-a-processor" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="writing-a-processor">Writing a <a href="https://nbdev.fast.ai/api/process.html#processor"><code>Processor</code></a></h2>
+<p>The second-to-last step here is to create the custom <a href="https://nbdev.fast.ai/api/process.html#processor"><code>Processor</code></a> nbdev utilizes to apply procs (things that modify the contents of cells). The basic understanding of these is simply that you should create a class, have it inherit <a href="https://nbdev.fast.ai/api/process.html#processor"><code>Processor</code></a>, and any modifications that should be done must be defined in a <code>cell</code> function which takes in a <code>cell</code> and modifies it in-place.</p>
+<div id="80e1d079-e5ef-4f22-8345-195285b66c3e" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LayoutProc(Processor):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"A processor that will turn `div` based tags into proper quarto ones"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    has_multiple_cells <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> cell(<span class="va">self</span>, cell):</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cell.cell_type <span class="op">==</span> <span class="st">"markdown"</span> <span class="kw">and</span> <span class="st">"div"</span> <span class="kw">in</span> cell.directives_:</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>            div_ <span class="op">=</span> cell.directives_[<span class="st">"div"</span>]</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="va">self</span>.has_multiple_cells <span class="kw">and</span> <span class="st">"end"</span> <span class="kw">in</span> div_:</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                convert_layout(cell)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                is_start <span class="op">=</span> div_[<span class="op">-</span><span class="dv">1</span>] <span class="op">==</span> <span class="st">"start"</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> is_start:</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                    <span class="va">self</span>.has_multiple_cells <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>                    div_.remove(<span class="st">"start"</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>                convert_layout(cell, is_start)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>How can we test if this will work or not?</p>
+<p>A minimal Jupyter Notebook is just a dictionary where the cells are in a <code>cells</code> key and the cells themselves are a list of notebook cells following a special format. We’ve created one of these above. <code>nbdev</code> has a <code>dict2nb</code> function which let’s us convert this minimal idea of a Jupyter Notebook into the true thing quickly.</p>
+<p>Afterwards, we can apply the processor to those cells though the <a href="https://nbdev.fast.ai/api/process.html#nbprocessor"><code>NBProcessor</code></a> class (what <code>nbdev</code> uses to apply these)</p>
+<div id="9463b345-2e93-447a-aae8-6f5a10c28adc" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbdev.process <span class="im">import</span> NBProcessor, dict2nb</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="8b0162b6-1019-4eed-a3da-41a0f34fe7de" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>nb <span class="op">=</span> {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cells"</span>:[</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    mk_cell(<span class="st">"""#| div column-margin</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="st">A test"""</span>, <span class="st">"markdown"</span>),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    mk_cell(<span class="st">"""#| div column-margin start</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="st">A test"""</span>, <span class="st">"markdown"</span>),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    mk_cell(<span class="st">"""#| div end"""</span>, <span class="st">"markdown"</span>),</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>]}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>The <code>mk_cell</code> function will create a cell based on some <code>content</code> and a <code>cell type</code>. The particular extension we’ve built works off <code>Markdown</code> cells, so we set the type as <code>markdown</code>.</p>
+</div></div><p>The <a href="https://nbdev.fast.ai/api/process.html#nbprocessor"><code>NBProcessor</code></a> takes in a list of procs (processors) that should be applied, and an opened Jupyter Notebook:</p>
+<div id="94424d4d-027d-4c61-83c7-3eef0d792926" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>processor <span class="op">=</span> NBProcessor(procs<span class="op">=</span>LayoutProc, nb<span class="op">=</span>dict2nb(nb))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The act of applying these processors is done through calling the <code>.process():</code> function</p>
+<div id="bb6c5cbe-e877-4218-819d-b168b4f4774e" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>processor.process()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>And now we can see that those code cells were changed:</p>
+<div id="633fa11d-cadc-4a10-99a0-6b1fe7ea3217" class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>):</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Before:</span><span class="ch">\n</span><span class="sc">{</span>nb[<span class="st">'cells'</span>][i]<span class="sc">.</span>source<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"After:</span><span class="ch">\n</span><span class="sc">{</span>processor<span class="sc">.</span>nb<span class="sc">.</span>cells[i]<span class="sc">.</span>source<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Before:
+#| div column-margin
+A test
+
+After:
+::: {.column-margin}
+A test
+:::
+
+Before:
+#| div column-margin start
+A test
+
+After:
+::: {.column-margin}
+A test
+
+
+Before:
+#| div end
+
+After:
+:::
+</code></pre>
+</div>
+</div>
+<p>Great! We’ve successfully created a plugin for nbdev that will let us lazily write markdown quarto directives easily. How can we actually <em>use</em> this in our projects?</p>
+</section>
+<section id="how-to-enable-the-plugin-on-your-project" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-enable-the-plugin-on-your-project">How to enable the plugin on your project</h2>
+<p>This requires two changes to your <code>settings.ini</code>.</p>
+<p>First, if say this were code that lived in <code>nbdev</code>, we can add a special <code>procs</code> key and specify where the processor comes from:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode ini code-with-copy"><code class="sourceCode ini"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="dt">procs </span><span class="ot">=</span><span class="st"> </span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="dt">    nbdev.extensions:LayoutProc</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>It follows the format of <code>library.module:processor_name</code></p>
+<p>If this were being used from an external library (such as how this processor is based on the one that lives in <a href="https://muellerzr.github.io/nbdev-extensions">nbdev-extensions</a>, you should add that to the requirements of your project:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode ini code-with-copy"><code class="sourceCode ini"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="dt">requirements </span><span class="ot">=</span><span class="st"> nbdev-extensions</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>And you’re done! Now when calling <a href="https://nbdev.fast.ai/api/quarto.html#nbdev_docs"><code>nbdev_docs</code></a> or <a href="https://nbdev.fast.ai/api/quarto.html#nbdev_preview"><code>nbdev_preview</code></a> the processor we just made will be <em>automatically</em> applied to your notebooks and perform this conversion!</p>
+</section>
+<section id="conclusion-nbdev-extensions-and-a-bit-about-me" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion-nbdev-extensions-and-a-bit-about-me">Conclusion, nbdev-extensions and a bit about me!</h2>
+<p>Basically if there’s any part of a cell and how it should look either from exporting modules, building documentation, or creating your own special command to perform post-processing it can be done quickly and efficiently with this <a href="https://nbdev.fast.ai/api/process.html#processor"><code>Processor</code></a> class nbdev provides!</p>
+<p>If you’re interested in seeing more examples of nbdev-extensions and where you can take it I’ve (Zachary Mueller) written a library dedicated to it called <a href="https://muellerzr.github.io/nbdev-extensions">nbdev-extensions</a> where any ideas that may benefit how I approach nbdev I then turn into an extension for the world to use.</p>
+<p>Thanks for reading!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/nbdev\.fast\.ai\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/nbdev/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
