@@ -36,7 +36,7 @@ def _is_qpy(path:Path):
 
 # %% ../nbs/api/17_serve.ipynb
 def _proc_file(s, cache, path, mtime=None):
-    skips = ('_proc', '_docs', '_site')
+    skips = ('_proc', '_docs', '_site', 'settings.ini')
     if not s.is_file() or any(o[0]=='.' or o in skips for o in s.parts): return
     d = cache/s.relative_to(path)
     if s.suffix=='.py': d = d.with_suffix('')
