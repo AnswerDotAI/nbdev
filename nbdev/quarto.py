@@ -17,7 +17,7 @@ from fastcore.shutil import rmtree,move,copytree
 from fastcore.meta import delegates
 from .serve import proc_nbs,_proc_file
 from . import serve_drv
-import yaml
+import yaml, json
 
 # %% auto 0
 __all__ = ['BASE_QUARTO_URL', 'install_quarto', 'install', 'IndentDumper', 'nbdev_sidebar', 'refresh_quarto_yml',
@@ -179,7 +179,7 @@ def refresh_quarto_yml():
     "Generate `_quarto.yml` from `settings.ini`."
     cfg = get_config()
     ny = cfg.nbs_path/'nbdev.yml'
-    vals = {k:cfg[k] for k in ['title', 'description', 'branch', 'git_url', 'doc_host', 'doc_baseurl']}
+    vals = {k:json.dumps(cfg[k])[1:-1] for k in ['title', 'description', 'branch', 'git_url', 'doc_host', 'doc_baseurl']}
     vals['doc_path'] = cfg.doc_path.name
     if 'title' not in vals: vals['title'] = vals['lib_name']
     ny.write_text(_nbdev_yml.format(**vals))
