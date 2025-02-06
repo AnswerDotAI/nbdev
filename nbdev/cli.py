@@ -27,7 +27,7 @@ from fastcore.shutil import rmtree,move
 
 from urllib.error import HTTPError
 from contextlib import redirect_stdout
-import os, tarfile, sys
+import os, tarfile, sys, json
 
 # %% auto 0
 __all__ = ['mapping', 'nbdev_filter', 'extract_tgz', 'nbdev_new', 'nbdev_update_license', 'nb_export_cli', 'watch_export',
@@ -66,7 +66,7 @@ def _render_nb(fn, cfg):
     "Render templated values like `{{lib_name}}` in notebook at `fn` from `cfg`"
     txt = fn.read_text()
     txt = txt.replace('from your_lib.core', f'from {cfg.lib_path}.core') # for compatibility with old templates
-    for k,v in cfg.d.items(): txt = txt.replace('{{'+k+'}}', v)
+    for k,v in cfg.d.items(): txt = txt.replace('{{'+k+'}}', json.dumps(v)[1:-1])
     fn.write_text(txt)
 
 # %% ../nbs/api/13_cli.ipynb
