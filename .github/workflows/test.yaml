@@ -17,7 +17,7 @@ jobs:
         version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}-latest
     steps:
-      - uses: fastai/workflows/nbdev-ci@master
+      - uses: answerdotai/workflows/nbdev-ci@master
         with:
           version: ${{ matrix.version }}
           pre: 1

@@ -91,7 +91,7 @@ def nbdev_new(**kwargs):
     _update_repo_meta(cfg)
     path = Path()
 
-    _ORG_OR_USR,_REPOSITORY = 'fastai','nbdev-template'
+    _ORG_OR_USR,_REPOSITORY = 'answerdotai','nbdev-template'
     _TEMPLATE = f'{_ORG_OR_USR}/{_REPOSITORY}'
     template = kwargs.get('template', _TEMPLATE)
     try: org_or_usr, repo = template.split('/')

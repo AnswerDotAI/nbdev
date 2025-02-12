@@ -9,5 +9,5 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: fastai/workflows/quarto-ghp@master
+      - uses: answerdotai/workflows/quarto-ghp@master
 #         with: {pre: 1}
