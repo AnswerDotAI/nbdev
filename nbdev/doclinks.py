@@ -132,7 +132,7 @@ def nbglob(path=None, skip_folder_re = '^[_.]', file_glob='*.ipynb', skip_file_r
 def nbglob_cli(
     path:str=None, # Path to notebooks
     symlinks:bool=False, # Follow symlinks?
-    file_glob:str|List[str]=['*.ipynb'] + [f"*.{ext}" for ext in plaintext_file_formats], # Only include files matching glob
+    file_glob:Union[str, List[str]]=['*.ipynb'] + [f"*.{ext}" for ext in plaintext_file_formats], # Only include files matching glob
     file_re:str=None, # Only include files matching regex
     folder_re:str=None, # Only enter folders matching regex
     skip_file_glob:str=None, # Skip files matching glob
