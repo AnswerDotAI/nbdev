@@ -10,6 +10,7 @@ from .config import *
 from .maker import *
 from .export import *
 from .imports import *
+from .process import plaintext_file_formats
 
 from fastcore.script import *
 from fastcore.utils import *
@@ -116,15 +117,18 @@ def nbglob(path=None, skip_folder_re = '^[_.]', file_glob='*.ipynb', skip_file_r
     "Find all files in a directory matching an extension given a config key."
     path = Path(path or get_config()[key])
     recursive=get_config().recursive
-    res = globtastic(path, file_glob=file_glob, skip_folder_re=skip_folder_re,
-                     skip_file_re=skip_file_re, recursive=recursive, **kwargs)
+    if type(file_glob) != list: file_glob = [file_glob]
+    res = []
+    for _file_glob in file_glob:
+        res += globtastic(path, file_glob=_file_glob, skip_folder_re=skip_folder_re,
+                    skip_file_re=skip_file_re, recursive=recursive, **kwargs)
     return res.map(Path) if as_path else res
 
 # %% ../nbs/api/05_doclinks.ipynb
 def nbglob_cli(
     path:str=None, # Path to notebooks
     symlinks:bool=False, # Follow symlinks?
-    file_glob:str='*.ipynb', # Only include files matching glob
+    file_glob:str|List[str]=['*.ipynb'] + [f"*.{ext}" for ext in plaintext_file_formats], # Only include files matching glob
     file_re:str=None, # Only include files matching regex
     folder_re:str=None, # Only enter folders matching regex
     skip_file_glob:str=None, # Skip files matching glob
@@ -138,7 +142,7 @@ def nbglob_cli(
 @call_parse
 @delegates(nbglob_cli)
 def nbdev_export(
-    path:str=None, # Path or filename
+    path:str=None, # Path or filename,
     procs:Param("tokens naming the export processors to use.", nargs="*", choices=optional_procs())="black_format",
     **kwargs):
     "Export notebooks in `path` to Python modules"
