@@ -16,6 +16,14 @@ from fastcore.imports import *
 
 from collections import defaultdict
 
+try:
+    import nbformat
+    import jupytext
+    import tempfile
+    plaintext_supported = True
+except ImportError:
+    plaintext_supported = False
+
 # %% ../nbs/api/03_process.ipynb
 # from https://github.com/quarto-dev/quarto-cli/blob/main/src/resources/jupyter/notebook.py
 langs = defaultdict(
@@ -89,15 +97,38 @@ def _mk_procs(procs, nb): return L(procs).map(instantiate, nb=nb)
 def _is_direc(f): return getattr(f, '__name__', '-')[-1]=='_'
 
 # %% ../nbs/api/03_process.ipynb
+plaintext_file_formats = {
+    "pct.py": "py:percent",
+    "lgt.py": "py:light",
+    "spx.py": "py:sphinx",
+    "myst.md": "md:myst",
+    "pandoc.md": "md:pandoc",
+}
+
+# %% ../nbs/api/03_process.ipynb
 class NBProcessor:
     "Process cells and nbdev comments in a notebook"
     def __init__(self, path=None, procs=None, nb=None, debug=False, rm_directives=True, process=False):
-        self.nb = read_nb(path) if nb is None else nb
+        self._handle_nb(path, nb)
         self.lang = nb_lang(self.nb)
         for cell in self.nb.cells: cell.directives_ = extract_directives(cell, remove=rm_directives, lang=self.lang)
         self.procs = _mk_procs(procs, nb=self.nb)
         self.debug,self.rm_directives = debug,rm_directives
         if process: self.process()
+
+    def _handle_nb(self, path, nb):        
+        path = str(path)
+        if any(path.endswith(ext) for ext in plaintext_file_formats):
+            if not plaintext_supported:
+                raise ValueError(f"File {path} has a supported extension, but plaintext conversion is not supported. Please install jupytext and nbformat to use this feature.")
+            else:
+                fmt = plaintext_file_formats[".".join(path.rsplit('.', 2)[-2:])]
+                nb_converted = jupytext.read(path, fmt=fmt)
+                with tempfile.NamedTemporaryFile(delete=True, suffix=".ipynb") as temp_file:
+                    nbformat.write(nb_converted, temp_file.name)
+                    self.nb = read_nb(temp_file.name) if nb is None else nb
+        else:
+            self.nb = read_nb(path) if nb is None else nb
 
     def _process_cell(self, proc, cell):
         if not hasattr(cell,'source'): return
