@@ -1,8 +1,10 @@
 name: Deploy to GitHub Pages
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
+env:
+  OBJC_DISABLE_INITIALIZE_FORK_SAFETY: YES
 jobs:
   deploy:
     runs-on: ubuntu-latest

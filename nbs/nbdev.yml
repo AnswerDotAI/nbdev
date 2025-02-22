@@ -6,4 +6,4 @@ website:
   site-url: "https://nbdev.fast.ai/"
   description: "Create delightful software with Jupyter Notebooks"
   repo-branch: master
-  repo-url: "https://github.com/fastai/nbdev"
+  repo-url: "https://github.com/AnswerDotAI/nbdev"

@@ -5,6 +5,9 @@ on:
   push:
     branches: [master]
 
+env:
+  OBJC_DISABLE_INITIALIZE_FORK_SAFETY: YES
+
 jobs:
   test:
     strategy:

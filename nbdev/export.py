@@ -74,6 +74,7 @@ def nb_export(nbname:str,        # Filename of notebook
               mod_maker=ModuleMaker,
               debug:bool=False,  # Debug mode
               fmt:str=None,      # Format to export to
+              solo_nb:bool=False # Export single notebook outside of an nbdev project.
              ):
     "Create module(s) from notebook"
     if lib_path is None: lib_path = get_config().lib_path if is_nbdev() else '.'
@@ -89,5 +90,5 @@ def nb_export(nbname:str,        # Filename of notebook
                      "Note nbdev2 no longer supports nbdev1 syntax. Run `nbdev_migrate` to upgrade.\n"
                      "See https://nbdev.fast.ai/getting_started.html for more information.")
                 return
-            mm = mod_maker(dest=lib_path, name=nm, nb_path=nbname, is_new=bool(name) or mod=='#')
+            mm = mod_maker(dest=lib_path, name=nm, nb_path=nbname, is_new=bool(name) or mod=='#', solo_nb=solo_nb)
             mm.make(cells, all_cells, lib_path=lib_path)

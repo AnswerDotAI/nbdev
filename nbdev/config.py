@@ -138,7 +138,7 @@ def _cfg2txt(cfg, head, sections, tail=''):
 
 # %% ../nbs/api/01_config.ipynb
 _nbdev_cfg_head = '''# All sections below are required unless otherwise specified.
-# See https://github.com/fastai/nbdev/blob/master/settings.ini for examples.
+# See https://github.com/AnswerDotAI/nbdev/blob/main/settings.ini for examples.
 
 '''
 _nbdev_cfg_sections = {'Python library': 'repo lib_name version min_python license black_formatting',
@@ -249,12 +249,12 @@ def add_init(path=None):
     if get_config().get('put_version_in_init', True): update_version(path)
 
 # %% ../nbs/api/01_config.ipynb
-def write_cells(cells, hdr, file, offset=0, cell_number=True):
+def write_cells(cells, hdr, file, offset=0, cell_number=True, solo_nb=False):
     "Write `cells` to `file` along with header `hdr` starting at index `offset` (mainly for nbdev internal use)."
     for cell in cells:
         if cell.cell_type=='code' and cell.source.strip():
             idx = f" {cell.idx_+offset}" if cell_number else ""
-            file.write(f'\n\n{hdr}{idx}\n{cell.source}')
+            file.write(f'\n\n{hdr}{idx}\n{cell.source}') if not solo_nb else file.write(f'\n\n{cell.source}')
 
 # %% ../nbs/api/01_config.ipynb
 def _basic_export_nb(fname, name, dest=None):

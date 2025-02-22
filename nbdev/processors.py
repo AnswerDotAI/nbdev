@@ -249,7 +249,7 @@ class exec_show_docs(Processor):
         if _do_eval(cell): self.k.cell(cell)
         title = fm.get('title', '')
         if self.k.exc: 
-            raise Exception(f"Error{' in notebook: '+title if title else ''} in cell {cell.idx_} :\n{cell.source}") from self.k.exc[1]
+            raise Exception(f"Error{' in notebook: '+title if title else ''} in cell {cell.idx_} :\n{cell.source}") from self.k.exc
 
     def end(self):
         try: from ipywidgets import Widget
