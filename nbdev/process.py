@@ -108,27 +108,30 @@ plaintext_file_formats = {
 # %% ../nbs/api/03_process.ipynb
 class NBProcessor:
     "Process cells and nbdev comments in a notebook"
-    def __init__(self, path=None, procs=None, nb=None, debug=False, rm_directives=True, process=False):
-        self._handle_nb(path, nb)
+    def __init__(self, path=None, procs=None, nb=None, debug=False, rm_directives=True, process=False, fmt=None):
+        self._handle_nb(path, nb, fmt)
         self.lang = nb_lang(self.nb)
         for cell in self.nb.cells: cell.directives_ = extract_directives(cell, remove=rm_directives, lang=self.lang)
         self.procs = _mk_procs(procs, nb=self.nb)
         self.debug,self.rm_directives = debug,rm_directives
         if process: self.process()
 
-    def _handle_nb(self, path, nb):        
+    def _handle_nb(self, path, nb, fmt):        
         path = str(path)
-        if any(path.endswith(ext) for ext in plaintext_file_formats):
-            if not plaintext_supported:
-                raise ValueError(f"File {path} has a supported extension, but plaintext conversion is not supported. Please install jupytext and nbformat to use this feature.")
-            else:
-                fmt = plaintext_file_formats[".".join(path.rsplit('.', 2)[-2:])]
+        if any(path.endswith(ext) for ext in plaintext_file_formats) or fmt is not None:
+            fmt = plaintext_file_formats[".".join(path.rsplit('.', 2)[-2:])] if fmt is None else fmt
+            if fmt in plaintext_file_formats.values():
+                if not plaintext_supported:
+                    raise ValueError(f"File {path} has a supported extension, but plaintext conversion is not supported. Please install jupytext and nbformat to use this feature.")
                 nb_converted = jupytext.read(path, fmt=fmt)
                 with tempfile.NamedTemporaryFile(delete=True, suffix=".ipynb") as temp_file:
                     nbformat.write(nb_converted, temp_file.name)
                     self.nb = read_nb(temp_file.name) if nb is None else nb
-        else:
+                    return
+        if fmt is None or fmt == "ipynb":
             self.nb = read_nb(path) if nb is None else nb
+        else:
+            raise ValueError(f"Invalid format: {fmt}")
 
     def _process_cell(self, proc, cell):
         if not hasattr(cell,'source'): return

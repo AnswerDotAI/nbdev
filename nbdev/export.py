@@ -73,11 +73,12 @@ def nb_export(nbname:str,        # Filename of notebook
               name:str=None,     # Name of python script {name}.py to create.
               mod_maker=ModuleMaker,
               debug:bool=False,  # Debug mode
+              fmt:str=None,      # Format to export to
              ):
     "Create module(s) from notebook"
     if lib_path is None: lib_path = get_config().lib_path if is_nbdev() else '.'
     exp = ExportModuleProc()
-    nb = NBProcessor(nbname, [exp]+L(procs), debug=debug)
+    nb = NBProcessor(nbname, [exp]+L(procs), debug=debug, fmt=fmt)
     nb.process()
     for mod,cells in exp.modules.items():
         if first(1 for o in cells if o.cell_type=='code'):
