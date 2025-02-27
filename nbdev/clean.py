@@ -130,7 +130,7 @@ def _nbdev_clean(nb, path=None, clear_all=None):
 # %% ../nbs/api/11_clean.ipynb
 @call_parse
 def nbdev_clean(
-    fname:str=None, # A notebook name or glob to clean
+    fname=None, # A notebook path or a list of paths/globs to clean
     clear_all:bool=False, # Remove all cell metadata and cell outputs?
     disp:bool=False,  # Print the cleaned outputs
     stdin:bool=False # Read notebook from input stream
@@ -141,7 +141,12 @@ def nbdev_clean(
     _write = partial(process_write, warn_msg='Failed to clean notebook', proc_nb=_clean)
     if stdin: return _write(f_in=sys.stdin, f_out=sys.stdout)
     if fname is None: fname = get_config().nbs_path
-    for f in globtastic(fname, file_glob='*.ipynb', skip_folder_re='^[_.]'): _write(f_in=f, disp=disp)
+    # If `fname` is a single string, wrap it in a list.
+    # Otherwise assume it's already a list/tuple of paths/globs.
+    if isinstance(fname, (str, Path)): fname = [str(fname)]
+    for f in fname:
+        for nb_path in globtastic(f, file_glob='*.ipynb', skip_folder_re='^[_.]'):
+            _write(f_in=nb_path, disp=disp)
 
 # %% ../nbs/api/11_clean.ipynb
 def clean_jupyter(path, model, **kwargs):
