@@ -7,13 +7,13 @@ from __future__ import annotations
 from .doclinks import *
 from .config import get_config
 
-from fastcore.dispatch import TypeDispatch
 from fastcore.docments import *
 from fastcore.utils import *
 
 from importlib import import_module
 import inspect, sys
 from collections import OrderedDict
+from plum import Function
 from textwrap import fill
 from types import FunctionType
 
@@ -189,7 +189,7 @@ def show_doc(sym,  # Symbol to document
     elif isinstance(renderer,str):
         p,m = renderer.rsplit('.', 1)
         renderer = getattr(import_module(p), m)
-    if isinstance(sym, TypeDispatch): pass
+    if isinstance(sym, Function): pass
     else:return renderer(sym or show_doc, name=name, title_level=title_level)
 
 # %% ../nbs/api/08_showdoc.ipynb
