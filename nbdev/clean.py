@@ -141,12 +141,9 @@ def nbdev_clean(
     _write = partial(process_write, warn_msg='Failed to clean notebook', proc_nb=_clean)
     if stdin: return _write(f_in=sys.stdin, f_out=sys.stdout)
     if fname is None: fname = get_config().nbs_path
-    # If `fname` is a single string, wrap it in a list.
-    # Otherwise assume it's already a list/tuple of paths/globs.
-    if isinstance(fname, (str, Path)): fname = [str(fname)]
-    for f in fname:
-        for nb_path in globtastic(f, file_glob='*.ipynb', skip_folder_re='^[_.]'):
-            _write(f_in=nb_path, disp=disp)
+    # Use listify to handle both single paths and lists of paths
+    for f in globtastic(listify(fname), file_glob='*.ipynb', skip_folder_re='^[_.]'): 
+        _write(f_in=f, disp=disp)
 
 # %% ../nbs/api/11_clean.ipynb
 def clean_jupyter(path, model, **kwargs):
