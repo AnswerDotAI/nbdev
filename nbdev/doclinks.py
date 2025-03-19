@@ -26,6 +26,7 @@ from pprint import pformat
 from urllib.parse import urljoin
 from functools import lru_cache
 from types import ModuleType
+import tomli_w
 
 # %% ../nbs/api/05_doclinks.ipynb
 def _sym_nm(klas, sym): return f'{unparse(klas).strip()}.{sym.name}'
@@ -153,7 +154,9 @@ def nbdev_export(
         procs = [getattr(nbdev.export, p) for p in L(procs)]
     files = nbglob(path=path, as_path=True, **kwargs).sorted('name')
     for f in files: nb_export(f, procs=procs)
-    add_init(get_config().lib_path)
+    cfg = get_config()
+    if cfg.get('pyproject_toml'): (cfg.lib_path.parent / "pyproject.toml").write_text(tomli_w.dumps(cfg2pyproj(cfg), indent=2))
+    add_init(cfg.lib_path)
     _build_modidx()
 
 # %% ../nbs/api/05_doclinks.ipynb
