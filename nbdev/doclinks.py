@@ -17,7 +17,8 @@ from fastcore.meta import delegates
 from fastcore.net import urlread
 
 import ast,builtins,contextlib
-import pkg_resources,importlib
+import importlib.metadata
+import importlib.util
 
 from astunparse import unparse
 from io import BytesIO
@@ -236,9 +237,10 @@ def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
     strip_libs = L(strip_libs)
     if incl_libs is not None: incl_libs = (L(incl_libs)+strip_libs).unique()
     entries = {}
-    for o in pkg_resources.iter_entry_points(group='nbdev'):
-        if incl_libs is not None and o.dist.key not in incl_libs: continue
-        try: entries[o.name] = _qual_syms(o.resolve())
+    eps = importlib.metadata.entry_points()
+    for o in eps.select(group='nbdev') if hasattr(eps, 'select') else eps.get('nbdev', []):
+        if incl_libs is not None and o.dist.name not in incl_libs: continue
+        try: entries[o.name] = _qual_syms(o.load())
         except Exception: pass
     py_syms = merge(*L(o['syms'].values() for o in entries.values()).concat())
     for m in strip_libs:
