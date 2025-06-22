@@ -232,16 +232,19 @@ def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
     cfg = get_config()
     if strip_libs is None:
         try: strip_libs = cfg.get('strip_libs', cfg.get('lib_path', 'nbdev').name).split()
-        except FileNotFoundError: strip_libs = 'nbdev'
+        except FileNotFoundError: strip_libs = ['nbdev']
     skip_mods = setify(skip_mods)
     strip_libs = L(strip_libs)
     if incl_libs is not None: incl_libs = (L(incl_libs)+strip_libs).unique()
+    
     entries = {}
     eps = importlib.metadata.entry_points()
-    for o in eps.select(group='nbdev') if hasattr(eps, 'select') else eps.get('nbdev', []):
+    nbdev_eps = eps.select(group='nbdev') if hasattr(eps, 'select') else eps.get('nbdev', [])
+    for o in nbdev_eps:
         if incl_libs is not None and o.dist.name not in incl_libs: continue
         try: entries[o.name] = _qual_syms(o.load())
         except Exception: pass
+
     py_syms = merge(*L(o['syms'].values() for o in entries.values()).concat())
     for m in strip_libs:
         if m in entries:
@@ -253,6 +256,7 @@ def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
                         k = remove_prefix(k,f"{mod}.")
                         if k not in stripped: stripped[k] = v
             py_syms = merge(stripped, py_syms)
+            
     return entries,py_syms
 
 # %% ../nbs/api/05_doclinks.ipynb
