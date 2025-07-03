@@ -11,6 +11,7 @@ __all__ = ['find_var', 'read_var', 'update_var', 'ModuleMaker', 'decor_id', 'mak
 # %% ../nbs/api/02_maker.ipynb
 from .config import *
 from .imports import *
+from .qmd import *
 
 from fastcore.script import *
 from fastcore.basics import *
