@@ -130,7 +130,8 @@ def nbdev_sidebar(
         _dir = dir_struct
         for subdir in drel.parts:
             _dir = _dir.setdefault(subdir, dict())
-        _dir[name] = name
+        if Path(name).suffix == '.qmd': name = Path(name).with_suffix('.ipynb') # .qmd files are converted to .ipynb before docs are rendered
+        _dir[name] = str(name)
 
     _recursive_parser(dir_struct, _contents, Path())
     yml_path = path/'sidebar.yml'
@@ -149,6 +150,7 @@ format:
     css: styles.css
     toc: true
     keep-md: true
+    keep-ipynb: true
   commonmark: default
 
 website:
@@ -264,7 +266,8 @@ def nbdev_readme(
 
     with _SidebarYmlRemoved(path): # to avoid rendering whole website
         cache = proc_nbs(path)
-        _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute')
+        readme_nb_name = Path(cfg.readme_nb).with_suffix('.ipynb')
+        _sprun(f'cd "{cache}" && quarto render "{cache/readme_nb_name}" -o README.md -t gfm --no-execute')
         
     _save_cached_readme(cache, cfg)
 
