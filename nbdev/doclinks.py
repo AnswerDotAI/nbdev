@@ -119,11 +119,11 @@ def _build_modidx(dest=None, nbs_path=None, skip_exists=False):
 
 # %% ../nbs/api/05_doclinks.ipynb
 @delegates(globtastic)
-def nbglob(path=None, skip_folder_re = '^[_.]', file_glob='*.ipynb', skip_file_re='^[_.]', key='nbs_path', as_path=False, **kwargs):
+def nbglob(path=None, skip_folder_re = '^[_.]', file_re=r'.*\.ipynb$|.*\.qmd$', skip_file_re='^[_.]', key='nbs_path', as_path=False, **kwargs):
     "Find all files in a directory matching an extension given a config key."
     path = Path(path or get_config()[key])
     recursive=get_config().recursive
-    res = globtastic(path, file_glob=file_glob, skip_folder_re=skip_folder_re,
+    res = globtastic(path, file_re=file_re, skip_folder_re=skip_folder_re,
                      skip_file_re=skip_file_re, recursive=recursive, **kwargs)
     return res.map(Path) if as_path else res
 
@@ -131,8 +131,8 @@ def nbglob(path=None, skip_folder_re = '^[_.]', file_glob='*.ipynb', skip_file_r
 def nbglob_cli(
     path:str=None, # Path to notebooks
     symlinks:bool=False, # Follow symlinks?
-    file_glob:str='*.ipynb', # Only include files matching glob
-    file_re:str=None, # Only include files matching regex
+    file_glob:str=None, # Only include files matching glob
+    file_re:str=r'.*\.ipynb$|.*\.qmd$', # Only include files matching regex
     folder_re:str=None, # Only enter folders matching regex
     skip_file_glob:str=None, # Skip files matching glob
     skip_file_re:str='^[_.]', # Skip files matching regex

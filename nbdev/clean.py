@@ -38,7 +38,7 @@ def nbdev_trust(
     path = fname if fname.is_dir() else fname.parent
     check_fname = path/".last_checked"
     last_checked = os.path.getmtime(check_fname) if check_fname.exists() else None
-    nbs = globtastic(fname, file_glob='*.ipynb', skip_folder_re='^[_.]') if fname.is_dir() else [fname]
+    nbs = globtastic(fname, file_re=r'.*\.ipynb$|.*\.qmd$', skip_folder_re='^[_.]') if fname.is_dir() else [fname]
     for fn in nbs:
         if last_checked and not force_all:
             last_changed = os.path.getmtime(fn)
@@ -141,7 +141,7 @@ def nbdev_clean(
     _write = partial(process_write, warn_msg='Failed to clean notebook', proc_nb=_clean)
     if stdin: return _write(f_in=sys.stdin, f_out=sys.stdout)
     if fname is None: fname = get_config().nbs_path
-    for f in globtastic(fname, file_glob='*.ipynb', skip_folder_re='^[_.]'): _write(f_in=f, disp=disp)
+    for f in globtastic(fname, file_re=r'.*\.ipynb$', skip_folder_re='^[_.]'): _write(f_in=f, disp=disp) # Don't clean .qmd files
 
 # %% ../nbs/api/11_clean.ipynb
 def clean_jupyter(path, model, **kwargs):

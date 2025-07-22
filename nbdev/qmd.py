@@ -4,13 +4,110 @@
 
 # %% ../nbs/api/15_qmd.ipynb 2
 from __future__ import annotations
-import sys,os,inspect
+from .config import *
+from execnb.nbio import *
+from pathlib import Path
+import re
+
+import sys,os,inspect,shutil
 
 from fastcore.utils import *
+from fastcore.script import *
 from fastcore.meta import delegates
 
 # %% auto 0
-__all__ = ['meta', 'div', 'img', 'btn', 'tbl_row', 'tbl_sep']
+__all__ = ['read_qmd', 'read_nb_or_qmd', 'write_qmd', 'write_nb_or_qmd', 'meta', 'div', 'img', 'btn', 'tbl_row', 'tbl_sep',
+           'ipynb_to_qmd', 'qmd_to_ipynb']
+
+# %% ../nbs/api/15_qmd.ipynb
+def _qmd_to_raw_cell(source:str, cell_type:str, qmd_metadata=None):
+    """Create a default ipynb json cell"""
+    cell = {'cell_type': cell_type, 'metadata': {}, 'source': source}
+    if cell_type == 'code':
+        cell['execution_count'] = None
+        cell['outputs'] = []
+        if qmd_metadata: cell['qmd_metadata'] = qmd_metadata
+    return cell
+
+def read_qmd(path:str): 
+    """Reads a .qmd file as an nb compatible with the rest of execnb and nbdev"""
+    content = Path(path).read_text(encoding='utf-8')
+    cell_pat = re.compile(r"^(`{3,})\s*\{python([^\}]*)\}\s*\n(.*?)^\1\s*$", re.MULTILINE | re.DOTALL)
+    
+    parts = cell_pat.split(content)
+    raw_cells = []
+    
+    # Handle the first markdown segment (before any code cells, or all content if no code cells)
+    initial_md_source = parts[0].strip()
+    if initial_md_source: raw_cells.append(_qmd_to_raw_cell(initial_md_source, 'markdown'))
+    
+    # 4 items per match: [md, backticks, metadata?, code]
+    for i in range(1, len(parts), 4):
+        if i + 2 < len(parts):  # backticks, metadata, code
+            metadata = parts[i+1]  # The captured metadata
+            code_source = parts[i+2].strip()  # The captured code
+            if code_source: raw_cells.append(_qmd_to_raw_cell(code_source, 'code', metadata if metadata else None))
+        if i + 3 < len(parts):  # intermediate markdown
+            intermediate_md_source = parts[i+3].strip()
+            if intermediate_md_source: raw_cells.append(_qmd_to_raw_cell(intermediate_md_source, 'markdown'))
+                
+    # Construct the final notebook dictionary
+    notebook_dict = {
+        'cells': raw_cells,
+        'metadata': {
+            'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'},
+            'language_info': {'name': 'python'},
+            'path': str(path)
+        },
+        'nbformat': 4,
+        'nbformat_minor': 5,
+        'path_': str(path)
+    }
+    
+    return dict2nb(notebook_dict)
+
+def read_nb_or_qmd(path:str):
+    if Path(path).suffix == '.qmd': return read_qmd(path)
+    return read_nb(path)
+
+
+# %% ../nbs/api/15_qmd.ipynb
+def _get_fence_ticks(source:str):
+    """Determine the number of backticks needed for fencing that won't conflict with source"""
+    if '`' not in source: return '```'  # Default to 3 if no backticks in source
+    
+    # Find all sequences of consecutive backticks
+    import re
+    backtick_sequences = re.findall(r'^`{3,}\s*$', source, flags=re.MULTILINE)
+    if not backtick_sequences: return '```'
+    used_lengths = set(len(s) for s in backtick_sequences)
+    # Find first integer >= 3 that's not in used_lengths
+    num_ticks = 3
+    while num_ticks in used_lengths: num_ticks += 1
+    return '`' * num_ticks
+
+def _nb_to_qmd_str(nb: AttrDict):
+    """Convert a notebook to a string in .qmd format"""
+    def cell_to_qmd(cell):
+        source = cell.source.rstrip('\n')
+        if cell.cell_type in ['markdown', 'raw']: return source
+        elif cell.cell_type == 'code':
+            fence_ticks = _get_fence_ticks(source)
+            qmd_metadata = getattr(cell, 'qmd_metadata', None)
+            if qmd_metadata: return f'```{{python{qmd_metadata}}}\n{source}\n```'
+            else: return f'{fence_ticks}{{python}}\n{source}\n{fence_ticks}'
+        return ''
+    return '\n\n'.join(filter(None, [cell_to_qmd(cell) for cell in nb.cells]))
+
+def write_qmd(nb: AttrDict, path:str):
+    """Write a notebook back to .qmd format"""
+    qmd_str = _nb_to_qmd_str(nb)
+    Path(path).write_text(qmd_str, encoding='utf-8')
+    
+def write_nb_or_qmd(nb: AttrDict, path:str):
+    if Path(path).suffix == '.qmd': write_qmd(nb, path)
+    else: write_nb(nb, path)
+
 
 # %% ../nbs/api/15_qmd.ipynb
 def meta(md,  # Markdown to add meta to
@@ -89,3 +186,135 @@ pip install -U nbdev
 conda install -c fastai nbdev
 ```
 ''', ['panel-tabset'])
+
+# %% ../nbs/api/15_qmd.ipynb
+@call_parse
+def ipynb_to_qmd(
+    source_folder: str,  # Source folder containing .ipynb files
+    dest_folder: str  # Destination folder for .qmd files and copied items
+):
+    "Converts .ipynb files from source_folder to .qmd files in dest_folder. Other files are copied directly."
+    source_dir = Path(source_folder)
+    dest_dir = Path(dest_folder)
+
+    if not source_dir.is_dir():
+        print(f"Error: Source directory '{source_dir.resolve()}' does not exist or is not a directory.")
+        return
+
+    print(f"Source directory: {source_dir.resolve()}")
+    print(f"Destination directory: {dest_dir.resolve()}")
+    
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Ensured destination directory exists: {dest_dir}")
+
+    total_files_processed = 0
+    notebooks_converted = 0
+    files_copied = 0
+    errors_encountered = 0
+
+    for root, _, files in os.walk(source_dir):
+        current_source_dir = Path(root)
+        # Calculate path relative to the initial source_dir
+        # to replicate the structure in dest_dir
+        relative_subdir_path = current_source_dir.relative_to(source_dir)
+        current_dest_dir = dest_dir / relative_subdir_path
+        
+        # Ensure the subdirectory structure exists in the destination
+        # (os.walk guarantees `root` exists, so mkdir for current_dest_dir is usually fine)
+        current_dest_dir.mkdir(parents=True, exist_ok=True)
+
+        for filename in files:
+            total_files_processed += 1
+            source_file_path = current_source_dir / filename
+            
+            if source_file_path.name.startswith('.'): # Skip hidden files like .DS_Store
+                print(f"Skipping hidden file: {source_file_path}")
+                # Decrement count as we are not "processing" it in terms of conversion/copy
+                total_files_processed -=1 
+                continue
+
+            if source_file_path.is_dir(): # Should not happen with os.walk's `files` list, but as a safeguard
+                print(f"Skipping directory listed as file: {source_file_path}")
+                total_files_processed -=1
+                continue
+
+            if source_file_path.suffix == ".ipynb":
+                # Prepare destination path for .qmd file
+                dest_qmd_filename = source_file_path.stem + ".qmd"
+                dest_file_path = current_dest_dir / dest_qmd_filename
+                
+                print(f"Processing for conversion: {source_file_path} -> {dest_file_path}")
+                try:
+                    # For .ipynb, read_nb_or_qmd will use read_nb from execnb
+                    notebook_object = read_nb_or_qmd(source_file_path)
+                    write_qmd(notebook_object, dest_file_path)
+                    print(f"  Successfully converted '{source_file_path.name}' to '{dest_file_path.name}'")
+                    notebooks_converted +=1
+                except Exception as e:
+                    print(f"  Error converting {source_file_path}: {e}")
+                    errors_encountered +=1
+            else:
+                # For any other file type, copy it directly
+                dest_file_path = current_dest_dir / filename
+                print(f"Copying: {source_file_path} -> {dest_file_path}")
+                try:
+                    shutil.copy2(source_file_path, dest_file_path) # copy2 preserves metadata
+                    print(f"  Successfully copied '{source_file_path.name}'")
+                    files_copied += 1
+                except Exception as e:
+                    print(f"  Error copying {source_file_path}: {e}")
+                    errors_encountered +=1
+    
+    print(f"\n--- Conversion Summary ---")
+    print(f"Total items scanned in source: {total_files_processed}")
+    print(f"Notebooks converted to .qmd: {notebooks_converted}")
+    print(f"Other files copied: {files_copied}")
+    if errors_encountered > 0:
+        print(f"Errors encountered: {errors_encountered}")
+    print(f"Output located in: {dest_dir.resolve()}") 
+
+# %% ../nbs/api/15_qmd.ipynb
+@call_parse
+def qmd_to_ipynb(
+    source_folder: str,  # Source folder containing .qmd files
+    dest_folder: str,  # Destination folder for .ipynb files and copied items
+    copy_other_files: bool_arg = True  # Whether to copy other files directly
+):
+    """Convert .qmd files from source_folder to .ipynb files in dest_folder"""
+    source_dir = Path(source_folder)
+    dest_dir = Path(dest_folder)
+
+    if not source_dir.is_dir():
+        print(f"Error: Source directory '{source_dir.resolve()}' does not exist.")
+        return
+
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    for root, _, files in os.walk(source_dir):
+        current_source_dir = Path(root)
+        relative_subdir_path = current_source_dir.relative_to(source_dir)
+        current_dest_dir = dest_dir / relative_subdir_path
+        current_dest_dir.mkdir(parents=True, exist_ok=True)
+        
+        for filename in files:
+            source_file_path = current_source_dir / filename
+            suffix = source_file_path.suffix
+            
+            if suffix in [".qmd", ".ipynb"]:
+                # Convert .qmd to .ipynb
+                if suffix == ".qmd": dest_filename = source_file_path.stem + ".ipynb"
+                else: dest_filename = source_file_path.name
+                dest_file_path = current_dest_dir / dest_filename
+                
+                try:
+                    nb = read_nb_or_qmd(source_file_path)
+                    write_nb(nb, dest_file_path)
+                    print(f"Converted: {source_file_path} -> {dest_file_path}")
+                except Exception as e:
+                    print(f"Error converting {source_file_path}: {e}")
+            else:
+                # Copy other files directly
+                if copy_other_files:
+                    dest_file_path = current_dest_dir / filename
+                    shutil.copy2(source_file_path, dest_file_path)
+
