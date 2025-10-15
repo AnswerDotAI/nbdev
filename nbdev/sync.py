@@ -57,7 +57,7 @@ def _update_nb(nb_path, cells, lib_dir):
         nbcell = nbp.nb.cells[cell.idx]
         dirs,_ = _partition_cell(nbcell, 'python')
         nbcell.source = ''.join(dirs) + _to_absolute(cell.code, cell.py_path, lib_dir)
-    write_nb(nbp.nb, nb_path)
+    write_nb_or_qmd(nbp.nb, nb_path)
 
 # %% ../nbs/api/06_sync.ipynb
 def _update_mod(py_path, lib_dir):
