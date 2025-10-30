@@ -1,0 +1,71 @@
+---
+title: Example Project (from YAML)
+---
+
+
+# Example Project
+> Example project
+
+
+```{python}
+#| echo: false
+# from example_proj.core import *
+```
+
+With an executable print example:
+
+```{python .metadata thiskey=islost}
+#| echo: true 
+print(3+4)
+```
+
+This file will become your README and also the index of your documentation.
+
+## Developer Guide
+
+If you are new to using `nbdev` here are some useful pointers to get you started.
+
+### Install example_proj in Development mode
+
+```sh
+# make sure example_proj package is installed in development mode
+$ pip install -e .
+
+# make changes under nbs/ directory
+# ...
+
+# compile to have changes apply to example_proj
+$ nbdev_prepare
+```
+
+## Usage
+
+### Installation
+
+Install latest from the GitHub [repository][repo]:
+
+```sh
+$ pip install ...
+```
+
+or from [conda][conda]
+
+```sh
+$ conda install -c ...
+```
+
+or from [pypi][pypi]
+
+
+```sh
+$ pip install ...
+```
+
+## How to use
+
+Fill me in please! Don't forget code examples:
+
+
+```{python}
+1+1
+```

@@ -1,0 +1,183 @@
+---
+title: Foo
+execute:
+  echo: false
+---
+
+# A Title
+
+> A description
+
+This notebook is used to demonstrate and test all the features of nbdev's export functionality. See the notebooks in `nbs` for how it's used.
+
+
+```{python}
+#|export
+from __future__ import print_function
+```
+
+
+```{python}
+#|export
+from __future__ import absolute_import
+from fastcore.utils import patch,patch_to
+```
+
+
+```{python}
+#|hide
+#|default_exp everything
+#|default_cls_lvl 3
+```
+
+Each symbol name below has >=2 parts, split on `_`. First part is a unique name. Second is `y` if it should be exported. Third is `nall` if it shouldn't appear in `__all__`.
+
+
+```{python}
+import nbdev.x,y,nbdev.z
+from nbdev.x import *
+```
+
+
+```{python}
+#|export
+def a_y(): ...
+```
+
+
+```{python}
+#|export
+def a_y(f): # should only appear once
+    def ai_n(): ...
+    class a2i_n(): ...
+    return f
+```
+
+
+```{python}
+#|hide
+#|export
+def b_y(a:bool)->int: ...
+```
+
+
+```{python}
+#|exporti
+#just another comment
+def c_y_nall(): ...
+```
+
+
+```{python}
+#|export
+class d_y():
+    def di_n(): ...
+    class d2i_n(): ...
+
+@a_y
+async def e_y(): ...
+```
+
+
+```{python}
+#|export
+@patch
+def d3i_n(self:d_y): ...
+```
+
+
+```{python}
+#|export
+@patch_to(d_y)
+def d4i_n(self): ...
+```
+
+
+```{python}
+#|export
+def _f_y_nall(): ...
+```
+
+
+```{python}
+#|export some.thing
+def h_n(): ...
+```
+
+
+```{python}
+def i_n(): ...
+```
+
+
+```{python}
+def j_n(): ...
+#|export
+```
+
+
+```{python}
+#export is used in a full sentence here
+#therefore this is not exported
+def k_n(): ...
+```
+
+
+```{python}
+#exporting
+def l_n(): ...
+```
+
+
+```{python}
+#|export
+m_y = n_y = 1
+```
+
+
+```{python}
+#|export
+exec("o_y=1")
+exec("p_y=1")
+_all_ = [o_y, 'p_y']
+```
+
+
+```{python}
+#|export
+q_y,_r_n = (1,1)
+```
+
+
+```{python}
+#|export
+a_y.test = 1
+```
+
+
+```{python}
+#|printme testing
+_tmp = "Cell for testing processor subclass"
+```
+
+
+```{python}
+%%html
+<b>a test</b>
+```
+
+
+```{python}
+print('\033[94mhello')
+```
+
+
+```{python}
+#|eval:false
+print("do not print me!")
+```
+
+
+```{python}
+
+```

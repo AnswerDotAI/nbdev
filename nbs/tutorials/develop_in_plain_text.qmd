@@ -1,0 +1,149 @@
+# Develop in plain text
+> Avoid the overhead of developing in .ipynb notebooks while working in plain text.
+
+- order: 10
+
+Using [quarto](https://quarto.org/docs/get-started/hello/vscode.html) and its [VS code extension](https://marketplace.visualstudio.com/items?itemName=quarto.quarto), it is possible to use `.qmd` files instead of `.ipynb` files for a interactive, plain text library development experience using `nbdev`. That `.qmd` files are plain text comes with several advantages:
+
+1. 🤖 `.qmd` **seamlessly integrates with AI copilots** (e.g., Cursor) with no overhead of a special notebook extension
+2. 🔄 `.qmd` is **fully compatible with standard git tooling**. No need for special notebook diff tools
+3. 🪄 `.qmd` **works with your favorite editing style** (e.g., VIM)
+4. 🫧 `.qmd` **source files stay clean** during `nbdev`'s transpilation process. You don't need a special `nbdev_clean` step to remove cell metadata and outputs.
+
+All this while remaining fully interactive thanks to VSCode's [interactive window](https://code.visualstudio.com/docs/python/jupyter-support-py).
+
+Starting from version YYY, `nbdev` will automatically support both `.qmd` files and `.ipynb` files for authoring the main library code+docs+tests.
+
+:::{.callout-warning}
+Ensure that all files under your `nbs/` directory have distinct names. E.g., do not have both `00_core.ipynb` and `00_core.qmd`, as both of these will create the intermediate `_proc/00_core.ipynb`
+:::
+
+
+## Helpful hotkeys
+
+Below are some helpful quarto hotkeys that have no keyboard shortcuts by default. Feel free to adjust the keybindings to your liking.
+
+| Command | Hotkey |
+|--------|---------|
+| "editor.action.showDefinitionPreviewHover" | `shift+tab` |
+| "quarto.insertCodeCell" | `cmd+shift+;` |
+| "jupyter.execSelectionInteractive" | `cmd+' cmd+'` |
+| "quarto.runCellsAbove" | `shift+cmd+,` |
+| "quarto.runCellsBelow" | `shift+cmd+.` |
+| "quarto.runAllCells" | `cmd+shift+'` |
+
+::: {.callout-note collapse="true"}
+## Or copy the following json to your user settings
+Use `Cmd+Shift+P` > "Preferences: Open User Settings (JSON)" to open your user settings. Then copy and paste the following json:
+
+```js
+    {
+        "key": "shift+tab",
+        "command": "editor.action.showDefinitionPreviewHover"
+    },
+	{
+		"key": "shift+cmd+;",
+		"command": "quarto.insertCodeCell",
+		"when": "editorTextFocus && !findInputFocussed && !replaceInputFocussed && editorLangId == 'quarto'"
+	},
+    {
+        "key": "cmd+' cmd+'",
+        "command": "jupyter.execSelectionInteractive",
+        "when": "editorTextFocus && isWorkspaceTrusted && !findInputFocussed && !notebookEditorFocused && !replaceInputFocussed && (editorLangId == 'markdown' || editorLangId == 'quarto' || editorLangId == 'python')"
+    },
+	{
+		"key": "shift+cmd+,",
+		"command": "quarto.runCellsAbove",
+		"when": "editorTextFocus && !findInputFocussed && !replaceInputFocussed && editorLangId == 'quarto'"
+	},
+	{
+		"key": "shift+cmd+,",
+		"command": "quarto.runCellsAbove",
+		"when": "activeCustomEditorId == 'quarto.visualEditor'"
+	},
+	{
+		"key": "shift+cmd+.",
+		"command": "quarto.runCellsBelow",
+		"when": "editorTextFocus && !findInputFocussed && !replaceInputFocussed && editorLangId == 'quarto'"
+	},
+	{
+		"key": "shift+cmd+.",
+		"command": "quarto.runCellsBelow",
+		"when": "activeCustomEditorId == 'quarto.visualEditor'"
+	},
+    {
+		"key": "shift+cmd+'",
+		"command": "quarto.runAllCells",
+		"when": "editorTextFocus && !findInputFocussed && !replaceInputFocussed && editorLangId == 'quarto'"
+	},
+    {
+		"key": "shift+cmd+'",
+		"command": "quarto.runAllCells",
+		"when": "activeCustomEditorId == 'quarto.visualEditor'"
+	},
+```
+
+:::
+
+## Helpful VSCode settings
+Open your VSCode settings (`Cmd+Shift+P` > "Preferences: Open User Settings (JSON)") and enable the following:
+
+- **Enable `Interactive Window: Execute with Shift+Enter`** --- Run code like you would with jupyter
+- **Set `Jupyter > Interactive Window: Creation Mode` to `perFile`** --- Each file has its own dedicated kernel, just like in jupyter
+- **Enable `Jupyter > Interactive Window > Text Editor: Magic commands as comments`** --- When checked, lets us use jupyter magics for cells made in plain text files (otherwise the `%` symbols break the interactive python)
+
+:::{.callout-note collapse="true"}
+## Or copy and paste the following into your user settings
+```js
+//...
+    "interactiveWindow.executeWithShiftEnter": true,
+    "jupyter.interactiveWindow.creationMode": "perFile",
+    "jupyter.interactiveWindow.textEditor.magicCommandsAsComments": true,
+    "jupyter.interactiveWindow.textEditor.autoAddNewCell": false
+//...
+```
+:::
+
+
+
+## Run `nbdev_export` in VSCode on file save
+
+> Never let your `.qmd` source get out of sync with your `.py` library. 
+
+Automatically run `nbdev_export` on save to keep your `.qmd` source in sync with your `.py` library.
+
+1. Install the [`Run on Save`](https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave) VSCode extension
+2. Copy and paste the following into your user/workspace settings (`Cmd+Shift+P` then either "Preferences: Open User settings (JSON)" or "Preferences: Open Workspace settings (JSON)")
+
+```js
+{
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true,
+    },
+    "emeraldwalk.runonsave": {
+        "commands": [
+        {
+            "match": "nbs/.*\\.qmd$", // Replace with your own nbs/ directory
+            "cmd": "source ${workspaceFolder}/.venv/bin/activate && nbdev_export", // Replace with a path to your python env where `nbdev` is installed
+        }
+        ]
+    }
+}
+```
+
+Now whenever you save a `.qmd` file, `nbdev_export` will automatically compile your source code for you (this approach will also work for .ipynb files if you update the `match` pattern to `nbs/.*\\.ipynb$`).
+
+You will still need to run `nbdev_prepare` to test the notebooks and generate the docs.
+
+## Convert existing .ipynb codebase to .qmd
+
+So you have an existing `.ipynb` codebase written in the `nbs/` directory that you want to convert to `.qmd` files. 
+
+Converting to `.qmd` is easy:
+
+1. Run `nbdev_ipynb_to_qmd nbs nbs_qmd && mv nbs nbs_ipynb && mv nbs_qmd nbs` to convert your `.ipynb` files to `.qmd` files (feel free to `rm -r nbs_ipynb`)
+2. Update the `readme_nb` in `settings.ini` to be the new `.qmd` file
+3. Run `nbdev_prepare`

@@ -46,7 +46,9 @@ def _proc_file(s, cache, path, mtime=None):
         if s.stat().st_mtime<=dtime: return
 
     d.parent.mkdir(parents=True, exist_ok=True)
-    if s.suffix=='.ipynb': return s,d,FilterDefaults
+    if s.suffix in ['.ipynb','.qmd']: 
+        if s.name == 'index.qmd': copy2(s,d)
+        return s,d,FilterDefaults
     md = _is_qpy(s)
     if md is not None: return s,d,md.strip()
     else: copy2(s,d)

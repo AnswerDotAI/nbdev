@@ -22,25 +22,56 @@ _RE_FM_BASE=r'''^---\s*
 _re_fm_nb = re.compile(_RE_FM_BASE+'$', flags=re.DOTALL)
 _re_fm_md = re.compile(_RE_FM_BASE, flags=re.DOTALL)
 
+_re_fm_title_desc = re.compile(r'^#\s+(\S.*?)(?:\n|$)(?:\s*\n)*(?:>\s+(\S.*?)(?:\n|$)(?:\s*\n)*)?', flags=re.MULTILINE)
+_re_fm_kv = re.compile(r'^((?:\s*-\s+[a-zA-Z_][a-zA-Z0-9_-]*\s*:\s+.*(?:\n|$)|\s*\n)*)', flags=re.MULTILINE)
+
+def _parse_kv_block(block_text: str):
+    """Parse a block of key-value pairs from lines starting with '-'"""
+    if not block_text.strip(): return {}
+    kv_lines = []
+    for line in block_text.split('\n'):
+        line = line.strip()
+        if line.startswith('-'):
+            kv_content = line[1:].strip()  # Remove the '-' and strip whitespace
+            if kv_content: kv_lines.append(kv_content)
+    if not kv_lines: return {}
+    try: return yaml.safe_load('\n'.join(kv_lines))
+    except Exception as e:
+        warn(f'Failed to create YAML dict for:\n{kv_lines}\n\n{e}\n')
+        return {}
+
+def _md2dict(s:str):
+    "Convert custom H1 formatted markdown cell to frontmatter dict"
+    if '#' not in s: return {}
+    res = {}
+    remaining_start = 0
+    
+    # Extract title and description
+    title_desc_match = _re_fm_title_desc.match(s)
+    if not title_desc_match: return {}
+    res['title'] = title_desc_match.group(1)
+    if title_desc_match.group(2): res['description'] = title_desc_match.group(2)
+    remaining_start = title_desc_match.end()
+    
+    # Extract KV pairs starting from where title/desc ended
+    kv_text = s[remaining_start:]
+    kv_match = _re_fm_kv.match(kv_text)
+    if kv_match:
+        kv_dict = _parse_kv_block(kv_match.group(1))
+        res.update(kv_dict)
+        remaining_start += kv_match.end()
+    
+    # Extract remaining content
+    remaining = s[remaining_start:].strip()
+    if remaining: res['__remaining'] = remaining
+    
+    return res
+
 def _fm2dict(s:str, nb=True):
     "Load YAML frontmatter into a `dict`"
     re_fm = _re_fm_nb if nb else _re_fm_md
     match = re_fm.search(s.strip())
     return yaml.safe_load(match.group(1)) if match else {}
-
-def _md2dict(s:str):
-    "Convert H1 formatted markdown cell to frontmatter dict"
-    if '#' not in s: return {}
-    m = re.search(r'^#\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
-    if not m: return {}
-    res = {'title': m.group(1)}
-    m = re.search(r'^>\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
-    if m: res['description'] = m.group(1)
-    r = re.findall(r'^-\s+(\S.*:.*\S)\s*$', s, flags=re.MULTILINE)
-    if r:
-        try: res.update(yaml.safe_load('\n'.join(r)))
-        except Exception as e: warn(f'Failed to create YAML dict for:\n{r}\n\n{e}\n')
-    return res
 
 # %% ../nbs/api/09_frontmatter.ipynb
 def _dict2fm(d): return f'---\n{yaml.dump(d)}\n---\n\n'
@@ -48,19 +79,26 @@ def _insertfm(nb, fm): nb.cells.insert(0, mk_cell(_dict2fm(fm), 'raw'))
 
 class FrontmatterProc(Processor):
     "A YAML and formatted-markdown frontmatter processor"
-    def begin(self): self.fm = getattr(self.nb, 'frontmatter_', {})
-
+    def begin(self): 
+        self.fm = getattr(self.nb, 'frontmatter_', {})
+        self.is_qmd = hasattr(self.nb, 'path_') and Path(self.nb.path_).suffix == '.qmd'
+        
     def _update(self, f, cell):
         s = cell.get('source')
         if not s: return
         d = f(s)
         if not d: return
+        remaining = d.pop('__remaining', None)
         self.fm.update(d)
+        if remaining:
+            new_cell = mk_cell(remaining, 'markdown')
+            cell_idx = self.nb.cells.index(cell)
+            self.nb.cells.insert(cell_idx + 1, new_cell)
         cell.source = None
 
     def cell(self, cell):
         if cell.cell_type=='raw': self._update(_fm2dict, cell)
-        elif cell.cell_type=='markdown' and 'title' not in self.fm: self._update(_md2dict, cell)
+        elif (cell.cell_type=='markdown' and 'title' not in self.fm): self._update(_md2dict, cell)
 
     def end(self):
         self.nb.frontmatter_ = self.fm
