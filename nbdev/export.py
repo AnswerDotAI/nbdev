@@ -85,7 +85,7 @@ def nb_export(nbname:str,        # Filename of notebook
             all_cells = exp.in_all[mod]
             nm = ifnone(name, getattr(exp, 'default_exp', None) if mod=='#' else mod)
             if not nm:
-                warn(f"Notebook '{nbname}' uses `#|export` without `#|default_exp` cell.\n"
+                warn(f"Notebook '{nbname}' uses `#| export` without `#| default_exp` cell.\n"
                      "Note nbdev2 no longer supports nbdev1 syntax. Run `nbdev_migrate` to upgrade.\n"
                      "See https://nbdev.fast.ai/getting_started.html for more information.")
                 return

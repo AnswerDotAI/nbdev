@@ -65,16 +65,16 @@ First, lets import the libraries we need, which in this case are `gradio` and `f
 
 
 ```python
-#|export
+#| export
 import gradio as gr
 from fastcore.net import urljson, HTTPError
 ```
 
-Next, write the functions your gradio app will use.  Because of [nbdev](https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/), you can prototype and package your code all in one place.  **The special comment `#|export` marks which cells will be sent to a python script** (more on this later). Note that there are only three cells in this notebook with the `#|export` directive.
+Next, write the functions your gradio app will use.  Because of [nbdev](https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/), you can prototype and package your code all in one place.  **The special comment `#| export` marks which cells will be sent to a python script** (more on this later). Note that there are only three cells in this notebook with the `#| export` directive.
 
 
 ```python
-#|export
+#| export
 def size(repo:str):
     "Returns the size in GB of a HuggingFace Dataset."
     url = f'https://huggingface.co/api/datasets/{repo}'
@@ -103,7 +103,7 @@ You can construct a simple UI with the `gradio.interface` and then call the `lau
 
 
 ```python
-#|export
+#| export
 iface = gr.Interface(fn=size, inputs=gr.Text(value="tglcourse/CelebA-faces-cropped-128"), outputs="text")
 iface.launch(height=450, width=500)
 ```
@@ -138,7 +138,7 @@ iface.close()
 
 ## 4. Convert This Notebook Into A Gradio App
 
-In order to host this code on Hugging Face Spaces, you will export parts of this notebook to a script named `app.py`.  As a reminder, this is what the special `#|export` comment that you have seen in cells above do!  You can export code from this notebook like so:
+In order to host this code on Hugging Face Spaces, you will export parts of this notebook to a script named `app.py`.  As a reminder, this is what the special `#| export` comment that you have seen in cells above do!  You can export code from this notebook like so:
 
 
 ```python

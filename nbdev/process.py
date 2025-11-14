@@ -35,7 +35,7 @@ def _quarto_re(lang=None): return re.compile(_dir_pre(lang) + r'\s*[\w|-]+\s*:')
 # %% ../nbs/api/03_process.ipynb
 def _directive(s, lang='python'):
     s = re.sub('^'+_dir_pre(lang), f"{langs[lang]}|", s)
-    if s.strip().endswith(':'): s = s.replace(':', '') # You can append colon at the end to be Quarto compliant.  Ex: #|hide:
+    if s.strip().endswith(':'): s = s.replace(':', '') # You can append colon at the end to be Quarto compliant.  Ex: #| hide:
     if ':' in s: s = s.replace(':', ': ')
     s = (s.strip()[2:]).strip().split()
     if not s: return None
