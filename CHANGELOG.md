@@ -339,7 +339,7 @@
 - fix exporting `patch_to` which is decorated with `staticmethod` ([#1100](https://github.com/fastai/nbdev/pull/1100)), thanks to [@seeM](https://github.com/seeM)
 - `show_doc` errors if a dependency in the `nbdev` group has a sub-dependency that isn't installed ([#1097](https://github.com/fastai/nbdev/issues/1097))
 - Running `nbdev_migrate` while upgrading removes nbdev2 compatible directives ([#1089](https://github.com/fastai/nbdev/issues/1089))
-- respect `#|hide` and `#|include: false` for showdoc ([#1079](https://github.com/fastai/nbdev/pull/1079)), thanks to [@hamelsmu](https://github.com/hamelsmu)
+- respect `#| hide` and `#| include: false` for showdoc ([#1079](https://github.com/fastai/nbdev/pull/1079)), thanks to [@hamelsmu](https://github.com/hamelsmu)
 - Export class to library but hide from documentation ([#1076](https://github.com/fastai/nbdev/issues/1076))
 - `nbdev_clean` removes widget state ([#1069](https://github.com/fastai/nbdev/issues/1069))
   - If widget state is present, it means the user had intentionally changed settings in their notebook editor.
@@ -493,7 +493,7 @@
 
 ### Bugs Squashed
 
-- Make sure `#|exec_doc` triggers an update even when there is no export or show_doc ([#906](https://github.com/fastai/nbdev/pull/906)), thanks to [@hamelsmu](https://github.com/hamelsmu)
+- Make sure `#| exec_doc` triggers an update even when there is no export or show_doc ([#906](https://github.com/fastai/nbdev/pull/906)), thanks to [@hamelsmu](https://github.com/hamelsmu)
 - allow nbdev directives to work with cell magic ([#905](https://github.com/fastai/nbdev/pull/905)), thanks to [@hamelsmu](https://github.com/hamelsmu)
 
 
@@ -572,7 +572,7 @@
 
 ### Bugs Squashed
 
-- #|exports directive does not show source code in the docs ([#822](https://github.com/fastai/nbdev/issues/822))
+- #| exports directive does not show source code in the docs ([#822](https://github.com/fastai/nbdev/issues/822))
 - nbdev commands fail when `doc_path` contains whitespace ([#813](https://github.com/fastai/nbdev/pull/813)), thanks to [@mone27](https://github.com/mone27)
 - `show_doc` html renderer is incorrectly formatted ([#808](https://github.com/fastai/nbdev/issues/808))
 - `show_doc` cell output is incorrectly styled ([#807](https://github.com/fastai/nbdev/issues/807))
@@ -595,7 +595,7 @@
 - `get_config` works without a settings file ([#768](https://github.com/fastai/nbdev/pull/768)), thanks to [@seeM](https://github.com/seeM)
 - add site url ([#767](https://github.com/fastai/nbdev/pull/767)), thanks to [@hamelsmu](https://github.com/hamelsmu)
 - add `show_src` to display rich source code ([#763](https://github.com/fastai/nbdev/pull/763)), thanks to [@seeM](https://github.com/seeM)
-- add support for `#|exports` ([#762](https://github.com/fastai/nbdev/issues/762))
+- add support for `#| exports` ([#762](https://github.com/fastai/nbdev/issues/762))
 - `nbdev_merge` prints info like `git merge` ([#753](https://github.com/fastai/nbdev/issues/753))
 - helpers to convert fp front matter to quarto front matter ([#750](https://github.com/fastai/nbdev/pull/750)), thanks to [@hamelsmu](https://github.com/hamelsmu)
 - Streamline default settings ([#747](https://github.com/fastai/nbdev/issues/747))

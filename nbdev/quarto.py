@@ -70,7 +70,7 @@ def _sort(a):
     x,y = a
     if y.startswith('index.'): return x,'00'
     return a
-#|export
+#| export
 _def_file_re = r'\.(?:ipynb|qmd|html)$'
 
 @delegates(nbglob_cli)
