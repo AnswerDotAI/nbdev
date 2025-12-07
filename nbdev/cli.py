@@ -101,7 +101,8 @@ def nbdev_new(**kwargs):
     if tag is None:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', UserWarning)
-            tag = GhApi(gh_host='https://api.github.com', authenticate=False).repos.get_latest_release(org_or_usr, repo).tag_name
+            tag = GhApi(gh_host='https://api.github.com', authenticate=False
+                       ).repos.get_latest_release(org_or_usr, repo).tag_name
 
     url = f"https://github.com/{org_or_usr}/{repo}/archive/{tag}.tar.gz"
     extract_tgz(url)
