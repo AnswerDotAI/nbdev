@@ -188,7 +188,7 @@ def watch_export(nbs:str=None, # Nb directory to watch for changes
     run(f'nbdev_export')
     def _export(e,lib=lib):
         p = e.src_path
-        if (not '.ipynb_checkpoints' in p and p.endswith('.ipynb') and not Path(p).name.startswith('.~')):
+        if (not '.ipynb_checkpoints' in p and p.endswith('.ipynb') and not Path(p).name.startswith(('tmp','.~'))):
             if e.event_type == 'modified':
                 time.sleep(0.1)
                 try: run(f'nb_export --lib_path {lib} "{p}"')
