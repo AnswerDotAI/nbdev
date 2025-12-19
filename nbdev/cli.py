@@ -185,6 +185,7 @@ def watch_export(nbs:str=None, # Nb directory to watch for changes
     lib = lib or (cfg.lib_path if cfg else '.')
     if cfg and (nbs != cfg.nbs_path or lib != cfg.lib_path) and not force:
         raise ValueError("In nbdev project. Use --force to override config.")
+    run(f'nbdev_export')
     def _export(e,lib=lib):
         p = e.src_path
         if (not '.ipynb_checkpoints' in p and p.endswith('.ipynb') and not Path(p).name.startswith('.~')):
