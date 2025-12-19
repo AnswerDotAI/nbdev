@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 2.4.7
+
+### New Features
+
+- Run `nbdev_export` at start of `watch_export` ([#1540](https://github.com/AnswerDotAI/nbdev/issues/1540))
+- Retry `watch_export` export if fails ([#1539](https://github.com/AnswerDotAI/nbdev/issues/1539))
+- Remove docments rendering now in fastcore ([#1536](https://github.com/AnswerDotAI/nbdev/issues/1536))
+- Allow `nbdev_clean` to accept multiple filenames or globs (#1480) ([#1488](https://github.com/AnswerDotAI/nbdev/pull/1488)), thanks to [@jbwhit](https://github.com/jbwhit)
+
+### Bugs Squashed
+
+
 ## 2.4.6
 
 ### New Features
