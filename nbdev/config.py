@@ -54,6 +54,8 @@ def _apply_defaults(
     language='English', # Language PyPI classifier
     recursive:bool_arg=True, # Include subfolders in notebook globs?
     black_formatting:bool_arg=False, # Format libraries with black?
+    ruff_formatting:bool_arg=False, # Format libraries with ruff format?
+    ruff_fixing:bool_arg=False, # Fix libraries with ruff check --fix?
     readme_nb='index.ipynb', # Notebook to export as repo readme
     title='%(lib_name)s', # Quarto website title
     allowed_metadata_keys='', # Preserve the list of keys in the main notebook metadata
