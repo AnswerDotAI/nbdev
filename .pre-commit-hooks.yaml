@@ -12,3 +12,9 @@
   name: nbdev_export
   entry: nbdev_export
   description: "Export notebooks to modules and build modidx"
+
+- <<: *hook
+  id: nbdev_docs
+  name: nbdev_docs
+  entry: nbdev_docs
+  description: "Create Quarto docs and README.md"
