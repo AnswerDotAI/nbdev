@@ -16,26 +16,33 @@ from execnb.nbio import *
 # %% ../nbs/api/19_diff.ipynb
 def read_nb_from_git(
     g:Git, # The git object
-    ref, # The git ref to read from (e.g. HEAD)
-    path # The path to the notebook in git
+    path, # The path to the notebook (absolute or relative to git root)
+    ref=None # The git ref to read from (e.g. HEAD); None for working dir
 )->AttrDict: # The notebook
-    "Read notebook from git ref (e.g. HEAD) at path"
+    "Read notebook from git ref (e.g. HEAD) at path, or working dir if ref is None"
+    path = Path(path)
+    if path.is_absolute(): path = path.relative_to(g.top())
+    if ref is None: return read_nb(g.top()/path)
     raw = g.show(f'{ref}:{path}', split=False)
     return dict2nb(json.loads(raw))
+
+# %% ../nbs/api/19_diff.ipynb
+def _nb_srcdict(g:Git, nb_path, ref=None, f=noop):
+    "Dict of id->source"
+    nb = read_nb_from_git(g, nb_path, ref)
+    return {c['id']: f(c) for c in nb.cells}
 
 # %% ../nbs/api/19_diff.ipynb
 def nbs_pair(
     nb_path, # Path to the notebook
     ref_a='HEAD', # First git ref (None for working dir)
-    ref_b=None # Second git ref (None for working dir)
+    ref_b=None, # Second git ref (None for working dir)
+    f=noop  # Function to call on contents
 ): # Tuple of two notebooks
     "NBs at two refs; None means working dir. By default provides HEAD and working dir"
     nb_path = Path(nb_path).resolve()
     g = Git(nb_path.parent)
-    rel = nb_path.relative_to(g.top())
-    nb_a = read_nb_from_git(g, ref_a, str(rel)) if ref_a else read_nb(nb_path)
-    nb_b = read_nb_from_git(g, ref_b, str(rel)) if ref_b else read_nb(nb_path)
-    return nb_a, nb_b
+    return _nb_srcdict(g, nb_path, ref_a, f), _nb_srcdict(g, nb_path, ref_b, f)
 
 # %% ../nbs/api/19_diff.ipynb
 def _cell_changes(
@@ -50,14 +57,12 @@ def _cell_changes(
     outputs=False # Consider cell outputs when comparing
 ): # Dict of results
     "Apply fn(cell_id, old_content, new_content) to changed cells between two refs"
-    nb_a, nb_b = nbs_pair(nb_path, ref_a, ref_b)
     def cell_content(c):
         res = c.get('source', '')
         if metadata: res += '\n# metadata: ' + json.dumps(c.get('metadata', {}), sort_keys=True)
         if outputs: res += '\n# outputs: ' + json.dumps(c.get('outputs', []), sort_keys=True)
         return res
-    old = {c['id']: cell_content(c) for c in nb_a.cells}
-    new = {c['id']: cell_content(c) for c in nb_b.cells}
+    old,new = nbs_pair(nb_path, ref_a, ref_b, f=cell_content)
     res = {}
     if adds: res |= {cid: fn(cid, '', new[cid]) for cid in new if cid not in old}
     if changes: res |= {cid: fn(cid, old[cid], new[cid]) for cid in new if cid in old and new[cid] != old[cid]}
