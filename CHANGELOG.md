@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.4.10
+
+### Breaking Changes
+
+- Remove HTML renderer ([#1550](https://github.com/AnswerDotAI/nbdev/issues/1550))
+
+
 ## 2.4.9
 
 ### New Features
