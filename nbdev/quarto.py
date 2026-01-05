@@ -70,10 +70,10 @@ def _sort(a):
     x,y = a
     if y.startswith('index.'): return x,'00'
     return a
-#| export
+
 _def_file_re = r'\.(?:ipynb|qmd|html)$'
 
-@delegates(nbglob_cli)
+@delegates
 def _nbglob_docs(
     path:str=None, # Path to notebooks
     file_glob:str=None, # Only include files matching glob    

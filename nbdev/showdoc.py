@@ -17,7 +17,7 @@ from textwrap import fill
 from types import FunctionType
 
 # %% auto 0
-__all__ = ['BasicMarkdownRenderer', 'show_doc', 'BasicHtmlRenderer', 'doc', 'showdoc_nm', 'colab_link']
+__all__ = ['BasicMarkdownRenderer', 'show_doc', 'doc', 'showdoc_nm', 'colab_link']
 
 # %% ../nbs/api/08_showdoc.ipynb
 def _ext_link(url, txt, xtra=""): return f'[{txt}]({url}){{target="_blank" {xtra}}}'
@@ -48,55 +48,9 @@ def show_doc(sym,  # Symbol to document
     else:return renderer(sym or show_doc, name=name, title_level=title_level)
 
 # %% ../nbs/api/08_showdoc.ipynb
-def _create_html_table(table_str):
-    def split_row(row):
-        return re.findall(r'\|(?:(?:\\.|[^|\\])*)', row)
-    
-    def unescape_cell(cell): 
-        return cell.strip(' *|').replace(r'\|', '|')
-    
-    lines = table_str.strip().split('\n')
-    header = [f"<th>{unescape_cell(cell)}</th>" for cell in split_row(lines[0])]
-    rows = [[f"<td>{unescape_cell(cell)}</td>" for cell in split_row(line)] for line in lines[2:]]
-    
-    return f'''<table>
-    <thead><tr>{' '.join(header)}</tr></thead>
-    <tbody>{''.join(f'<tr>{" ".join(row)}</tr>' for row in rows)}</tbody>
-    </table>'''
-
-# %% ../nbs/api/08_showdoc.ipynb
-def _html_link(url, txt): return f'<a href="{url}" target="_blank" rel="noreferrer noopener">{txt}</a>'
-
-# %% ../nbs/api/08_showdoc.ipynb
-from fastcore.docments import _fmt_sig
-
-# %% ../nbs/api/08_showdoc.ipynb
-class BasicHtmlRenderer(ShowDocRenderer):
-    "HTML renderer for `show_doc`"
-    def _repr_html_(self):
-        doc = '<hr/>\n'
-        src = NbdevLookup().code(self.fn)
-        doc += f'<h{self.title_level}>{self.nm}</h{self.title_level}>\n'
-        sig = _fmt_sig(self.sig) if self.sig else ''
-        # Escape < and > characters in the signature
-        sig = sig.replace('<', '&lt;').replace('>', '&gt;')
-        doc += f'<blockquote><pre><code>{self.nm} {sig}</code></pre></blockquote>'
-        if self.docs:
-            doc += f"<p><i>{self.docs}</i></p>"
-        if src: doc += f"<br/>{_html_link(src, 'source')}"
-        if self.dm.has_docment: doc += _create_html_table(str(self.dm))
-        return doc
-
-    def doc(self):
-        "Show `show_doc` info along with link to docs"
-        from IPython.display import display,HTML
-        res = self._repr_html_()
-        display(HTML(res))
-
-# %% ../nbs/api/08_showdoc.ipynb
 def doc(elt):
     "Show `show_doc` info along with link to docs"
-    BasicHtmlRenderer(elt).doc()
+    return BasicMarkdownRenderer(elt)
 
 # %% ../nbs/api/08_showdoc.ipynb
 def showdoc_nm(tree):
