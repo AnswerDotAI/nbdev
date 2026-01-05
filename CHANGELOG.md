@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 2.4.8
+
+### New Features
+
+- New `nbdev.diff` module
+- Use threads for `nbdev_release_gh` ([#1547](https://github.com/AnswerDotAI/nbdev/issues/1547))
+- Skip tmp nbs in `watch_export` ([#1541](https://github.com/AnswerDotAI/nbdev/issues/1541))
+
+
 ## 2.4.7
 
 ### New Features
