@@ -2,9 +2,19 @@
 
 ## How to get started
 
-Before anything else, please install the git hooks that run automatic scripts during each commit and merge to strip the notebooks of superfluous metadata (and avoid merge conflicts). After cloning the repository, run the following command inside it:
+Install nbdev in editable mode with development dependencies:
+```sh
+pip install -e '.[dev]'
 ```
+
+Before anything else, please install the git hooks that run automatic scripts during each commit and merge to strip the notebooks of superfluous metadata (and avoid merge conflicts). After cloning the repository, run the following command inside it:
+```sh
 nbdev_install_hooks
+```
+
+Run the test suite to ensure everything is working:
+```sh
+nbdev_test
 ```
 
 ## Did you find a bug?
