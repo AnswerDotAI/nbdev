@@ -146,7 +146,7 @@ def nbglob_cli(
 @delegates(nbglob_cli)
 def nbdev_export(
     path:str=None, # Path or filename
-    procs:Param("tokens naming the export processors to use.", nargs="*", choices=optional_procs())="black_format",
+    procs:Param("tokens naming the export processors to use.", nargs="*", choices=optional_procs())=["black_format", "ruff_format", "ruff_fix"],
     **kwargs):
     "Export notebooks in `path` to Python modules"
     if os.environ.get('IN_TEST',0): return
