@@ -26,7 +26,7 @@ def nbdev_trust(
     fname:str=None,  # A notebook name or glob to trust
     force_all:bool=False  # Also trust notebooks that haven't changed
 ):
-    "Trust notebooks matching `fname`"
+    "Trust notebooks matching `fname`."
     try: from nbformat.sign import NotebookNotary
     except:
         import warnings
@@ -100,6 +100,8 @@ def clean_nb(
     if nb.get('metadata', {}).get('kernelspec', {}).get('name', None):
         nb['metadata']['kernelspec']['display_name'] = nb["metadata"]["kernelspec"]["name"]
     nb['metadata'] = {k:v for k,v in nb['metadata'].items() if k in metadata_keys}
+    # Cell IDs were added in nbformat 4.5
+    if nb.get('nbformat') == 4 and nb.get('nbformat_minor', 0) < 5: nb['nbformat_minor'] = 5
 
 # %% ../nbs/api/11_clean.ipynb #604d83e6
 def _reconfigure(*strms):
