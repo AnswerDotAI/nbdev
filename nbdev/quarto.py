@@ -19,7 +19,7 @@ from .serve import proc_nbs,_proc_file
 from . import serve_drv
 import yaml
 
-# %% auto 0
+# %% auto #0
 __all__ = ['BASE_QUARTO_URL', 'install_quarto', 'install', 'IndentDumper', 'nbdev_sidebar', 'refresh_quarto_yml',
            'nbdev_proc_nbs', 'nbdev_readme', 'nbdev_contributing', 'nbdev_docs', 'prepare', 'fs_watchdog',
            'nbdev_preview']

@@ -16,7 +16,7 @@ from collections import OrderedDict
 from textwrap import fill
 from types import FunctionType
 
-# %% auto 0
+# %% auto #0
 __all__ = ['BasicMarkdownRenderer', 'show_doc', 'doc', 'showdoc_nm', 'colab_link']
 
 # %% ../nbs/api/08_showdoc.ipynb #abe98f5c
