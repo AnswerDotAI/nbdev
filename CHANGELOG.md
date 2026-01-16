@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 2.4.11
+
+### New Features
+
+- Bump `nbformat_minor` to 5 when adding cell IDs ([#1553](https://github.com/AnswerDotAI/nbdev/issues/1553))
+
+### Bugs Squashed
+
+- `nbdev_new` results in creation of template file with incorrect name ([#1551](https://github.com/AnswerDotAI/nbdev/issues/1551))
+
+
 ## 2.4.10
 
 ### Breaking Changes
