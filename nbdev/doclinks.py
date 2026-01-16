@@ -65,7 +65,8 @@ def _iter_py_cells(p):
         else:
             raise ValueError(f"Cell ID required but not found in '{p}' at:\n```\n# %% {top}\n```\n"
                            "Run `nbdev_export` to regenerate .py files with cell IDs.")
-        nb_path = None if nb=='auto' else (p.parent/nb).resolve()  # NB paths are stored relative to .py file
+        if nb=='auto': continue  # Skip auto-generated __all__ cell
+        nb_path = (p.parent/nb).resolve()  # NB paths are stored relative to .py file
         if code.endswith('\n'): code=code[:-1]
         yield AttrDict(nb=nb, cell_id=cell_id, code=code, nb_path=nb_path, py_path=p.resolve())
 
