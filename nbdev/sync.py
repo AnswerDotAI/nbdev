@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['absolute_import', 'nbdev_update']
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #ea6a935c
 from .imports import *
 from .config import *
 from .maker import *
@@ -21,7 +21,7 @@ from fastcore.xtras import *
 import ast
 import importlib
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #fde5667d
 def absolute_import(name, fname, level):
     "Unwarps a relative import in `name` according to `fname`"
     if not level: return name
@@ -29,7 +29,7 @@ def absolute_import(name, fname, level):
     if not name: return '.'.join(mods)
     return '.'.join(mods[:len(mods)-level+1]) + f".{name}"
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #54ab1e17
 @functools.lru_cache(maxsize=None)
 def _mod_files():
     midx_spec = importlib.util.spec_from_file_location("_modidx", get_config().lib_path / "_modidx.py")
@@ -38,41 +38,45 @@ def _mod_files():
 
     return L(files for mod in midx.d['syms'].values() for _,files in mod.values()).unique()
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #64d51ab6
 _re_import = re.compile(r"from\s+\S+\s+import\s+\S")
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #9075f993
 def _to_absolute(code, py_path, lib_dir):
     if not _re_import.search(code): return code
     res = update_import(code, ast.parse(code).body, str(py_path.relative_to(lib_dir).parent), absolute_import)
     return ''.join(res) if res else code
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #27ae8834
 def _update_nb(nb_path, cells, lib_dir):
     "Update notebook `nb_path` with contents from `cells`"
     nbp = NBProcessor(nb_path, ExportModuleProc(), rm_directives=False)
     nbp.process()
+    # Build a dict of cell_id -> cell for fast lookup
+    nb_cells_by_id = {c.get('id'): c for c in nbp.nb.cells if c.get('id')}
     for cell in cells:
         assert cell.nb_path == nb_path
-        nbcell = nbp.nb.cells[cell.idx]
+        if not cell.cell_id: continue  # Skip cells without ID (from old exports)
+        nbcell = nb_cells_by_id.get(cell.cell_id)
+        if nbcell is None:
+            raise ValueError(f"Cell ID '{cell.cell_id}' not found in notebook '{nb_path}'")
         dirs,_ = _partition_cell(nbcell, 'python')
         nbcell.source = ''.join(dirs) + _to_absolute(cell.code, cell.py_path, lib_dir)
     write_nb(nbp.nb, nb_path)
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #46c9e605
 def _update_mod(py_path, lib_dir):
     "Propagate changes from cells in module `py_path` to corresponding notebooks"
     py_cells = L(_iter_py_cells(py_path)).filter(lambda o: o.nb != 'auto')
     for nb_path,cells in groupby(py_cells, 'nb_path').items(): _update_nb(nb_path, cells, lib_dir)
 
-# %% ../nbs/api/06_sync.ipynb
+# %% ../nbs/api/06_sync.ipynb #60b5b528
 @call_parse
 def nbdev_update(fname:str=None): # A Python file name to update
     "Propagate change in modules matching `fname` to notebooks that created them"
     if fname and fname.endswith('.ipynb'): raise ValueError("`nbdev_update` operates on .py files.  If you wish to convert notebooks instead, see `nbdev_export`.")
     if os.environ.get('IN_TEST',0): return
     cfg = get_config()
-    if not cfg.cell_number: raise ValueError("`nbdev_update` does not support without cell_number in .py files. Please check your settings.ini")
     fname = Path(fname or cfg.lib_path)
     lib_dir = cfg.lib_path.parent
     files = globtastic(fname, file_glob='*.py', skip_folder_re='^[_.]').filter(lambda x: str(Path(x).absolute().relative_to(lib_dir) in _mod_files()))

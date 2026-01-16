@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['FrontmatterProc']
 
-# %% ../nbs/api/09_frontmatter.ipynb
+# %% ../nbs/api/09_frontmatter.ipynb #2398f5ef-06d3-4890-8a54-7cf4f81f3894
 from .imports import *
 from .process import *
 from .doclinks import _nbpath2html
@@ -14,7 +14,7 @@ from execnb.nbio import *
 from fastcore.imports import *
 import yaml
 
-# %% ../nbs/api/09_frontmatter.ipynb
+# %% ../nbs/api/09_frontmatter.ipynb #6d13ecdb
 _RE_FM_BASE=r'''^---\s*
 (.*?\S+.*?)
 ---\s*'''
@@ -42,7 +42,7 @@ def _md2dict(s:str):
         except Exception as e: warn(f'Failed to create YAML dict for:\n{r}\n\n{e}\n')
     return res
 
-# %% ../nbs/api/09_frontmatter.ipynb
+# %% ../nbs/api/09_frontmatter.ipynb #1b5d9d32
 def _dict2fm(d): return f'---\n{yaml.dump(d)}\n---\n\n'
 def _insertfm(nb, fm): nb.cells.insert(0, mk_cell(_dict2fm(fm), 'raw'))
 

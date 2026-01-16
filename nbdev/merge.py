@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['conf_re', 'unpatch', 'nbdev_fix', 'nbdev_merge']
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #f2c8f7ea
 from .imports import *
 from .config import *
 from .export import *
@@ -18,7 +18,7 @@ from fastcore import shutil
 import subprocess
 from difflib import SequenceMatcher
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #b496277c
 _BEG,_MID,_END = '<'*7,'='*7,'>'*7
 conf_re = re.compile(rf'^{_BEG}\s+(\S+)\n(.*?)^{_MID}\n(.*?)^{_END}\s+([\S ]+)\n', re.MULTILINE|re.DOTALL)
 
@@ -28,7 +28,7 @@ def _unpatch_f(before, cb1, cb2, c, r):
     r.append(c)
     return cb2
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #92a460f3
 def unpatch(s:str):
     "Takes a string with conflict markers and returns the two original files, and their branch names"
     *main,last = conf_re.split(s)
@@ -38,7 +38,7 @@ def unpatch(s:str):
         c2b = _unpatch_f(before, c2b, c2_branch, c2, r2)
     return ''.join(r1+[last]), ''.join(r2+[last]), c1b, c2b
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #35ff58e3
 def _make_md(code): return [dict(source=f'`{code}`', cell_type="markdown", metadata={})]
 def _make_conflict(a,b, branch1, branch2):
     return _make_md(f'{_BEG} {branch1}') + a+_make_md(_MID)+b + _make_md(f'{_END} {branch2}')
@@ -55,7 +55,7 @@ def _merge_cells(a, b, brancha, branchb, theirs):
         prev_sa,prev_sb = sa+sz,sb+sz
     return res,conflict
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #cc492d30
 @call_parse
 def nbdev_fix(nbname:str, # Notebook filename to fix
                outname:str=None, # Filename of output notebook (defaults to `nbname`)
@@ -77,12 +77,12 @@ def nbdev_fix(nbname:str, # Notebook filename to fix
         else: print("Successfully merged conflicts!")
     return conflict
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #481a6bdf
 def _git_branch_merge():
     try: return only(v for k,v in os.environ.items() if k.startswith('GITHEAD'))
     except ValueError: return
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #801ba5a9
 def _git_rebase_head():
     for d in ('apply','merge'):
         d = Path(f'.git/rebase-{d}')
@@ -91,14 +91,14 @@ def _git_rebase_head():
             msg = run(f'git show-branch --no-name {cmt}')
             return f'{cmt[:7]} ({msg})'
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #a39cf098
 def _git_merge_file(base, ours, theirs):
     "`git merge-file` with expected labels depending on if a `merge` or `rebase` is in-progress"
     l_theirs = _git_rebase_head() or _git_branch_merge() or 'THEIRS'
     cmd = f"git merge-file -L HEAD -L BASE -L '{l_theirs}' {ours} {base} {theirs}"
     return subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
-# %% ../nbs/api/07_merge.ipynb
+# %% ../nbs/api/07_merge.ipynb #40796199
 @call_parse
 def nbdev_merge(base:str, ours:str, theirs:str, path:str):
     "Git merge driver for notebooks"

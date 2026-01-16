@@ -7,7 +7,7 @@ __all__ = ['GH_HOST', 'CONDA_WARNING', 'Release', 'changelog', 'release_git', 'r
            'pypi_details', 'conda_output_path', 'write_conda_meta', 'write_requirements', 'anaconda_upload',
            'release_conda', 'chk_conda_rel', 'release_pypi', 'release_both', 'bump_version', 'nbdev_bump_version']
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #c35cc2b8
 from fastcore.all import *
 from ghapi.core import *
 
@@ -17,16 +17,16 @@ import shutil,subprocess
 
 from .doclinks import *
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #7e554523
 GH_HOST = "https://api.github.com"
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #e220cefa
 def _find_config(cfg_name="settings.ini"):
     cfg_path = Path().absolute()
     while cfg_path != cfg_path.parent and not (cfg_path/cfg_name).exists(): cfg_path = cfg_path.parent
     return Config(cfg_path, cfg_name)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #1972609a
 def _issue_txt(issue):
     res = '- {} ([#{}]({}))'.format(issue.title.strip(), issue.number, issue.html_url)
     if hasattr(issue, 'pull_request'): res += ', thanks to [@{}]({})'.format(issue.user.login, issue.user.html_url)
@@ -43,7 +43,7 @@ def _load_json(cfg, k):
     try: return json.loads(cfg[k])
     except json.JSONDecodeError as e: raise Exception(f"Key: `{k}` in .ini file is not a valid JSON string: {e}")
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #0b36471a
 class Release:
     def __init__(self, owner=None, repo=None, token=None, **groups):
         "Create CHANGELOG.md from GitHub issues"
@@ -65,7 +65,7 @@ class Release:
         return self.gh.issues.list_for_repo(state='closed', sort='created', filter='all', since=self.commit_date, labels=label)
     def _issue_groups(self): return parallel(self._issues, self.groups.keys(), progress=False, threadpool=True)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #aa22dfe3
 @patch
 def changelog(self:Release,
               debug=False): # Just print the latest changes, instead of updating file
@@ -86,7 +86,7 @@ def changelog(self:Release,
     self.changefile.write_text(res)
     run(f'git add {self.changefile}')
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #068421c6
 @patch
 def release(self:Release):
     "Tag and create a release in GitHub for the current version"
@@ -95,7 +95,7 @@ def release(self:Release):
     self.gh.create_release(ver, branch=self.cfg.branch, body=notes)
     return ver
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #22101171
 @patch
 def latest_notes(self:Release):
     "Latest CHANGELOG entry"
@@ -104,7 +104,7 @@ def latest_notes(self:Release):
     if not len(its)>0: return ''
     return '\n'.join(its[1].splitlines()[1:]).strip()
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #01cb1ca4
 @call_parse
 def changelog(
     debug:store_true=False,  # Print info to be added to CHANGELOG, instead of updating file
@@ -114,7 +114,7 @@ def changelog(
     res = Release(repo=repo).changelog(debug=debug)
     if debug: print(res)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #6d3c5cd8
 @call_parse
 def release_git(
     token:str=None  # Optional GitHub token (otherwise `token` file is used)
@@ -123,7 +123,7 @@ def release_git(
     ver = Release(token=token).release()
     print(f"Released {ver}")
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #ad73518a
 @call_parse
 def release_gh(
     token:str=None  # Optional GitHub token (otherwise `token` file is used)
@@ -138,7 +138,7 @@ def release_gh(
     ver = Release(token=token).release()
     print(f"Released {ver}")
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #5b4d4aa2
 from fastcore.all import *
 from .config import *
 from .cli import *
@@ -150,18 +150,18 @@ except ImportError: from pip._vendor.packaging.version import parse
 
 _PYPI_URL = 'https://pypi.org/pypi/'
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #4070bbef
 def pypi_json(s):
     "Dictionary decoded JSON for PYPI path `s`"
     return urljson(f'{_PYPI_URL}{s}/json')
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #1985c8b1
 def latest_pypi(name):
     "Latest version of `name` on pypi"
     return max(parse(r) for r,o in pypi_json(name)['releases'].items()
                if not parse(r).is_prerelease and not nested_idx(o, 0, 'yanked'))
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #ab0bfd9a
 def pypi_details(name):
     "Version, URL, and SHA256 for `name` from pypi"
     ver = str(latest_pypi(name))
@@ -169,7 +169,7 @@ def pypi_details(name):
     rel = [o for o in pypi['urls'] if o['packagetype']=='sdist'][0]
     return ver,rel['url'],rel['digests']['sha256']
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #431f625b
 import shlex
 from subprocess import Popen, PIPE, CalledProcessError
 
@@ -183,12 +183,12 @@ def _run(cmd):
     if p.returncode != 0: raise CalledProcessError(p.returncode, p.args)
     return res
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #6a9d34ab
 def conda_output_path(name, build='build'):
     "Output path for conda build"
     return run(f'conda {build} --output {name}').strip().replace('\\', '/')
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #99fb71c2
 def _write_yaml(path, name, d1, d2):
     path = Path(path)
     p = path/name
@@ -198,7 +198,7 @@ def _write_yaml(path, name, d1, d2):
         yaml.safe_dump(d1, f)
         yaml.safe_dump(d2, f)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #5c78f115
 def _get_conda_meta():
     cfg = get_config()
     name,ver = cfg.lib_name,cfg.version
@@ -240,12 +240,12 @@ def _get_conda_meta():
     }
     return name,d1,d2
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #b911bd4d
 def write_conda_meta(path='conda'):
     "Writes a `meta.yaml` file to the `conda` directory of the current directory"
     _write_yaml(path, *_get_conda_meta())
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #7550557f
 @call_parse
 def write_requirements(path:str=''):
     "Writes a `requirements.txt` file to `directory` based on settings.ini."
@@ -254,7 +254,7 @@ def write_requirements(path:str=''):
     req = '\n'.join([cfg.get(k, '').replace(' ', '\n') for k in ['requirements', 'pip_requirements']])
     (d/'requirements.txt').mk_write(req)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #715ae3ac
 CONDA_WARNING='Conda support for nbdev is deprecated and scheduled for removal in a future version.'
 
 def anaconda_upload(name, loc=None, user=None, token=None, env_token=None):
@@ -267,7 +267,7 @@ def anaconda_upload(name, loc=None, user=None, token=None, env_token=None):
     if not loc: raise Exception("Failed to find output")
     return _run(f'anaconda {token} upload {user} {loc} --skip-existing')
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #952bc33d
 @call_parse
 def release_conda(
     path:str='conda', # Path where package will be created
@@ -299,7 +299,7 @@ def release_conda(
     if 'anaconda upload' not in res: return print(f"{res}\n\nFailed. Check auto-upload not set in .condarc. Try `--do_build False`.")
     return anaconda_upload(name, loc)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #0500d972
 def chk_conda_rel(
     nm:str,  # Package name on pypi
     apkg:str=None,  # Anaconda Package (defaults to {nm})
@@ -313,7 +313,7 @@ def chk_conda_rel(
     pypitag = latest_pypi(nm)
     if force or not condatag or pypitag > max(condatag): return f'{pypitag}'
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #bf55df9b
 @call_parse
 def release_pypi(
     repository:str="pypi" # Respository to upload to (defined in ~/.pypirc)
@@ -323,7 +323,7 @@ def release_pypi(
     system(f'cd {_dir}  && rm -rf dist build && python -m build')
     system(f'twine upload --repository {repository} {_dir}/dist/*')
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #06edfcb0
 @call_parse
 def release_both(
     path:str='conda', # Path where package will be created
@@ -339,7 +339,7 @@ def release_both(
     release_conda.__wrapped__(path, do_build=do_build, build_args=build_args, skip_upload=skip_upload, mambabuild=mambabuild, upload_user=upload_user)
     nbdev_bump_version.__wrapped__()
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #6380dd5a
 def bump_version(version, part=2, unbump=False):
     version = version.split('.')
     incr = -1 if unbump else 1
@@ -347,7 +347,7 @@ def bump_version(version, part=2, unbump=False):
     for i in range(part+1, 3): version[i] = '0'
     return '.'.join(version)
 
-# %% ../nbs/api/18_release.ipynb
+# %% ../nbs/api/18_release.ipynb #c0f64b2c
 @call_parse
 def nbdev_bump_version(
     part:int=2,  # Part of version to bump

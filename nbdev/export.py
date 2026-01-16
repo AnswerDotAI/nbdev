@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['ExportModuleProc', 'black_format', 'scrub_magics', 'optional_procs', 'nb_export']
 
-# %% ../nbs/api/04_export.ipynb
+# %% ../nbs/api/04_export.ipynb #3b932371
 from .config import *
 from .maker import *
 from .imports import *
@@ -18,7 +18,7 @@ from fastcore.meta import *
 
 from collections import defaultdict
 
-# %% ../nbs/api/04_export.ipynb
+# %% ../nbs/api/04_export.ipynb #a62f3967
 class ExportModuleProc:
     "A processor which exports code to a module"
     def begin(self): self.modules,self.in_all = defaultdict(L),defaultdict(L)
@@ -33,7 +33,7 @@ class ExportModuleProc:
         if cell.cell_type=='markdown' and src.startswith('# '): self.modules['#'].append(cell)
     _exports_=_export_
 
-# %% ../nbs/api/04_export.ipynb
+# %% ../nbs/api/04_export.ipynb #6f524839
 def black_format(cell, # Cell to format
                  force=False): # Turn black formatting on regardless of settings.ini
     "Processor to format code with `black`"
@@ -47,7 +47,7 @@ def black_format(cell, # Cell to format
         try: cell.source = _format_str(cell.source).strip()
         except: pass
 
-# %% ../nbs/api/04_export.ipynb
+# %% ../nbs/api/04_export.ipynb #aed6a875
 # includes the newline, because calling .strip() would affect all cells.
 _magics_pattern = re.compile(r'^\s*(%%|%).*\n?', re.MULTILINE)
 
@@ -59,14 +59,14 @@ def scrub_magics(cell): # Cell to format
     try: cell.source = _magics_pattern.sub('', cell.source)
     except: pass
 
-# %% ../nbs/api/04_export.ipynb
+# %% ../nbs/api/04_export.ipynb #d4a5fd8c
 import nbdev.export
 def optional_procs():
     "An explicit list of processors that could be used by `nb_export`"
     return L([p for p in nbdev.export.__all__
               if p not in ["nb_export", "nb_export_cli", "ExportModuleProc", "optional_procs"]])
 
-# %% ../nbs/api/04_export.ipynb
+# %% ../nbs/api/04_export.ipynb #76717e36
 def nb_export(nbname:str,        # Filename of notebook 
               lib_path:str=None, # Path to destination library.  If not in a nbdev project, defaults to current directory.
               procs=None,        # Processors to use

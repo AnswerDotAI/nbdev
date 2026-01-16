@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['test_nb', 'nbdev_test']
 
-# %% ../nbs/api/12_test.ipynb
+# %% ../nbs/api/12_test.ipynb #45e10c3f
 import time,os,sys,traceback,contextlib, inspect
 from fastcore.basics import *
 from fastcore.imports import *
@@ -22,7 +22,7 @@ from .frontmatter import FrontmatterProc
 from execnb.nbio import *
 from execnb.shell import *
 
-# %% ../nbs/api/12_test.ipynb
+# %% ../nbs/api/12_test.ipynb #3f4fa1ad
 def test_nb(fn,  # file name of notebook to test
             skip_flags=None,  # list of flags marking cells to skip
             force_flags=None,  # list of flags marking cells to always run
@@ -57,7 +57,7 @@ def test_nb(fn,  # file name of notebook to test
     if do_print: print(f'- Completed {fn}')
     return res,time.time()-start
 
-# %% ../nbs/api/12_test.ipynb
+# %% ../nbs/api/12_test.ipynb #d8bf1f1b-935d-4b69-ba96-827c5d7213f0
 def _keep_file(p:Path, # filename for which to check for `indicator_fname`
                ignore_fname:str # filename that will result in siblings being ignored
                 ) -> bool:
@@ -65,7 +65,7 @@ def _keep_file(p:Path, # filename for which to check for `indicator_fname`
     if p.exists(): return not bool(p.parent.ls().attrgot('name').filter(lambda x: x == ignore_fname))
     else: True
 
-# %% ../nbs/api/12_test.ipynb
+# %% ../nbs/api/12_test.ipynb #f8cc6a61-a48e-4ab1-89a9-18316ca795d6
 @call_parse
 @delegates(nbglob_cli)
 def nbdev_test(

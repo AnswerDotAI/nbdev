@@ -6,7 +6,7 @@
 __all__ = ['pyproj_tmpl', 'nbdev_create_config', 'get_config', 'config_key', 'is_nbdev', 'create_output', 'show_src',
            'update_version', 'update_proj', 'add_init', 'write_cells']
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #6fd14ecd
 from datetime import datetime
 from fastcore.docments import *
 from fastcore.utils import *
@@ -15,21 +15,21 @@ from fastcore.script import *
 from fastcore.style import *
 from fastcore.xdg import *
 
-import ast
+import ast,warnings
 from IPython.display import Markdown
 from execnb.nbio import read_nb,NbCell
 from urllib.error import HTTPError
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #117128e6
 _nbdev_home_dir = 'nbdev' # sub-directory of xdg base dir
 _nbdev_cfg_name = 'settings.ini'
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #adf0834f
 def _git_repo():
     try: return repo_details(run('git config --get remote.origin.url'))[1]
     except OSError: return
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #efccb7f2
 # When adding a named default to the list below, be sure that that name
 # is also added to one of the sections in `_nbdev_cfg_sections` as well,
 # or it won't get written by `nbdev_create_config`:
@@ -61,12 +61,13 @@ def _apply_defaults(
     jupyter_hooks:bool_arg=False, # Run Jupyter hooks?
     clean_ids:bool_arg=True, # Remove ids from plaintext reprs?
     clear_all:bool_arg=False, # Remove all cell metadata and cell outputs?
-    cell_number:bool_arg=True, # Add cell number to the exported file
     put_version_in_init:bool_arg=True, # Add the version to the main __init__.py in nbdev_export
     update_pyproject:bool_arg=True, # Create/update pyproject.toml with correct project name
     skip_procs:str='', # A comma-separated list of processors that you want to skip
 ):
     "Apply default settings where missing in `cfg`."
+    if 'cell_number' in cfg:
+        warnings.warn("`cell_number` in settings.ini is deprecated and ignored. Cell IDs are now used instead.", DeprecationWarning)
     if getattr(cfg,'repo',None) is None:
         cfg.repo = _git_repo()
         if cfg.repo is None:
@@ -79,7 +80,7 @@ def _apply_defaults(
         cfg[k] = v
     return cfg
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #6eeafafd
 def _get_info(owner, repo, default_branch='main', default_kw='nbdev'):
     from ghapi.all import GhApi
     api = GhApi(owner=owner, repo=repo, token=os.getenv('GITHUB_TOKEN'))
@@ -95,7 +96,7 @@ https://nbdev.fast.ai/api/release.html#setup"""]
     
     return r.default_branch, default_kw if not getattr(r, 'topics', []) else ' '.join(r.topics), r.description
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #35d5c037
 def _fetch_from_git(raise_err=False):
     "Get information for settings.ini from the user."
     res={}
@@ -111,7 +112,7 @@ def _fetch_from_git(raise_err=False):
     else: res['lib_name'] = res['repo'].replace('-','_')
     return res
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #999c74f6
 def _prompt_user(cfg, inferred):
     "Let user input values not in `cfg` or `inferred`."
     res = cfg.copy()
@@ -125,7 +126,7 @@ def _prompt_user(cfg, inferred):
                 print(msg+res[k]+' # Automatically inferred from git')
     return res
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #8348a963
 def _cfg2txt(cfg, head, sections, tail=''):
     "Render `cfg` with commented sections."
     nm = cfg.d.name
@@ -137,7 +138,7 @@ def _cfg2txt(cfg, head, sections, tail=''):
     res += tail
     return res.strip()
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #a4ef6546
 _nbdev_cfg_head = '''# All sections below are required unless otherwise specified.
 # See https://github.com/AnswerDotAI/nbdev/blob/main/settings.ini for examples.
 
@@ -154,7 +155,7 @@ _nbdev_cfg_tail = '''### Optional ###
 # package_data = 
 '''
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #05aae09f
 @call_parse
 @delegates(_apply_defaults, but='cfg')
 def nbdev_create_config(
@@ -180,17 +181,17 @@ def nbdev_create_config(
     cfg_fn = Path(path)/cfg_name
     print(f'{cfg_fn} created.')
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #0e56064f
 def _nbdev_config_file(cfg_name=_nbdev_cfg_name, path=None):
     cfg_path = Path.cwd() if path is None else Path(path)
     return getattr(Config.find(cfg_name), 'config_file', cfg_path/cfg_name)
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #f8813a52
 def _xdg_config_paths(cfg_name=_nbdev_cfg_name):
     xdg_config_paths = reversed([xdg_config_home()]+xdg_config_dirs())
     return [o/_nbdev_home_dir/cfg_name for o in xdg_config_paths]
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #3dac70e0
 def _type(t): return bool if t==bool_arg else t
 _types = {k:_type(v['anno']) for k,v in docments(_apply_defaults,full=True,returns=False).items() if k != 'cfg'}
 
@@ -202,25 +203,25 @@ def get_config(cfg_name=_nbdev_cfg_name, path=None):
     cfg = Config(cfg_file.parent, cfg_file.name, extra_files=extra_files, types=_types)
     return _apply_defaults(cfg)
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #9c5b3681
 def config_key(c, default=None, path=True, missing_ok=None):
     "Deprecated: use `get_config().get` or `get_config().path` instead."
     warn("`config_key` is deprecated. Use `get_config().get` or `get_config().path` instead.", DeprecationWarning)
     return get_config().path(c, default) if path else get_config().get(c, default)
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #6939b40e
 def is_nbdev(): return _nbdev_config_file().exists()
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #6e89fe6c
 def create_output(txt, mime):
     "Add a cell output containing `txt` of the `mime` text MIME sub-type"
     return [{"data": { f"text/{mime}": str(txt).splitlines(True) },
              "execution_count": 1, "metadata": {}, "output_type": "execute_result"}]
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #5a4d8e52
 def show_src(src, lang='python'): return Markdown(f'```{lang}\n{src}\n```')
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #163177f2
 pyproj_tmpl = """[build-system]
 requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
@@ -234,7 +235,7 @@ dynamic = [ "keywords", "description", "version", "dependencies", "optional-depe
 cache-keys = [{ file = "pyproject.toml" }, { file = "settings.ini" }, { file = "setup.py" }]
 """
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #f1c85f45
 _re_version = re.compile(r'^__version__\s*=.*$', re.MULTILINE)
 _re_proj = re.compile(r'^name\s*=\s*".*$', re.MULTILINE)
 _re_reqpy = re.compile(r'^requires-python\s*=\s*".*$', re.MULTILINE)
@@ -276,15 +277,15 @@ def add_init(path=None):
     if get_config().get('put_version_in_init', True): update_version(path)
     if get_config().get('update_pyproject', True): update_proj(path.parent)
 
-# %% ../nbs/api/01_config.ipynb
-def write_cells(cells, hdr, file, offset=0, cell_number=True, solo_nb=False):
-    "Write `cells` to `file` along with header `hdr` starting at index `offset` (mainly for nbdev internal use)."
+# %% ../nbs/api/01_config.ipynb #cdd05b4c
+def write_cells(cells, hdr, file, solo_nb=False):
+    "Write `cells` to `file` along with header `hdr` (mainly for nbdev internal use)."
     for cell in cells:
         if cell.cell_type=='code' and cell.source.strip():
-            idx = f" {cell.idx_+offset}" if cell_number else ""
-            file.write(f'\n\n{hdr}{idx}\n{cell.source}') if not solo_nb else file.write(f'\n\n{cell.source}')
+            cell_id = f" #{cell.id}" if cell.get('id') else ""
+            file.write(f'\n\n{hdr}{cell_id}\n{cell.source}') if not solo_nb else file.write(f'\n\n{cell.source}')
 
-# %% ../nbs/api/01_config.ipynb
+# %% ../nbs/api/01_config.ipynb #34cfeb82
 def _basic_export_nb(fname, name, dest=None):
     "Basic exporter to bootstrap nbdev."
     if dest is None: dest = get_config().lib_path

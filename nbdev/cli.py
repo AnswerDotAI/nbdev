@@ -6,7 +6,7 @@
 __all__ = ['mapping', 'nbdev_filter', 'extract_tgz', 'nbdev_new', 'nbdev_update_license', 'nb_export_cli', 'watch_export',
            'chelp']
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #6a35c7c4-748f-4c82-a9bf-c780a8d83e90
 import warnings
 import time
 
@@ -32,7 +32,7 @@ from urllib.error import HTTPError
 from contextlib import redirect_stdout
 import os, tarfile, sys
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #86c29369
 @call_parse
 def nbdev_filter(
     nb_txt:str=None,  # Notebook text (uses stdin if not provided)
@@ -55,12 +55,12 @@ def nbdev_filter(
     if printit: print(res, flush=True)
     else: return res
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #a1c001af-2c7c-4e0b-8c7d-a7d40c08f5e9
 def extract_tgz(url, dest='.'):
     from fastcore.net import urlopen
     with urlopen(url) as u: tarfile.open(mode='r:gz', fileobj=u).extractall(dest)
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #60df4b28
 def _render_nb(fn, cfg):
     "Render templated values like `{{lib_name}}` in notebook at `fn` from `cfg`"
     txt = fn.read_text()
@@ -68,7 +68,7 @@ def _render_nb(fn, cfg):
     for k,v in cfg.d.items(): txt = txt.replace('{{'+k+'}}', v)
     fn.write_text(txt)
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #dd385911-aa8f-44e7-8d46-7b8a20f3b010
 def _update_repo_meta(cfg):
     "Enable gh pages and update the homepage and description in your GitHub repo."
     token=os.getenv('GITHUB_TOKEN')
@@ -79,7 +79,7 @@ def _update_repo_meta(cfg):
         except HTTPError:print(f"Could not update the description & URL on the repo: {cfg.user}/{cfg.repo} using $GITHUB_TOKEN.\n"
                   "Use a token with the correction permissions or perform these steps manually.")
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #c4a663d9
 @call_parse
 @delegates(nbdev_create_config)
 def nbdev_new(**kwargs):
@@ -123,7 +123,7 @@ def nbdev_new(**kwargs):
     nbdev_readme.__wrapped__()
     nbdev_contributing.__wrapped__()
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #69458d7f-cda3-4055-aecf-07d047c7a683
 mapping = {
   'mit': 'mit',
   'apache2': 'apache-2.0',
@@ -132,7 +132,7 @@ mapping = {
   'bsd3': 'bsd-3-clause'
 }
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #a1116ee1-f5cb-4b63-8630-b64cd2ae3c12
 @call_parse
 def nbdev_update_license(
     to: str=None, # update license to
@@ -163,7 +163,7 @@ def nbdev_update_license(
     lic.write(body)
     print(f"License updated from {curr_lic} to {to}")
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #412b4cd2
 @call_parse
 @delegates(nb_export, but=['procs', 'mod_maker'])
 def nb_export_cli(nbname, 
@@ -172,7 +172,7 @@ def nb_export_cli(nbname,
     "Export a single nbdev notebook to a python script."
     return nb_export(nbname=nbname, debug=debug, **kwargs)
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #aaa472e7
 @call_parse
 def watch_export(nbs:str=None, # Nb directory to watch for changes
                  lib:str=None, # Export directory to write py files to
@@ -197,7 +197,7 @@ def watch_export(nbs:str=None, # Nb directory to watch for changes
     with fs_watchdog(_export, nbs):
         while True: time.sleep(1)
 
-# %% ../nbs/api/13_cli.ipynb
+# %% ../nbs/api/13_cli.ipynb #e34f6ff4-f85b-4805-b406-121279cc9246
 @call_parse
 def chelp():
     "Show help for all console scripts"

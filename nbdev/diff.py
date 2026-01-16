@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['read_nb_from_git', 'nbs_pair', 'changed_cells', 'source_diff', 'cell_diffs']
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #10c8ad0b
 import json
 from fastcore.utils import *
 from fastcore.meta import delegates
@@ -13,7 +13,7 @@ from difflib import unified_diff
 from fastgit import Git
 from execnb.nbio import *
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #a8981115
 def read_nb_from_git(
     g:Git, # The git object
     path, # The path to the notebook (absolute or relative to git root)
@@ -26,13 +26,13 @@ def read_nb_from_git(
     raw = g.show(f'{ref}:{path}', split=False)
     return dict2nb(json.loads(raw))
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #3ac25702
 def _nb_srcdict(g:Git, nb_path, ref=None, f=noop):
     "Dict of id->source"
     nb = read_nb_from_git(g, nb_path, ref)
     return {c['id']: f(c) for c in nb.cells}
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #27ff9a7b
 def nbs_pair(
     nb_path, # Path to the notebook
     ref_a='HEAD', # First git ref (None for working dir)
@@ -44,7 +44,7 @@ def nbs_pair(
     g = Git(nb_path.parent)
     return _nb_srcdict(g, nb_path, ref_a, f), _nb_srcdict(g, nb_path, ref_b, f)
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #958aeaf8
 def _cell_changes(
     nb_path, # Path to the notebook
     fn, # function to call to get dict values
@@ -69,14 +69,14 @@ def _cell_changes(
     if dels: res |= {cid: fn(cid, old[cid], '') for cid in old if cid not in new}
     return res
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #6a723bc8
 @delegates(_cell_changes)
 def changed_cells(nb_path, **kwargs):
     "Return set of cell IDs for changed/added/deleted cells between two refs"
     def f(cid,o,n): return cid
     return set(_cell_changes(nb_path, f, **kwargs).keys())
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #079eedb0
 def source_diff(
     old_source, # Original source string
     new_source # New source string
@@ -84,7 +84,7 @@ def source_diff(
     "Return unified diff string for source change"
     return '\n'.join(unified_diff(old_source.splitlines(), new_source.splitlines(), lineterm=''))
 
-# %% ../nbs/api/19_diff.ipynb
+# %% ../nbs/api/19_diff.ipynb #38216afa
 @delegates(_cell_changes)
 def cell_diffs(nb_path, **kwargs):
     "{cell_id:diff} for changed/added/deleted cells between two refs"

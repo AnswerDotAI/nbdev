@@ -5,22 +5,22 @@
 # %% auto 0
 __all__ = ['nbdev_trust', 'clean_nb', 'process_write', 'nbdev_clean', 'clean_jupyter', 'nbdev_install_hooks']
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #07637414
 import ast,warnings,stat
 from astunparse import unparse
 from textwrap import indent
 
 from execnb.nbio import *
 from fastcore.script import *
-from fastcore.basics import *
-from fastcore.imports import *
+from fastcore.utils import *
+from fastcore.xtras import *
 
 from .imports import *
 from .config import *
 from .sync import *
 from .process import first_code_ln
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #4259f92c
 @call_parse
 def nbdev_trust(
     fname:str=None,  # A notebook name or glob to trust
@@ -47,7 +47,7 @@ def nbdev_trust(
         if not NotebookNotary().check_signature(nb): NotebookNotary().sign(nb)
     check_fname.touch(exist_ok=True)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #a2ba2b4c
 _repr_id_re = re.compile('(<.*?)( at 0x[0-9a-fA-F]+)(>)')
 
 _sub = partial(_repr_id_re.sub, r'\1\3')
@@ -57,7 +57,7 @@ def _skip_or_sub(x): return _sub(x) if "at 0x" in x else x
 def _clean_cell_output_id(lines):
     return _skip_or_sub(lines) if isinstance(lines,str) else [_skip_or_sub(o) for o in lines]
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #b4cde615
 def _clean_cell_output(cell, clean_ids):
     "Remove `cell` output execution count and optionally ids from text reprs"
     outputs = cell.get('outputs', [])
@@ -71,7 +71,7 @@ def _clean_cell_output(cell, clean_ids):
         if 'text' in o and clean_ids: o['text'] = _clean_cell_output_id(o['text'])
 #         o.get('metadata', {}).pop('tags', None)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #2ba79c93
 def _clean_cell(cell, clear_all, allowed_metadata_keys, clean_ids):
     "Clean `cell` by removing superfluous metadata or everything except the input if `clear_all`"
     if 'execution_count' in cell: cell['execution_count'] = None
@@ -81,8 +81,9 @@ def _clean_cell(cell, clear_all, allowed_metadata_keys, clean_ids):
     if cell['source'] == ['']: cell['source'] = []
     cell['metadata'] = {} if clear_all else {
         k:v for k,v in cell['metadata'].items() if k in allowed_metadata_keys}
+    if 'id' not in cell: cell['id'] = rtoken_hex(4)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #e8101222
 def clean_nb(
     nb, # The notebook to clean
     clear_all=False, # Remove all cell metadata and cell outputs?
@@ -100,12 +101,12 @@ def clean_nb(
         nb['metadata']['kernelspec']['display_name'] = nb["metadata"]["kernelspec"]["name"]
     nb['metadata'] = {k:v for k,v in nb['metadata'].items() if k in metadata_keys}
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #604d83e6
 def _reconfigure(*strms):
     for s in strms:
         if hasattr(s,'reconfigure'): s.reconfigure(encoding='utf-8')
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #d251837f
 def process_write(warn_msg, proc_nb, f_in, f_out=None, disp=False):
     if not f_out: f_out = f_in
     if isinstance(f_in, (str,Path)): f_in = Path(f_in).open(encoding="utf-8")
@@ -118,7 +119,7 @@ def process_write(warn_msg, proc_nb, f_in, f_out=None, disp=False):
         warn(f'{warn_msg}')
         warn(e)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #714357ce
 def _nbdev_clean(nb, path=None, clear_all=None):
     cfg = get_config(path=path)
     clear_all = clear_all or cfg.clear_all
@@ -127,7 +128,7 @@ def _nbdev_clean(nb, path=None, clear_all=None):
     clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, cfg.clean_ids)
     if path: nbdev_trust.__wrapped__(path)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #6af3b9d4
 @call_parse
 def nbdev_clean(
     fname:str=None, # A notebook name or glob to clean
@@ -143,7 +144,7 @@ def nbdev_clean(
     if fname is None: fname = get_config().nbs_path
     for f in globtastic(fname, file_glob='*.ipynb', skip_folder_re='^[_.]'): _write(f_in=f, disp=disp)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #f84289fc
 def clean_jupyter(path, model, **kwargs):
     "Clean Jupyter `model` pre save to `path`"
     if not (model['type']=='notebook' and model['content']['nbformat']==4): return
@@ -151,7 +152,7 @@ def clean_jupyter(path, model, **kwargs):
     jupyter_hooks = get_config(path=path).jupyter_hooks
     if jupyter_hooks: _nbdev_clean(model['content'], path=path)
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #b7c19563
 _pre_save_hook_src = '''
 def nbdev_clean_jupyter(**kwargs):
     try: from nbdev.clean import clean_jupyter
@@ -161,7 +162,7 @@ def nbdev_clean_jupyter(**kwargs):
 c.ContentsManager.pre_save_hook = nbdev_clean_jupyter'''.strip()
 _pre_save_hook_re = re.compile(r'c\.(File)?ContentsManager\.pre_save_hook')
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #fcb8df4b
 def _add_jupyter_hooks(src, path):
     if _pre_save_hook_src in src: return
     mod = ast.parse(src)
@@ -179,12 +180,12 @@ def _add_jupyter_hooks(src, path):
     if src: src+='\n\n'
     return src+_pre_save_hook_src
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #cc677e44
 def _git_root(): 
     try: return Path(run('git rev-parse --show-toplevel'))
     except OSError: return None
 
-# %% ../nbs/api/11_clean.ipynb
+# %% ../nbs/api/11_clean.ipynb #e6083614
 @call_parse
 def nbdev_install_hooks():
     "Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks"

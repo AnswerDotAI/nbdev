@@ -5,7 +5,7 @@
 # %% auto 0
 __all__ = ['MigrateProc', 'fp_md_fm', 'migrate_nb', 'migrate_md', 'nbdev_migrate']
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #5b687fa0-dc50-48df-8bfc-e98df34e7572
 from .process import *
 from .frontmatter import *
 from .frontmatter import _fm2dict, _re_fm_md, _dict2fm, _insertfm
@@ -16,20 +16,20 @@ from .showdoc import show_doc
 from fastcore.all import *
 import shutil
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #52f60fb5-bc54-474a-876c-9146dd092681
 def _cat_slug(fmdict):
     "Get the partial slug from the category front matter."
     slug = '/'.join(fmdict.get('categories', ''))
     return '/' + slug if slug else '' 
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #9fac0338-a503-4680-984f-60153843d5ef
 def _file_slug(fname): 
     "Get the partial slug from the filename."
     p = Path(fname)
     dt = '/'+p.name[:10].replace('-', '/')+'/'
     return dt + p.stem[11:]    
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #689bf354
 def _replace_fm(d:dict, # dictionary you wish to conditionally change
                 k:str,  # key to check 
                 val:str,# value to check if d[k] == v
@@ -47,14 +47,14 @@ def _fp_fm(d):
     d = _replace_fm(d, 'hide', 'true', {'draft': 'true'})
     return d
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #3146ce27
 def _fp_image(d):
     "Correct path of fastpages images to reference the local directory."
     prefix = 'images/copied_from_nb/'
     if d.get('image', '').startswith(prefix): d['image'] = d['image'].replace(prefix, '')
     return d
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #244b0d01-a166-4549-9a45-1f8b1195c3c8
 def _rm_quote(s): 
     title = re.search('''"(.*?)"''', s)
     return title.group(1) if title else s
@@ -81,7 +81,7 @@ def _fp_convert(fm:dict, path:Path):
     if fm.get('comments'): fm.pop('comments') #true by itself is not a valid value for comments https://quarto.org/docs/output-formats/html-basics.html#commenting, and the default is true
     return fm
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #c8440f8b-f69e-44d2-8556-8869c1eedf0f
 class MigrateProc(Processor):
     "Migrate fastpages front matter in notebooks to a raw cell."
     def begin(self): 
@@ -89,7 +89,7 @@ class MigrateProc(Processor):
         if getattr(first(self.nb.cells), 'cell_type', None) == 'raw': del self.nb.cells[0]
         _insertfm(self.nb, self.nb.frontmatter_)
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #d5d575f3-b3b8-487d-8740-b1ebdccf6b34
 def fp_md_fm(path):
     "Make fastpages front matter in markdown files quarto compliant."
     p = Path(path)
@@ -100,12 +100,12 @@ def fp_md_fm(path):
         return _re_fm_md.sub(_dict2fm(fm), md)
     else: return md 
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #1abf7dc6-4a01-4c44-bdc3-0147820091ca
 _alias = merge({k:'code-fold: true' for k in ['collapse', 'collapse_input', 'collapse_hide']}, 
                {'collapse_show':'code-fold: show', 'hide_input': 'echo: false', 'hide': 'include: false', 'hide_output': 'output: false'})
 def _subv1(s): return _alias.get(s, s)
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #0dde9fe8-d3ad-47b8-bd87-85b9536e9f96
 def _re_v1():
     d = ['default_exp', 'export', 'exports', 'exporti', 'hide', 'hide_input', 'collapse_show', 'collapse',
          'collapse_hide', 'collapse_input', 'hide_output',  'default_cls_lvl']
@@ -118,7 +118,7 @@ def _repl_directives(code_str):
     def _fmt(x): return f"#| {_subv1(x[2].replace('-', '_').strip())}"
     return _re_v1().sub(_fmt, code_str)
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #cddcad93-1e44-4cbe-8dbd-9538533d0f8e
 def _repl_v1dir(cell):
     "Replace nbdev v1 with v2 directives."
     if cell.get('source') and cell.get('cell_type') == 'code':
@@ -128,21 +128,21 @@ def _repl_v1dir(cell):
         if not ss: pass
         else: cell['source'] = '\n'.join([_repl_directives(c) for c in ss[:first_code]] + ss[first_code:])
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #e99a0998-cbfc-46ca-a068-5695437ebc5a
 _re_callout = re.compile(r'^>\s(Warning|Note|Important|Tip):(.*)', flags=re.MULTILINE)
 def _co(x): return ":::{.callout-"+x[1].lower()+"}\n\n" + f"{x[2].strip()}\n\n" + ":::"
 def _convert_callout(s): 
     "Convert nbdev v1 to v2 callouts."
     return _re_callout.sub(_co, s)
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #5b19ae68-9d40-498f-bcda-38496b139a27
 _re_video = re.compile(r'^>\syoutube:(.*)', flags=re.MULTILINE)
 def _v(x): return "{{< " + f"video {x[1].strip()}" + " >}}"
 def _convert_video(s):
     "Replace nbdev v1 with v2 video embeds."
     return _re_video.sub(_v, s)
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #614a8cb8-5c43-45de-b93f-8646e549cc0e
 _shortcuts = compose(_convert_video, _convert_callout)
 
 def _repl_v1shortcuts(cell):
@@ -150,7 +150,7 @@ def _repl_v1shortcuts(cell):
     if cell.get('source') and cell.get('cell_type') == 'markdown':
         cell['source'] = _shortcuts(cell['source'])
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #9383e062-487b-4259-ab96-f427994742cc
 def migrate_nb(path, overwrite=True):
     "Migrate Notebooks from nbdev v1 and fastpages."
     nbp = NBProcessor(path, procs=[FrontmatterProc, MigrateProc, _repl_v1shortcuts, _repl_v1dir], rm_directives=False)
@@ -158,14 +158,14 @@ def migrate_nb(path, overwrite=True):
     if overwrite: write_nb(nbp.nb, path)
     return nbp.nb
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #e10f1558-95cb-49a6-b1e6-affd6fa3ecd2
 def migrate_md(path, overwrite=True):
     "Migrate Markdown Files from fastpages."
     txt = fp_md_fm(path)
     if overwrite: path.write_text(txt)
     return txt
 
-# %% ../nbs/api/16_migrate.ipynb
+# %% ../nbs/api/16_migrate.ipynb #3eb0cd02-e1ee-4910-be82-570434b974b5
 @call_parse
 def nbdev_migrate(
     path:str=None, # A path or glob containing notebooks and markdown files to migrate
