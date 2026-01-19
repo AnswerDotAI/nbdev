@@ -318,12 +318,15 @@ def chk_conda_rel(
 # %% ../nbs/api/18_release.ipynb #bf55df9b
 @call_parse
 def release_pypi(
-    repository:str="pypi" # Respository to upload to (defined in ~/.pypirc)
+    repository:str="pypi", # Respository to upload to (defined in ~/.pypirc)
+    quiet:bool=False # Reduce output verbosity
 ):
     "Create and upload Python package to PyPI"
     _dir = get_config().lib_path.parent
-    system(f'cd {_dir}  && rm -rf dist build && python -m build')
-    system(f'twine upload --repository {repository} {_dir}/dist/*')
+    q = ' --quiet' if quiet else ''
+    p = ' --disable-progress-bar' if quiet else ''
+    system(f'cd {_dir}  && rm -rf dist build && python -m build{q}')
+    system(f'twine upload --repository {repository}{p} {_dir}/dist/*')
 
 # %% ../nbs/api/18_release.ipynb #06edfcb0
 @call_parse
