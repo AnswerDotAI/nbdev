@@ -2,6 +2,11 @@
 
 <!-- do not remove -->
 
+## 2.4.13
+
+- Adds --quiet to build and --disable-progress-bar to twine upload when quiet=True
+
+
 ## 2.4.12
 
 ### New Features
