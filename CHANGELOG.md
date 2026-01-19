@@ -2,6 +2,12 @@
 
 <!-- do not remove -->
 
+## 2.4.12
+
+### New Features
+
+- Add push_release function for programmatic releases ([#1554](https://github.com/AnswerDotAI/nbdev/issues/1554))
+
 
 ## 2.4.11
 
