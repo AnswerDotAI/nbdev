@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.4.14
+
+### Bugs Squashed
+
+- Update to avoid fastcore version that was not compatible with py<312 ([#1556](https://github.com/AnswerDotAI/nbdev/issues/1556))
+
+
 ## 2.4.13
 
 - Adds --quiet to build and --disable-progress-bar to twine upload when quiet=True
@@ -11,7 +18,7 @@
 
 ### New Features
 
-- Add push_release function for programmatic releases ([#1554](https://github.com/AnswerDotAI/nbdev/issues/1554))
+- Add `push_release` function for programmatic releases ([#1554](https://github.com/AnswerDotAI/nbdev/issues/1554))
 
 
 ## 2.4.11
