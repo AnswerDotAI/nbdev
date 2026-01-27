@@ -86,7 +86,7 @@ def nbdev_test(
 
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
     if IN_NOTEBOOK: kw = {'method':'spawn'} if os.name=='nt' else {'method':'forkserver'}
-    else: kw = {}
+    else: kw = {'method':'forkserver'} if sys.platform=='darwin' else {}
     wd_pth = get_config().nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
