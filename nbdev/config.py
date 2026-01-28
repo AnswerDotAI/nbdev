@@ -313,8 +313,8 @@ def update_proj(path):
     fname = path/_pyproj
     if not fname.exists(): fname.write_text(pyproj_tmpl)
     txt = fname.read_text()
-    txt = _re_proj.sub(f'name="{get_config().lib_name}"', txt)
-    txt = _re_reqpy.sub(f'requires-python=">={get_config().min_python}"', txt)
+    txt = _re_proj.sub(f'name = "{get_config().lib_name}"', txt)
+    txt = _re_reqpy.sub(f'requires-python = ">={get_config().min_python}"', txt)
     fname.write_text(txt)
 
 # %% ../nbs/api/01_config.ipynb #bdf57184
