@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 3.0.0
+
+### Breaking Changes
+
+- nbdev 3: switch to pyproject.toml settings ([#1558](https://github.com/AnswerDotAI/nbdev/issues/1558))
+
+### New Features
+
+- Update GitHub workflow files to use nbdev3 workflows ([#1559](https://github.com/AnswerDotAI/nbdev/issues/1559))
+- Use forkserver for tests on MacOS ([#1557](https://github.com/AnswerDotAI/nbdev/pull/1557)), thanks to [@KeremTurgutlu](https://github.com/KeremTurgutlu)
+
+
 ## 2.4.14
 
 ### Bugs Squashed
