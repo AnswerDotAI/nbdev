@@ -180,10 +180,10 @@ class ConfigToml(AttrDict):
         auths = proj.get('authors') or [{}]
         self.author = auths[0].get('name')
         self.author_email = auths[0].get('email')
-        self.version = proj.get('version', '0.0.1')
+        
         
         urls = proj.get('urls') or {}
-        self.git_url = urls.get('Repository') or urls.get('Source') or ''
+        self.git_url = (urls.get('Repository') or urls.get('Source') or '').rstrip('/')
         self.doc_url = urls.get('Documentation') or ''
         self.user, self.repo = repo_details(self.git_url) if self.git_url else ('', '')
         # Derive doc_host and doc_baseurl from doc_url
@@ -192,6 +192,10 @@ class ConfigToml(AttrDict):
         self.doc_host = f"{u.scheme}://{u.netloc}" if u.scheme else ''
         self.doc_baseurl = (u.path or '/').rstrip('/') or '/'
         if 'lib_path' not in self: self['lib_path'] = self.lib_name.replace('-', '_')
+
+    @property
+    def version(self):
+        return read_version(self.config_path / self['lib_path']) or '0.0.1'
 
     @property
     def d(self): return {k:v for k,v in super().items()}

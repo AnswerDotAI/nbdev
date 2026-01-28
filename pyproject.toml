@@ -3,10 +3,10 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name="nbdev"
+name = "nbdev"
 description = "Create delightful software with Jupyter Notebooks"
 readme = "README.md"
-requires-python=">=3.9"
+requires-python = ">=3.9"
 license = {text = "Apache-2.0"}
 authors = [{name = "Jeremy Howard and the fast.ai community", email = "j@fast.ai"}]
 keywords = ["nbdev", "fastai", "jupyter", "notebook", "export"]
