@@ -193,13 +193,20 @@ class ConfigToml(AttrDict):
         self.doc_baseurl = (u.path or '/').rstrip('/') or '/'
         if 'lib_path' not in self: self['lib_path'] = self.lib_name.replace('-', '_')
 
-    def __getattr__(self, k):
-        v = super().__getattr__(k)
-        return self.config_path / v if k in _path_keys else v
+    @property
+    def d(self): return {k:v for k,v in super().items()}
+
+    def __getattr__(self, k): return stop(AttributeError(k)) if k=='d' or k not in self.d else self.get(k)
+    def __getitem__(self, k): return stop(IndexError(k)) if k not in self.d else self.get(k)
 
     def get(self, k, default=None):
-        v = super().get(k, default)
-        return self.config_path / v if k in _path_keys and v else v
+        v = self.d.get(k, default)
+        if v is None: return None
+        return self.config_path / v if k in _path_keys else v
+
+    def path(self, k, default=None):
+        v = self.d.get(k, default)
+        return v if v is None else self.config_path / v
 
 # %% ../nbs/api/01_config.ipynb #6fed9c91
 def _user_config():

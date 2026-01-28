@@ -107,8 +107,7 @@ def _build_modidx(dest=None, nbs_path=None, skip_exists=False):
     with contextlib.suppress(FileNotFoundError): idxfile.unlink()
     if idxfile.exists(): res = exec_local(idxfile.read_text(encoding='utf-8'), 'd')
     else: res = dict(syms={}, settings={}) 
-    cfg = get_config()
-    res['settings'] = {k:cfg[k] for k in ('doc_host','doc_baseurl','lib_path','git_url','branch') if k in cfg}
+    res['settings'] = {k:v for k,v in get_config().d.items() if k in ('doc_host','doc_baseurl','lib_path','git_url','branch')}
     code_root = dest.parent.resolve()
     for file in globtastic(dest, file_glob="*.py", skip_file_re='^_', skip_folder_re=r"\.ipynb_checkpoints"):
         try: res['syms'].update(_get_modidx((dest.parent/file).resolve(), code_root, nbs_path=nbs_path))
