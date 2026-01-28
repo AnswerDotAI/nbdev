@@ -227,7 +227,7 @@ def get_config(path=None, also_settings=False):
         # Check for old settings.ini and complain loudly
         old_cfg = cfg_file.parent / 'settings.ini'
         if old_cfg.exists() and not also_settings:
-            raise ValueError(f"Found old settings.ini at {old_cfg}. Please migrate to pyproject.toml using `nbdev_migrate`")
+            raise ValueError(f"Found old settings.ini at {old_cfg}. Please migrate to pyproject.toml using `nbdev_migrate`. See https://nbdev.fast.ai/getting_started.html for details.")
         d = _load_toml(cfg_file)
         user = _user_config()
         nbdev = {**user, **d.get('tool', {}).get('nbdev', {})}
