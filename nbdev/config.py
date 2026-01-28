@@ -209,19 +209,24 @@ def _user_config():
     return {}
 
 # %% ../nbs/api/01_config.ipynb #f6660849
-@functools.lru_cache(maxsize=None)
-def get_config(path=None):
+def get_config(path=None, also_settings=False):
     "Return nbdev config."
     cfg_file = _find_nbdev_pyproject(path)
-    if cfg_file is None: raise FileNotFoundError("No pyproject.toml with [tool.nbdev] found")
-    # Check for old settings.ini and complain loudly
-    old_cfg = cfg_file.parent / 'settings.ini'
-    if old_cfg.exists():
-        raise ValueError(f"Found old settings.ini at {old_cfg}. Please migrate to pyproject.toml using `nbdev_migrate`")
-    d = _load_toml(cfg_file)
-    user = _user_config()
-    nbdev = {**user, **d.get('tool', {}).get('nbdev', {})}  # project overrides user
-    return ConfigToml(nbdev, d.get('project', {}), cfg_file)
+    if cfg_file is not None:
+        # Check for old settings.ini and complain loudly
+        old_cfg = cfg_file.parent / 'settings.ini'
+        if old_cfg.exists() and not also_settings:
+            raise ValueError(f"Found old settings.ini at {old_cfg}. Please migrate to pyproject.toml using `nbdev_migrate`")
+        d = _load_toml(cfg_file)
+        user = _user_config()
+        nbdev = {**user, **d.get('tool', {}).get('nbdev', {})}
+        return ConfigToml(nbdev, d.get('project', {}), cfg_file)
+    if also_settings:
+        from fastcore.foundation import Config
+        cfg = Config.find('settings.ini', path)
+        if cfg: return cfg
+    cfg_path = Path(path or Path.cwd()).expanduser().absolute()
+    return ConfigToml(nbdev_defaults, {}, cfg_path/'pyproject.toml')
 
 # %% ../nbs/api/01_config.ipynb #6939b40e
 def is_nbdev(path=None): return _find_nbdev_pyproject(path) is not None

@@ -229,7 +229,7 @@ _re_backticks = re.compile(r'`([^`\s]+?)(?:\(\))?`')
 # %% ../nbs/api/05_doclinks.ipynb #3a24b883
 @lru_cache(None)
 def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
-    cfg = get_config()
+    cfg = get_config(also_settings=True)
     if strip_libs is None:
         try: strip_libs = cfg.get('strip_libs') or cfg.lib_name
         except FileNotFoundError: strip_libs = 'nbdev'
