@@ -65,7 +65,7 @@ def _render_nb(fn, cfg):
     "Render templated values like `{{lib_name}}` in notebook at `fn` from `cfg`"
     txt = fn.read_text()
     txt = txt.replace('from your_lib.core', f'from {cfg.lib_path}.core') # for compatibility with old templates
-    for k,v in cfg.d.items(): txt = txt.replace('{{'+k+'}}', v)
+    for k,v in cfg.items(): txt = txt.replace('{{'+k+'}}', str(v))
     fn.write_text(txt)
 
 # %% ../nbs/api/13_cli.ipynb #dd385911-aa8f-44e7-8d46-7b8a20f3b010
@@ -87,10 +87,11 @@ def nbdev_new(**kwargs):
     from ghapi.core import GhApi
     nbdev_create_config.__wrapped__(**kwargs)
     cfg = get_config()
-    _update_repo_meta(cfg)
+    if (Path('.git')).exists(): _update_repo_meta(cfg)
+    else: print(f"No git repo found. Run: gh repo create {cfg.user}/{cfg.repo} --public --source=.")
     path = Path()
 
-    _ORG_OR_USR,_REPOSITORY = 'answerdotai','nbdev-template'
+    _ORG_OR_USR,_REPOSITORY = 'answerdotai','nbdev3-template'
     _TEMPLATE = f'{_ORG_OR_USR}/{_REPOSITORY}'
     template = kwargs.get('template', _TEMPLATE)
     try: org_or_usr, repo = template.split('/')
@@ -143,24 +144,23 @@ def nbdev_update_license(
     avail_lic = GhApi().licenses.get_all_commonly_used().map(lambda x: x['key'])
 
     cfg = get_config()
-    curr_lic = cfg['license']
+    curr_lic = cfg.license
 
     mapped = mapping.get(to, None)
-
     if mapped not in avail_lic: raise ValueError(f"{to} is not an available license")
     body = GhApi().licenses.get(mapped)['body']
 
-    body = body.replace('[year], [fullname]', cfg['copyright'])
-    body = body.replace('[year] [fullname]', cfg['copyright'])
+    copyright = f"{datetime.now().year}, {cfg.author}"
+    body = body.replace('[year], [fullname]', copyright)
+    body = body.replace('[year] [fullname]', copyright)
 
-    content = open("settings.ini", "r").read()
-    content = re.sub(r"^(license\s*=\s*).*?$", r"\1 " + to, content, flags=re.MULTILINE)
+    # Update pyproject.toml
+    pyproj = cfg.config_file
+    content = pyproj.read_text()
+    content = re.sub(r'^(license\s*=\s*\{text\s*=\s*").*?(")', rf'\g<1>{to}\2', content, flags=re.MULTILINE)
+    pyproj.write_text(content)
 
-    config = open("settings.ini", "w")
-    config.write(content)
-
-    lic = open('LICENSE', 'w')
-    lic.write(body)
+    Path('LICENSE').write_text(body)
     print(f"License updated from {curr_lic} to {to}")
 
 # %% ../nbs/api/13_cli.ipynb #412b4cd2

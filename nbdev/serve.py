@@ -36,7 +36,7 @@ def _is_qpy(path:Path):
 
 # %% ../nbs/api/17_serve.ipynb #abc3835a
 def _proc_file(s, cache, path, mtime=None):
-    skips = ('_proc', '_docs', '_site', 'settings.ini')
+    skips = ('_proc', '_docs', '_site', 'pyproject.toml')
     if not s.is_file() or any(o[0]=='.' or o in skips for o in s.parts): return
     d = cache/s.relative_to(path)
     if s.suffix=='.py': d = d.with_suffix('')
@@ -69,7 +69,7 @@ def proc_nbs(
     if (path/'_brand.yml').exists(): files.append(path/'_brand.yml')
     if (path/'_extensions').exists(): files.extend(nbglob(path/'_extensions', func=Path, file_glob='', file_re='', skip_file_re='^[.]'))
 
-    # If settings.ini or filter script newer than cache folder modified, delete cache
+    # If pyproject.toml or filter script newer than cache folder modified, delete cache
     chk_mtime = max(cfg.config_file.stat().st_mtime, Path(__file__).stat().st_mtime)
     cache.mkdir(parents=True, exist_ok=True)
     cache_mtime = cache.stat().st_mtime

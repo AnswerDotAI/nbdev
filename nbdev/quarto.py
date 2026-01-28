@@ -110,7 +110,7 @@ class IndentDumper(yaml.Dumper):
 def nbdev_sidebar(
     path:str=None, # Path to notebooks
     printit:bool=False,  # Print YAML for debugging
-    force:bool=False,  # Create sidebar even if settings.ini custom_sidebar=False
+    force:bool=False,  # Create sidebar even if custom_sidebar=false in pyproject.toml
     skip_folder_re:str=r'(?:^[_.]|^www\$)', # Skip folders matching regex
     **kwargs):
     "Create sidebar.yml"
@@ -177,7 +177,7 @@ website:
 
 # %% ../nbs/api/14_quarto.ipynb #38124450
 def refresh_quarto_yml():
-    "Generate `_quarto.yml` from `settings.ini`."
+    "Generate `_quarto.yml` from `pyproject.toml`."
     cfg = get_config()
     ny = cfg.nbs_path/'nbdev.yml'
     vals = {k:cfg[k] for k in ['title', 'description', 'branch', 'git_url', 'doc_host', 'doc_baseurl']}
@@ -185,7 +185,7 @@ def refresh_quarto_yml():
     if 'title' not in vals: vals['title'] = vals['lib_name']
     ny.write_text(_nbdev_yml.format(**vals))
     qy = cfg.nbs_path/'_quarto.yml'
-    if 'custom_quarto_yml' in cfg.d: print("NB: `_quarto.yml` is no longer auto-updated. Remove `custom_quarto_yml` from `settings.ini`")
+    if 'custom_quarto_yml' in cfg: print("NB: `_quarto.yml` is no longer auto-updated. Remove `custom_quarto_yml` from `pyproject.toml`")
     if qy.exists() and not str2bool(cfg.get('custom_quarto_yml', True)): qy.unlink()
     if not qy.exists(): qy.write_text(_quarto_yml)
 

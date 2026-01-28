@@ -5,8 +5,7 @@
 # %% auto #0
 __all__ = ['GH_HOST', 'CONDA_WARNING', 'Release', 'changelog', 'push_release', 'release_git', 'release_gh', 'pypi_json',
            'latest_pypi', 'pypi_details', 'conda_output_path', 'write_conda_meta', 'write_requirements',
-           'anaconda_upload', 'release_conda', 'chk_conda_rel', 'release_pypi', 'release_both', 'bump_version',
-           'nbdev_bump_version']
+           'anaconda_upload', 'release_conda', 'chk_conda_rel', 'release_pypi', 'release_both', 'nbdev_bump_version']
 
 # %% ../nbs/api/18_release.ipynb #c35cc2b8
 from fastcore.all import *
@@ -22,10 +21,7 @@ from .doclinks import *
 GH_HOST = "https://api.github.com"
 
 # %% ../nbs/api/18_release.ipynb #e220cefa
-def _find_config(cfg_name="settings.ini"):
-    cfg_path = Path().absolute()
-    while cfg_path != cfg_path.parent and not (cfg_path/cfg_name).exists(): cfg_path = cfg_path.parent
-    return Config(cfg_path, cfg_name)
+def _find_config(): return get_config()
 
 # %% ../nbs/api/18_release.ipynb #1972609a
 def _issue_txt(issue):
@@ -109,7 +105,7 @@ def latest_notes(self:Release):
 @call_parse
 def changelog(
     debug:store_true=False,  # Print info to be added to CHANGELOG, instead of updating file
-    repo:str=None,  # repo to use instead of `lib_name` from `settings.ini`
+    repo:str=None,  # repo to use instead of `lib_name` from pyproject.toml
 ):
     "Create a CHANGELOG.md file from closed and labeled GitHub issues"
     res = Release(repo=repo).changelog(debug=debug)
@@ -211,8 +207,8 @@ def _get_conda_meta():
 
     hostreqs = ['packaging', f'python >={cfg.min_python}']
     reqs = hostreqs+[]
-    if cfg.get('requirements'): reqs += cfg.requirements.split()
-    if cfg.get('conda_requirements'): reqs += cfg.conda_requirements.split()
+    if cfg.get('requirements'): reqs += cfg.requirements
+    if cfg.get('conda_requirements'): reqs += cfg.conda_requirements
 
     pypi = pypi_json(f'{name}/{ver}')
     rel = [o for o in pypi['urls'] if o['packagetype']=='sdist'][0]
@@ -250,10 +246,10 @@ def write_conda_meta(path='conda'):
 # %% ../nbs/api/18_release.ipynb #7550557f
 @call_parse
 def write_requirements(path:str=''):
-    "Writes a `requirements.txt` file to `directory` based on settings.ini."
+    "Writes a `requirements.txt` file to `directory` based on pyproject.toml."
     cfg = get_config()
     d = Path(path) if path else cfg.config_path
-    req = '\n'.join([cfg.get(k, '').replace(' ', '\n') for k in ['requirements', 'pip_requirements']])
+    req = '\n'.join(['\n'.join(cfg.get(k) or []) for k in ['requirements', 'pip_requirements']])
     (d/'requirements.txt').mk_write(req)
 
 # %% ../nbs/api/18_release.ipynb #715ae3ac
@@ -297,7 +293,7 @@ def release_conda(
     loc = outs[0]
     if skip_upload: return print(loc)
     if not upload_user: upload_user = get_config().conda_user
-    if not upload_user: return print("`conda_user` not in settings.ini and no `upload_user` passed. Cannot upload")
+    if not upload_user: return print("`conda_user` not in pyproject.toml and no `upload_user` passed. Cannot upload")
     if 'anaconda upload' not in res: return print(f"{res}\n\nFailed. Check auto-upload not set in .condarc. Try `--do_build False`.")
     return anaconda_upload(name, loc)
 
@@ -344,24 +340,16 @@ def release_both(
     release_conda.__wrapped__(path, do_build=do_build, build_args=build_args, skip_upload=skip_upload, mambabuild=mambabuild, upload_user=upload_user)
     nbdev_bump_version.__wrapped__()
 
-# %% ../nbs/api/18_release.ipynb #6380dd5a
-def bump_version(version, part=2, unbump=False):
-    version = version.split('.')
-    incr = -1 if unbump else 1
-    version[part] = str(int(version[part]) + incr)
-    for i in range(part+1, 3): version[i] = '0'
-    return '.'.join(version)
-
 # %% ../nbs/api/18_release.ipynb #c0f64b2c
 @call_parse
 def nbdev_bump_version(
     part:int=2,  # Part of version to bump
     unbump:bool=False):  # Reduce version instead of increasing it
-    "Increment version in settings.ini by one"
+    "Increment version in __init__.py by one"
     cfg = get_config()
-    print(f'Old version: {cfg.version}')
-    cfg.d['version'] = bump_version(get_config().version, part, unbump=unbump)
-    cfg.save()
-    update_version()
+    old_ver = read_version(cfg.lib_path)
+    print(f'Old version: {old_ver}')
+    new_ver = bump_version(old_ver, part, unbump=unbump)
+    set_version(cfg.lib_path, new_ver)
     nbdev_export.__wrapped__()
-    print(f'New version: {cfg.version}')
+    print(f'New version: {new_ver}')

@@ -125,8 +125,8 @@ def process_write(warn_msg, proc_nb, f_in, f_out=None, disp=False):
 def _nbdev_clean(nb, path=None, clear_all=None):
     cfg = get_config(path=path)
     clear_all = clear_all or cfg.clear_all
-    allowed_metadata_keys = cfg.get("allowed_metadata_keys").split()
-    allowed_cell_metadata_keys = cfg.get("allowed_cell_metadata_keys").split()
+    allowed_metadata_keys = cfg.get("allowed_metadata_keys") or []
+    allowed_cell_metadata_keys = cfg.get("allowed_cell_metadata_keys") or []
     clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, cfg.clean_ids)
     if path: nbdev_trust.__wrapped__(path)
 

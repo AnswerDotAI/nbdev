@@ -78,7 +78,7 @@ def nbdev_test(
     ignore_fname:str='.notest', # Filename that will result in siblings being ignored
     **kwargs):
     "Test in parallel notebooks matching `path`, passing along `flags`"
-    skip_flags = get_config().tst_flags.split()
+    skip_flags = get_config().tst_flags
     force_flags = flags.split()
     files = nbglob(path, as_path=True, **kwargs)
     files = [f.absolute() for f in sorted(files) if _keep_file(f, ignore_fname)]

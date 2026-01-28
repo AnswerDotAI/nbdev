@@ -107,8 +107,8 @@ def _build_modidx(dest=None, nbs_path=None, skip_exists=False):
     with contextlib.suppress(FileNotFoundError): idxfile.unlink()
     if idxfile.exists(): res = exec_local(idxfile.read_text(encoding='utf-8'), 'd')
     else: res = dict(syms={}, settings={}) 
-    res['settings'] = {k:v for k,v in get_config().d.items()
-                       if k in ('doc_host','doc_baseurl','lib_path','git_url','branch')}
+    cfg = get_config()
+    res['settings'] = {k:cfg[k] for k in ('doc_host','doc_baseurl','lib_path','git_url','branch') if k in cfg}
     code_root = dest.parent.resolve()
     for file in globtastic(dest, file_glob="*.py", skip_file_re='^_', skip_folder_re=r"\.ipynb_checkpoints"):
         try: res['syms'].update(_get_modidx((dest.parent/file).resolve(), code_root, nbs_path=nbs_path))
@@ -231,10 +231,10 @@ _re_backticks = re.compile(r'`([^`\s]+?)(?:\(\))?`')
 def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
     cfg = get_config()
     if strip_libs is None:
-        try: strip_libs = cfg.get('strip_libs', cfg.get('lib_path', 'nbdev').name).split()
+        try: strip_libs = cfg.get('strip_libs') or cfg.lib_name
         except FileNotFoundError: strip_libs = 'nbdev'
     skip_mods = setify(skip_mods)
-    strip_libs = L(strip_libs)
+    strip_libs = L(strip_libs.split() if isinstance(strip_libs, str) else strip_libs)
     if incl_libs is not None: incl_libs = (L(incl_libs)+strip_libs).unique()
     entries = {}
     try: eps = entry_points(group='nbdev')

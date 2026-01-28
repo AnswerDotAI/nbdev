@@ -35,7 +35,7 @@ class ExportModuleProc:
 
 # %% ../nbs/api/04_export.ipynb #6f524839
 def black_format(cell, # Cell to format
-                 force=False): # Turn black formatting on regardless of settings.ini
+                 force=False): # Turn black formatting on regardless of pyproject.toml
     "Processor to format code with `black`"
     try: cfg = get_config()
     except FileNotFoundError: return
