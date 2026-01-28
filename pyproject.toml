@@ -8,7 +8,7 @@ description = "Create delightful software with Jupyter Notebooks"
 readme = "README.md"
 requires-python=">=3.9"
 license = {text = "Apache-2.0"}
-authors = [{name = "Jeremy Howard and Hamel Husain", email = "j@fast.ai"}]
+authors = [{name = "Jeremy Howard and the fast.ai community", email = "j@fast.ai"}]
 keywords = ["nbdev", "fastai", "jupyter", "notebook", "export"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -19,35 +19,12 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
 ]
 dynamic = ["version"]
-dependencies = [
-    "fastcore>=1.12.3",
-    "execnb>=0.1.12",
-    "astunparse",
-    "ghapi>=1.0.3",
-    "watchdog",
-    "asttokens",
-    "setuptools",
-    "build",
-    "fastgit",
-    "pyyaml",
-    "tomli; python_version < '3.11'",
-]
+dependencies = [ "fastcore>=1.12.3", "execnb>=0.1.12", "astunparse", "ghapi>=1.0.3", "watchdog", "asttokens",
+    "setuptools", "build", "fastgit", "pyyaml", "tomli; python_version < '3.11'", ]
 
 [project.optional-dependencies]
-dev = [
-    "ipywidgets",
-    "nbdev-numpy",
-    "nbdev-stdlib",
-    "pandas",
-    "matplotlib",
-    "black",
-    "svg.py",
-    "nbclassic",
-    "pysymbol_llm",
-    "llms-txt",
-    "sphinx",
-    "plum-dispatch",
-]
+dev = [ "ipywidgets", "nbdev-numpy", "nbdev-stdlib", "pandas", "matplotlib", "black", "svg.py", "nbclassic",
+    "pysymbol_llm", "llms-txt", "sphinx", "plum-dispatch", ]
 
 [project.urls]
 Repository = "https://github.com/AnswerDotAI/nbdev"
