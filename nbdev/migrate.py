@@ -206,8 +206,8 @@ def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
         min_python=d.get('min_python', '3.9'), license=_license_map.get(d.get('license', ''), d.get('license', 'Apache-2.0')),
         author=d.get('author', ''), author_email=d.get('author_email', ''),
         keywords=d.get('keywords', 'nbdev').split(), git_url=git_url, doc_url=doc_url, branch=branch)
-    # Add dependencies
-    reqs = d.get('requirements', '').split()
+    # Add dependencies (combine requirements + pip_requirements)
+    reqs = d.get('requirements', '').split() + d.get('pip_requirements', '').split()
     if reqs: txt = txt.replace('dependencies = []', f'dependencies = {reqs}')
     dev_reqs = d.get('dev_requirements', '').split()
     if dev_reqs: txt = txt.replace('[tool.setuptools', f'[project.optional-dependencies]\ndev = {dev_reqs}\n\n[tool.setuptools')
@@ -217,6 +217,17 @@ def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
         scripts_lines = [s.strip() for s in scripts.split('\n') if s.strip()]
         scripts_toml = '\n[project.scripts]\n' + '\n'.join(scripts_lines)
         txt = txt.replace('[tool.setuptools', scripts_toml + '\n\n[tool.setuptools')
+    # Add classifiers from status/audience/language
+    _status_map = {'1': 'Planning', '2': 'Pre-Alpha', '3': 'Alpha', '4': 'Beta', '5': 'Production/Stable', '6': 'Mature', '7': 'Inactive'}
+    status = d.get('status', '').strip()
+    if status and status in _status_map:
+        txt = txt.replace('    "Programming Language', f'    "Development Status :: {status} - {_status_map[status]}",\n    "Programming Language')
+    audience = d.get('audience', '').strip()
+    if audience:
+        txt = txt.replace('    "Programming Language', f'    "Intended Audience :: {audience}",\n    "Programming Language')
+    language = d.get('language', '').strip()
+    if language:
+        txt = txt.replace('    "Programming Language', f'    "Natural Language :: {language}",\n    "Programming Language')
     
     # Build [tool.nbdev] only with non-default values
     def _toml_val(v):
