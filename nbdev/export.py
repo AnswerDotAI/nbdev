@@ -37,8 +37,7 @@ class ExportModuleProc:
 def black_format(cell, # Cell to format
                  force=False): # Turn black formatting on regardless of pyproject.toml
     "Processor to format code with `black`"
-    try: cfg = get_config()
-    except FileNotFoundError: return
+    cfg = get_config()
     if (not cfg.black_formatting and not force) or cell.cell_type != 'code': return
     try: import black
     except: raise ImportError("You must install black: `pip install black` if you wish to use black formatting with nbdev")
@@ -53,8 +52,7 @@ _magics_pattern = re.compile(r'^\s*(%%|%).*\n?', re.MULTILINE)
 
 def scrub_magics(cell): # Cell to format
     "Processor to remove cell magics from exported code"
-    try: cfg = get_config()
-    except FileNotFoundError: return
+    cfg = get_config()
     if cell.cell_type != 'code': return
     try: cell.source = _magics_pattern.sub('', cell.source)
     except: pass
