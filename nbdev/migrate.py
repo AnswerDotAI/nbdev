@@ -183,16 +183,34 @@ def nbdev_migrate(
 # %% ../nbs/api/16_migrate.ipynb #ad76e503
 _license_map = {'apache2': 'Apache-2.0', 'mit': 'MIT', 'gpl2': 'GPL-2.0', 'gpl3': 'GPL-3.0', 'bsd3': 'BSD-3-Clause'}
 
+# %% ../nbs/api/16_migrate.ipynb #1ca2d1b3
+def _toml_val(v):
+    if v.lower() in ('true','false'): return v.lower()
+    return repr(v)
+def _py_val(v):
+    try: return str2bool(v)
+    except: return v
+
+
+def _fmt_script(s):
+    name,val = s.strip().split('=')
+    return f'{name.strip()} = "{val.strip()}"'
+
+
+def _build_classifiers(d):
+    "Build list of classifier strings from config dict"
+    _status_map = {'1': 'Planning', '2': 'Pre-Alpha', '3': 'Alpha', '4': 'Beta', '5': 'Production/Stable', '6': 'Mature', '7': 'Inactive'}
+    cs = ['Programming Language :: Python :: 3', 'Programming Language :: Python :: 3 :: Only']
+    status,audience,language = d.get('status', '').strip(), d.get('audience', '').strip(), d.get('language', '').strip()
+    if status and status in _status_map: cs.insert(0, f"Development Status :: {status} - {_status_map[status]}")
+    if audience: cs.insert(0, f"Intended Audience :: {audience}")
+    if language: cs.insert(0, f"Natural Language :: {language}")
+    return cs
+
 # %% ../nbs/api/16_migrate.ipynb #796a2c4b
-@call_parse
-def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
-    "Migrate settings.ini to pyproject.toml"
-    path = Path(path)
-    ini = path/'settings.ini'
-    if not ini.exists(): return print(f"No settings.ini found at {ini}")
-    cfg = Config(path, 'settings.ini')
-    d = cfg.d
-    repo = d.get('repo', path.name)
+def _nbdev_migrate_config(d, path):  # Config dict from settings.ini
+    "Migrate settings.ini dict to pyproject.toml string"
+    repo = d.get('repo', '')
     user = d.get('user', '')
     lib_path = d.get('lib_path', repo.replace('-', '_'))
     branch = d.get('branch', 'main')
@@ -211,37 +229,32 @@ def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
     reqs = d.get('requirements', '').split() + d.get('pip_requirements', '').split()
     if reqs: txt = txt.replace('dependencies = []', f'dependencies = {reqs}')
     dev_reqs = d.get('dev_requirements', '').split()
-    if dev_reqs: txt = txt.replace('[tool.setuptools', f'[project.optional-dependencies]\ndev = {dev_reqs}\n\n[tool.setuptools')
+    if dev_reqs: txt = txt.replace('[tool.setuptools', f'[project.optional-dependencies]\ndev = {dev_reqs}\n\n[tool.setuptools', 1)
     # Add console_scripts
     scripts = d.get('console_scripts', '').strip()
     if scripts:
-        scripts_lines = [s.strip() for s in scripts.split('\n') if s.strip()]
+        scripts_lines = [_fmt_script(s) for s in scripts.split('\n') if s.strip()]
         scripts_toml = '\n[project.scripts]\n' + '\n'.join(scripts_lines)
-        txt = txt.replace('[tool.setuptools', scripts_toml + '\n\n[tool.setuptools')
-    # Add classifiers from status/audience/language
-    _status_map = {'1': 'Planning', '2': 'Pre-Alpha', '3': 'Alpha', '4': 'Beta', '5': 'Production/Stable', '6': 'Mature', '7': 'Inactive'}
-    status = d.get('status', '').strip()
-    if status and status in _status_map:
-        txt = txt.replace('    "Programming Language', f'    "Development Status :: {status} - {_status_map[status]}",\n    "Programming Language')
-    audience = d.get('audience', '').strip()
-    if audience:
-        txt = txt.replace('    "Programming Language', f'    "Intended Audience :: {audience}",\n    "Programming Language')
-    language = d.get('language', '').strip()
-    if language:
-        txt = txt.replace('    "Programming Language', f'    "Natural Language :: {language}",\n    "Programming Language')
+        txt = txt.replace('[tool.setuptools', scripts_toml + '\n\n[tool.setuptools', 1)
+    _classifiers_default = 'classifiers = [\n    "Programming Language :: Python :: 3",\n    "Programming Language :: Python :: 3 :: Only",\n]'
+    txt = txt.replace(_classifiers_default, 'classifiers = ' + repr(_build_classifiers(d)).replace("'", '"'))
     
-    # Build [tool.nbdev] only with non-default values
-    def _toml_val(v):
-        if v.lower() in ('true','false'): return v.lower()
-        return repr(v)
-    def _py_val(v):
-        try: return str2bool(v)
-        except: return v
     nbdev_settings = {k:d[k] for k in ('nbs_path','doc_path','branch','recursive','readme_nb','tst_flags',
         'clean_ids','clear_all','put_version_in_init','jupyter_hooks','custom_sidebar','title')
         if k in d and _py_val(d[k]) != nbdev_defaults.get(k) and not (k=='title' and d[k]==repo)}
     if nbdev_settings:
         nbdev_toml = '\n'.join(f'{k} = {_toml_val(v)}' for k,v in nbdev_settings.items())
         txt = txt.rstrip() + '\n' + nbdev_toml + '\n'
+    return txt
+
+# %% ../nbs/api/16_migrate.ipynb #a9534478
+@call_parse
+def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
+    "Migrate settings.ini to pyproject.toml"
+    path = Path(path)
+    ini = path/'settings.ini'
+    if not ini.exists(): return print(f"No settings.ini found at {ini}")
+    cfg = Config(path, 'settings.ini')
+    txt = _nbdev_migrate_config(cfg.d, path)
     (path/'pyproject.toml').write_text(txt)
     print(f"Created {path/'pyproject.toml'}. You can now delete {ini} and setup.py (if present)")
