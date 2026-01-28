@@ -206,6 +206,17 @@ def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
         min_python=d.get('min_python', '3.9'), license=_license_map.get(d.get('license', ''), d.get('license', 'Apache-2.0')),
         author=d.get('author', ''), author_email=d.get('author_email', ''),
         keywords=d.get('keywords', 'nbdev').split(), git_url=git_url, doc_url=doc_url, branch=branch)
+    # Add dependencies
+    reqs = d.get('requirements', '').split()
+    if reqs: txt = txt.replace('dependencies = []', f'dependencies = {reqs}')
+    dev_reqs = d.get('dev_requirements', '').split()
+    if dev_reqs: txt = txt.replace('[tool.setuptools', f'[project.optional-dependencies]\ndev = {dev_reqs}\n\n[tool.setuptools')
+    # Add console_scripts
+    scripts = d.get('console_scripts', '').strip()
+    if scripts:
+        scripts_lines = [s.strip() for s in scripts.split('\n') if s.strip()]
+        scripts_toml = '\n[project.scripts]\n' + '\n'.join(scripts_lines)
+        txt = txt.replace('[tool.setuptools', scripts_toml + '\n\n[tool.setuptools')
     
     # Build [tool.nbdev] only with non-default values
     def _toml_val(v):
@@ -215,7 +226,7 @@ def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
         try: return str2bool(v)
         except: return v
     nbdev_settings = {k:d[k] for k in ('nbs_path','doc_path','branch','recursive','readme_nb','tst_flags',
-        'clean_ids','clear_all','put_version_in_init','jupyter_hooks','black_formatting','custom_sidebar','title')
+        'clean_ids','clear_all','put_version_in_init','jupyter_hooks','custom_sidebar','title')
         if k in d and _py_val(d[k]) != nbdev_defaults.get(k) and not (k=='title' and d[k]==repo)}
     if nbdev_settings:
         nbdev_toml = '\n'.join(f'{k} = {_toml_val(v)}' for k,v in nbdev_settings.items())
