@@ -190,7 +190,7 @@ def _migrate_workflows(path):
     if not wf_path.exists(): return
     replacements = [
         ('fastai/workflows/quarto-ghp@', 'fastai/workflows/quarto-ghp3@'),
-        ('fastai/workflows/nbdev-ci@', 'fastai/workflows/nbdev-ci3@'),
+        ('fastai/workflows/nbdev-ci@', 'fastai/workflows/nbdev3-ci@'),
     ]
     for f in (*wf_path.glob('*.yml'), *wf_path.glob('*.yaml')):
         txt = f.read_text()
