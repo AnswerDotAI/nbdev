@@ -1,14 +1,14 @@
 - &hook
-  id: nbdev_clean
-  name: nbdev_clean
-  entry: nbdev_clean
+  id: nbdev-clean
+  name: nbdev-clean
+  entry: nbdev-clean
   description: "Clean metadata from notebooks to avoid merge conflicts"
   language: python
   always_run: true
   pass_filenames: false
 
 - <<: *hook
-  id: nbdev_export
-  name: nbdev_export
-  entry: nbdev_export
+  id: nbdev-export
+  name: nbdev-export
+  entry: nbdev-export
   description: "Export notebooks to modules and build modidx"
