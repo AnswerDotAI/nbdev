@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.2
+
+### New Features
+
+- Warn if settings.ini found ([#1560](https://github.com/AnswerDotAI/nbdev/issues/1560))
+
+
 ## 3.0.1
 
 ### Breaking Changes
