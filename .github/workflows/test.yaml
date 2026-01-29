@@ -27,7 +27,7 @@ jobs:
           set -ux
           wget -q $(curl https://latest.fast.ai/pre/quarto-dev/quarto-cli/linux-amd64.deb)
           sudo dpkg -i quarto*.deb
-          nbdev_docs
+          nbdev-docs
           if [ -f "_docs/index.html" ]; then
             echo "docs built successfully."
           else

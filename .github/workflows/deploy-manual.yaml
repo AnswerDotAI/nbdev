@@ -17,7 +17,7 @@ jobs:
           pip install -e ".[dev]"
           wget -nv https://www.quarto.org/download/latest/quarto-linux-amd64.deb
           sudo dpkg -i quarto*.deb
-          nbdev_docs
+          nbdev-docs
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:

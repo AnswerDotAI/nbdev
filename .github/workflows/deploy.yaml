@@ -19,7 +19,7 @@ jobs:
           set -ux
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-          nbdev_docs
+          nbdev-docs
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
