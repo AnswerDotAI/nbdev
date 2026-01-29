@@ -2,7 +2,7 @@
 
 <!-- do not remove -->
 
-## 3.0.3
+## 3.0.4
 
 ### New Features
 
