@@ -192,7 +192,7 @@ def _migrate_workflows(path):
         ('fastai/workflows/quarto-ghp@', 'fastai/workflows/quarto-ghp3@'),
         ('fastai/workflows/nbdev-ci@', 'fastai/workflows/nbdev-ci3@'),
     ]
-    for f in wf_path.glob('*.yml'):
+    for f in (*wf_path.glob('*.yml'), *wf_path.glob('*.yaml')):
         txt = f.read_text()
         for old, new in replacements: txt = txt.replace(old, new)
         f.write_text(txt)
