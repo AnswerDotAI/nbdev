@@ -161,6 +161,9 @@ def _find_nbdev_pyproject(path=None):
     for d in [p] + list(p.parents):
         f = d/pyproject_nm
         if f.exists() and _has_nbdev(f): return f
+    for d in [p] + list(p.parents):
+        if (d/'settings.ini').exists():
+            raise ValueError(f"Found old settings.ini. Migrate to pyproject.toml using `nbdev_migrate`. See https://nbdev.fast.ai/getting_started.html")
 
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
@@ -227,10 +230,6 @@ def get_config(path=None, also_settings=False):
     "Return nbdev config."
     cfg_file = _find_nbdev_pyproject(path)
     if cfg_file is not None:
-        # Check for old settings.ini and complain loudly
-        old_cfg = cfg_file.parent / 'settings.ini'
-        if old_cfg.exists() and not also_settings:
-            raise ValueError(f"Found old settings.ini at {old_cfg}. Please migrate to pyproject.toml using `nbdev_migrate`. See https://nbdev.fast.ai/getting_started.html for details.")
         d = _load_toml(cfg_file)
         user = _user_config()
         nbdev = {**user, **d.get('tool', {}).get('nbdev', {})}
