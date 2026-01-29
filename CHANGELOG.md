@@ -2,7 +2,7 @@
 
 <!-- do not remove -->
 
-## 3.0.6
+## 3.0.7
 
 ### Bugs Squashed
 
@@ -21,6 +21,7 @@
 ### Breaking Changes
 
 - nbdev 3: switch to pyproject.toml settings ([#1558](https://github.com/AnswerDotAI/nbdev/issues/1558))
+- Replace underscores with hyphens ([#1562](https://github.com/AnswerDotAI/nbdev/issues/1562))
 
 ### New Features
 
