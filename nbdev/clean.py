@@ -150,7 +150,6 @@ def nbdev_clean(
 def clean_jupyter(path, model, **kwargs):
     "Clean Jupyter `model` pre save to `path`"
     if not (model['type']=='notebook' and model['content']['nbformat']==4): return
-    get_config.cache_clear() # Allow config changes without restarting Jupyter
     jupyter_hooks = get_config(path=path).jupyter_hooks
     if jupyter_hooks: _nbdev_clean(model['content'], path=path)
 
