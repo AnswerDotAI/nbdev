@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.6
+
+### Bugs Squashed
+
+- remove `cache_clear` ([#1561](https://github.com/AnswerDotAI/nbdev/issues/1561))
+
+
 ## 3.0.5
 
 ### New Features
