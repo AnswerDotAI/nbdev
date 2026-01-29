@@ -183,7 +183,7 @@ def nbdev_migrate(
 # %% ../nbs/api/16_migrate.ipynb #ad76e503
 _license_map = {'apache2': 'Apache-2.0', 'mit': 'MIT', 'gpl2': 'GPL-2.0', 'gpl3': 'GPL-3.0', 'bsd3': 'BSD-3-Clause'}
 
-# %% ../nbs/api/16_migrate.ipynb #7647b587
+# %% ../nbs/api/16_migrate.ipynb #124b1c9b
 def _migrate_workflows(path):
     "Update GitHub workflow files to use nbdev3 workflows"
     wf_path = Path(path) / '.github/workflows'
