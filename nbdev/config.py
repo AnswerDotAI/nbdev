@@ -16,10 +16,13 @@ from fastcore.script import *
 from fastcore.style import *
 from fastcore.xdg import *
 
-import ast,warnings,tomli
+import ast,warnings
 from IPython.display import Markdown
 from execnb.nbio import read_nb,NbCell
 from urllib.error import HTTPError
+
+try: import tomllib
+except ImportError: import tomli as tomllib
 
 # %% ../nbs/api/01_config.ipynb #117128e6
 pyproject_nm = 'pyproject.toml'
@@ -145,7 +148,7 @@ def nbdev_create_config(
 # %% ../nbs/api/01_config.ipynb #0e56064f
 def _load_toml(p):
     "Load TOML file at `p` into a dict"
-    return tomli.loads(Path(p).read_text(encoding='utf-8'))
+    return tomllib.loads(Path(p).read_text(encoding='utf-8'))
 
 def _has_nbdev(p):
     "True if pyproject.toml at `p` has [tool.nbdev]"
