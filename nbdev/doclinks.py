@@ -143,17 +143,17 @@ def nbglob_cli(
 @delegates(nbglob_cli)
 def nbdev_export(
     path:str=None, # Path or filename
-    procs:Param("tokens naming the export processors to use.", nargs="*", choices=optional_procs())="black_format",
+    procs:str='', # Space-separated `module:name` processors to use (or set `export_procs` in pyproject.toml)
     **kwargs):
     "Export notebooks in `path` to Python modules"
     if os.environ.get('IN_TEST',0): return
     if not is_nbdev(): raise Exception('`nbdev_export` must be called from a directory within a nbdev project.')
-    if procs:
-        import nbdev.export
-        procs = [getattr(nbdev.export, p) for p in L(procs)]
+    cfg = get_config()
+    procs = procs.split() if procs else cfg.get('export_procs', [])
+    procs = [import_obj(p) for p in procs] if procs else None
     files = nbglob(path=path, as_path=True, **kwargs).sorted('name')
     for f in files: nb_export(f, procs=procs)
-    add_init(get_config().lib_path)
+    add_init(cfg.lib_path)
     _build_modidx()
 
 # %% ../nbs/api/05_doclinks.ipynb #3134c22b
