@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.8
+
+### New Features
+
+- Export processors extension system ([#1563](https://github.com/AnswerDotAI/nbdev/pull/1563)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.0.7
 
 ### Bugs Squashed
