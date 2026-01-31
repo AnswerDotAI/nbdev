@@ -5,7 +5,7 @@
 # %% auto #0
 __all__ = ['pyproject_nm', 'pyproject_tmpl', 'nbdev_defaults', 'pyproj_tmpl', 'nbdev_create_config', 'ConfigToml', 'get_config',
            'is_nbdev', 'create_output', 'show_src', 'read_version', 'set_version', 'bump_version', 'update_version',
-           'update_proj', 'add_init', 'write_cells']
+           'update_proj', 'add_init', 'import_obj', 'write_cells']
 
 # %% ../nbs/api/01_config.ipynb #6fd14ecd
 from datetime import datetime
@@ -16,7 +16,7 @@ from fastcore.script import *
 from fastcore.style import *
 from fastcore.xdg import *
 
-import ast,warnings
+import ast,importlib,warnings
 from IPython.display import Markdown
 from execnb.nbio import read_nb,NbCell
 from urllib.error import HTTPError
@@ -167,7 +167,8 @@ def _find_nbdev_pyproject(path=None):
 
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
-    clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, black_formatting=False, branch='main')
+    clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, branch='main',
+    doc_procs=[], export_procs=[])
 
 _path_keys = 'lib_path', 'nbs_path', 'doc_path'
 
@@ -336,6 +337,13 @@ def add_init(path=None):
         if _has_py(fs) or any(filter(_has_py, subds)) and not (r/_init).exists(): (r/_init).touch()
     if get_config().get('put_version_in_init', True): update_version(path)
     if get_config().get('update_pyproject', True): update_proj(path.parent)
+
+# %% ../nbs/api/01_config.ipynb #95cebda6
+def import_obj(s):
+    "Import and return `module:obj` string"
+    mod_nm, obj_nm = s.split(':')
+    mod = importlib.import_module(mod_nm)
+    return getattr(mod, obj_nm)
 
 # %% ../nbs/api/01_config.ipynb #cdd05b4c
 def write_cells(cells, hdr, file, solo_nb=False):
