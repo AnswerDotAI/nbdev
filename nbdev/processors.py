@@ -264,7 +264,8 @@ class exec_show_docs(Processor):
 class FilterDefaults:
     "Override `FilterDefaults` to change which notebook processors are used"
     def xtra_procs(self):
-        imps = get_config().get('doc_procs', '').split()
+        imps = get_config().get('doc_procs', [])
+        if isinstance(imps, str): imps = imps.split()
         return [import_obj(o) for o in imps]
 
     def base_procs(self):
