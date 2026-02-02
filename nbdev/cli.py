@@ -184,16 +184,16 @@ def watch_export(nbs:str=None, # Nb directory to watch for changes
     lib = lib or (cfg.lib_path if cfg else '.')
     if cfg and (nbs != cfg.nbs_path or lib != cfg.lib_path) and not force:
         raise ValueError("In nbdev project. Use --force to override config.")
-    run(f'nbdev_export')
+    run('nbdev-export')
     def _export(e,lib=lib):
         p = e.src_path
         if (not '.ipynb_checkpoints' in p and p.endswith('.ipynb') and not Path(p).name.startswith(('tmp','.~'))):
             if e.event_type == 'modified':
                 time.sleep(0.1)
-                try: run(f'nb_export --lib_path {lib} "{p}"')
+                try: run(f'nb-export --lib_path {lib} "{p}"')
                 except IOError:
                     time.sleep(0.3)
-                    run(f'nb_export --lib_path {lib} "{p}"')
+                    run(f'nb-export --lib_path {lib} "{p}"')
     with fs_watchdog(_export, nbs):
         while True: time.sleep(1)
 
