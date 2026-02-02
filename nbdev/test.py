@@ -28,7 +28,8 @@ def test_nb(fn,  # file name of notebook to test
             force_flags=None,  # list of flags marking cells to always run
             do_print=False,  # print completion?
             showerr=True,  # print errors to stderr?
-            basepath=None):  # path to add to sys.path
+            basepath=None,  # path to add to sys.path
+            verbose=False):  # stream stdout/stderr from cells to console?
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     if basepath: sys.path.insert(0, str(basepath))
     if not IN_NOTEBOOK: os.environ["IN_TEST"] = '1'
@@ -49,7 +50,7 @@ def test_nb(fn,  # file name of notebook to test
     if do_print: print(f'Starting {fn}')
     try:
         with working_directory(fn.parent):
-            k.run_all(nb, exc_stop=True, preproc=_no_eval)
+            k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
             res = True
     except: 
         if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
@@ -76,6 +77,7 @@ def nbdev_test(
     do_print:bool=False, # Print start and end of each notebook
     pause:float=0.01,  # Pause time (in seconds) between notebooks to avoid race conditions
     ignore_fname:str='.notest', # Filename that will result in siblings being ignored
+    verbose:bool=False, # Print stdout/stderr from notebook cells?
     **kwargs):
     "Test in parallel notebooks matching `path`, passing along `flags`"
     skip_flags = get_config().tst_flags
@@ -90,7 +92,7 @@ def nbdev_test(
     wd_pth = get_config().nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
-                           basepath=get_config().config_path, pause=pause, do_print=do_print, **kw)
+                           basepath=get_config().config_path, pause=pause, do_print=do_print, verbose=verbose, **kw)
     passed,times = zip(*results)
     if all(passed): print("Success.")
     else: 
