@@ -152,7 +152,7 @@ def _load_toml(p):
 
 def _has_nbdev(p):
     "True if pyproject.toml at `p` has [tool.nbdev]"
-    try: return bool(_load_toml(p).get('tool', {}).get('nbdev', {}))
+    try: return _load_toml(p).get('tool', {}).get('nbdev') is not None
     except Exception: return False
 
 def _find_nbdev_pyproject(path=None):
