@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 3.0.9
+
+### New Features
+
+- Add verbose parameter to `test_nb` and nbdev-test for streaming cell output ([#1567](https://github.com/AnswerDotAI/nbdev/issues/1567))
+
+### Bugs Squashed
+
+- Fix `_has_nbdev` to detect empty [tool.nbdev] sections ([#1570](https://github.com/AnswerDotAI/nbdev/issues/1570))
+- Fix `watch-export` ([#1568](https://github.com/AnswerDotAI/nbdev/pull/1568)), thanks to [@curtis-allan](https://github.com/curtis-allan)
+
+
 ## 3.0.8
 
 ### New Features
