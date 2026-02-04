@@ -127,7 +127,7 @@ def release_git(token:str=None):
 def release_gh(
     token:str=None  # Optional GitHub token (otherwise `token` file is used)
 ):
-    "Calls `nbdev_changelog`, lets you edit the result, then pushes to git and calls `nbdev_release_git`"
+    "Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`"
     cfg = _find_config()
     Release().changelog()
     subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])

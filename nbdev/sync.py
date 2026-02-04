@@ -73,7 +73,7 @@ def _update_mod(py_path, lib_dir):
 @call_parse
 def nbdev_update(fname:str=None): # A Python file name to update
     "Propagate change in modules matching `fname` to notebooks that created them"
-    if fname and fname.endswith('.ipynb'): raise ValueError("`nbdev_update` operates on .py files.  If you wish to convert notebooks instead, see `nbdev_export`.")
+    if fname and fname.endswith('.ipynb'): raise ValueError("`nbdev-update` operates on .py files.  If you wish to convert notebooks instead, see `nbdev-export`.")
     if os.environ.get('IN_TEST',0): return
     cfg = get_config()
     fname = Path(fname or cfg.lib_path)

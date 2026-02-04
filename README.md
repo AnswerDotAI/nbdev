@@ -14,12 +14,10 @@ Python packaging standards ([PEP
 lives in the standard `[project]` section, while nbdev-specific settings
 go in `[tool.nbdev]`.
 
-**Migrating from nbdev2:** Run
-[`nbdev_migrate_config`](https://nbdev.fast.ai/api/migrate.html#nbdev_migrate_config)
-in your project root to automatically convert your `settings.ini` to
-`pyproject.toml` and update your GitHub Actions workflows to use
-nbdev3-compatible versions. Your existing notebooks and code don’t need
-any changes.
+**Migrating from nbdev2:** Run `nbdev-migrate-config` in your project
+root to automatically convert your `settings.ini` to `pyproject.toml`
+and update your GitHub Actions workflows to use nbdev3-compatible
+versions. Your existing notebooks and code don’t need any changes.
 
 `nbdev` is a notebook-driven development platform. Simply write
 notebooks with lightweight markup and get high-quality documentation,
@@ -42,8 +40,7 @@ practices because tests and documentation are first class.
 - **Two-way sync between notebooks and plaintext source code** allowing
   you to use your IDE for code navigation or quick edits. Sync is
   robust: each exported cell is tagged with its unique notebook cell ID,
-  so [`nbdev_update`](https://nbdev.fast.ai/api/sync.html#nbdev_update)
-  always updates the correct cell
+  so `nbdev-update` always updates the correct cell
 - **Tests** written as ordinary notebook cells are run in parallel with
   a single command
 - **Continuous integration** out-of-the-box with [GitHub
@@ -85,47 +82,47 @@ walkthrough](https://youtu.be/67FdzLSt4aA) with coding sections sped up
 using the `unsilence` Python library – it’s 27 minutes faster, but a bit
 harder to follow.
 
-You can also run `nbdev_help` from the terminal to see the full list of
+You can also run `nbdev-help` from the terminal to see the full list of
 available commands:
 
 ``` python
-!nbdev_help
+!nbdev-help
 ```
 
-    nb_export                 Export a single nbdev notebook to a python script.
-    nbdev_bump_version        Increment version in __init__.py by one
-    nbdev_changelog           Create a CHANGELOG.md file from closed and labeled GitHub issues
-    nbdev_clean               Clean all notebooks in `fname` to avoid merge conflicts
-    nbdev_conda               Create a `meta.yaml` file ready to be built into a package, and optionally build and upload it
-    nbdev_contributing        Create CONTRIBUTING.md from contributing_nb (defaults to 'contributing.ipynb' if present). Skips if the file doesn't exist.
-    nbdev_create_config       Create a pyproject.toml config file.
-    nbdev_docs                Create Quarto docs and README.md
-    nbdev_export              Export notebooks in `path` to Python modules
-    nbdev_filter              A notebook filter for Quarto
-    nbdev_fix                 Create working notebook from conflicted notebook `nbname`
-    nbdev_help                Show help for all console scripts
-    nbdev_install             Install Quarto and the current library
-    nbdev_install_hooks       Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks
-    nbdev_install_quarto      Install latest Quarto on macOS or Linux, prints instructions for Windows
-    nbdev_merge               Git merge driver for notebooks
-    nbdev_migrate             Convert all markdown and notebook files in `path` from v1 to v2
-    nbdev_migrate_config      Migrate settings.ini to pyproject.toml
-    nbdev_new                 Create an nbdev project.
-    nbdev_prepare             Export, test, and clean notebooks, and render README if needed
-    nbdev_preview             Preview docs locally
-    nbdev_proc_nbs            Process notebooks in `path` for docs rendering
-    nbdev_pypi                Create and upload Python package to PyPI
-    nbdev_readme              Create README.md from readme_nb (index.ipynb by default)
-    nbdev_release_both        Release both conda and PyPI packages
-    nbdev_release_gh          Calls `nbdev_changelog`, lets you edit the result, then pushes to git and calls `nbdev_release_git`
-    nbdev_release_git         Tag and create a release in GitHub for the current version
-    nbdev_requirements        Writes a `requirements.txt` file to `directory` based on pyproject.toml.
-    nbdev_sidebar             Create sidebar.yml
-    nbdev_test                Test in parallel notebooks matching `path`, passing along `flags`
-    nbdev_trust               Trust notebooks matching `fname`.
-    nbdev_update              Propagate change in modules matching `fname` to notebooks that created them
-    nbdev_update_license      Allows you to update the license of your project.
-    watch_export              Use `nb_export` on ipynb files in `nbs` directory on changes using nbdev config if available
+    nb-export                 Export a single nbdev notebook to a python script.
+    nbdev-bump-version        Increment version in __init__.py by one
+    nbdev-changelog           Create a CHANGELOG.md file from closed and labeled GitHub issues
+    nbdev-clean               Clean all notebooks in `fname` to avoid merge conflicts
+    nbdev-conda               Create a `meta.yaml` file ready to be built into a package, and optionally build and upload it
+    nbdev-contributing        Create CONTRIBUTING.md from contributing_nb (defaults to 'contributing.ipynb' if present). Skips if the file doesn't exist.
+    nbdev-create-config       Create a pyproject.toml config file.
+    nbdev-docs                Create Quarto docs and README.md
+    nbdev-export              Export notebooks in `path` to Python modules
+    nbdev-filter              A notebook filter for Quarto
+    nbdev-fix                 Create working notebook from conflicted notebook `nbname`
+    nbdev-help                Show help for all console scripts
+    nbdev-install             Install Quarto and the current library
+    nbdev-install-hooks       Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks
+    nbdev-install-quarto      Install latest Quarto on macOS or Linux, prints instructions for Windows
+    nbdev-merge               Git merge driver for notebooks
+    nbdev-migrate             Convert all markdown and notebook files in `path` from v1 to v2
+    nbdev-migrate-config      Migrate settings.ini to pyproject.toml
+    nbdev-new                 Create an nbdev project.
+    nbdev-prepare             Export, test, and clean notebooks, and render README if needed
+    nbdev-preview             Preview docs locally
+    nbdev-proc-nbs            Process notebooks in `path` for docs rendering
+    nbdev-pypi                Create and upload Python package to PyPI
+    nbdev-readme              Create README.md from readme_nb (index.ipynb by default)
+    nbdev-release-both        Release both conda and PyPI packages
+    nbdev-release-gh          Calls `nbdev_changelog`, lets you edit the result, then pushes to git and calls `nbdev_release_git`
+    nbdev-release-git         Tag and create a release in GitHub for the current version
+    nbdev-requirements        Writes a `requirements.txt` file to `directory` based on pyproject.toml.
+    nbdev-sidebar             Create sidebar.yml
+    nbdev-test                Test in parallel notebooks matching `path`, passing along `flags`
+    nbdev-trust               Trust notebooks matching `fname`.
+    nbdev-update              Propagate change in modules matching `fname` to notebooks that created them
+    nbdev-update-license      Allows you to update the license of your project.
+    watch-export              Use `nb_export` on ipynb files in `nbs` directory on changes using nbdev config if available
 
 ## FAQ
 
@@ -204,8 +201,7 @@ strive to abide by generally accepted best practices in open-source
 software development.
 
 Make sure you have `nbdev`’s git hooks installed by running
-[`nbdev_install_hooks`](https://nbdev.fast.ai/api/clean.html#nbdev_install_hooks)
-in the cloned repository.
+`nbdev-install-hooks` in the cloned repository.
 
 ## Copyright
 

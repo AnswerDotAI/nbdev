@@ -163,11 +163,11 @@ def _find_nbdev_pyproject(path=None):
         if f.exists() and _has_nbdev(f): return f
     for d in [p] + list(p.parents):
         if (d/'settings.ini').exists():
-            raise ValueError(f"Found old settings.ini. Migrate to pyproject.toml using `nbdev_migrate_config`. See https://nbdev.fast.ai/getting_started.html")
+            raise ValueError(f"Found old settings.ini. Migrate to pyproject.toml using `nbdev-migrate-config`. See https://nbdev.fast.ai/getting_started.html")
 
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
-    clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, branch='main',
+    clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, custom_sidebar=False, branch='main',
     doc_procs=[], export_procs=[])
 
 _path_keys = 'lib_path', 'nbs_path', 'doc_path'

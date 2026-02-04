@@ -64,7 +64,7 @@ def _iter_py_cells(p):
             nb = ' '.join(parts[:-1])
         else:
             raise ValueError(f"Cell ID required but not found in '{p}' at:\n```\n# %% {top}\n```\n"
-                           "Run `nbdev_export` to regenerate .py files with cell IDs.")
+                           "Run `nbdev-export` to regenerate .py files with cell IDs.")
         if nb=='auto': continue  # Skip auto-generated __all__ cell
         nb_path = (p.parent/nb).resolve()  # NB paths are stored relative to .py file
         if code.endswith('\n'): code=code[:-1]
@@ -147,7 +147,7 @@ def nbdev_export(
     **kwargs):
     "Export notebooks in `path` to Python modules"
     if os.environ.get('IN_TEST',0): return
-    if not is_nbdev(): raise Exception('`nbdev_export` must be called from a directory within a nbdev project.')
+    if not is_nbdev(): raise Exception('`nbdev-export` must be called from a directory within a nbdev project.')
     cfg = get_config()
     procs = procs.split() if procs else cfg.get('export_procs', [])
     procs = [import_obj(p) for p in procs] if procs else None

@@ -223,7 +223,7 @@ def _doc_mtime_not_older(readme_path, readme_nb_path):
 
 # %% ../nbs/api/14_quarto.ipynb #7b70b5c8
 class _SidebarYmlRemoved:
-    "Context manager for `nbdev_readme` to avoid rendering whole docs website"
+    "Context manager for `nbdev-readme` to avoid rendering whole docs website"
     def __init__(self,path): self._path=path
     def __enter__(self):
         self._yml_path = self._path/'sidebar.yml'
