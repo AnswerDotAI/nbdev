@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 3.0.10
+
+
+### Bugs Squashed
+
+- Use correct template
+
+
 ## 3.0.9
 
 ### New Features
