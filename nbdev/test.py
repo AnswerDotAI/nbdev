@@ -17,7 +17,7 @@ from fastcore.meta import delegates
 from .config import *
 from .doclinks import *
 from .process import NBProcessor, nb_lang
-from .frontmatter import FrontmatterProc
+from .frontmatter import nb_frontmatter
 
 from execnb.nbio import *
 from execnb.shell import *
@@ -29,13 +29,14 @@ def test_nb(fn,  # file name of notebook to test
             do_print=False,  # print completion?
             showerr=True,  # print errors to stderr?
             basepath=None,  # path to add to sys.path
-            verbose=False):  # stream stdout/stderr from cells to console?
+            verbose=False,  # stream stdout/stderr from cells to console?
+            save=False):  # write outputs back to notebook on success?
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     if basepath: sys.path.insert(0, str(basepath))
     if not IN_NOTEBOOK: os.environ["IN_TEST"] = '1'
     flags=set(L(skip_flags)) - set(L(force_flags))
-    nb = NBProcessor(fn, procs=FrontmatterProc, process=True).nb
-    fm = getattr(nb, 'frontmatter_', {})
+    nb = NBProcessor(fn, rm_directives=False, process=True).nb
+    fm = nb_frontmatter(nb)
     if str2bool(fm.get('skip_exec', False)) or nb_lang(nb) != 'python': return True, 0
 
     def _no_eval(cell):
@@ -51,6 +52,7 @@ def test_nb(fn,  # file name of notebook to test
     try:
         with working_directory(fn.parent):
             k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
+            if save: write_nb(nb, fn)
             res = True
     except: 
         if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
@@ -78,6 +80,7 @@ def nbdev_test(
     pause:float=0.01,  # Pause time (in seconds) between notebooks to avoid race conditions
     ignore_fname:str='.notest', # Filename that will result in siblings being ignored
     verbose:bool=False, # Print stdout/stderr from notebook cells?
+    save:bool=False, # Write outputs back to notebooks on success?
     **kwargs):
     "Test in parallel notebooks matching `path`, passing along `flags`"
     skip_flags = get_config().tst_flags
@@ -92,7 +95,7 @@ def nbdev_test(
     wd_pth = get_config().nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
-                           basepath=get_config().config_path, pause=pause, do_print=do_print, verbose=verbose, **kw)
+                           basepath=get_config().config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
     passed,times = zip(*results)
     if all(passed): print("Success.")
     else: 
