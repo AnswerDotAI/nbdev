@@ -205,7 +205,7 @@ def nbdev_install_hooks():
     hook_path = repo_path/'.git'/'hooks'
     fn = hook_path/'post-merge'
     hook_path.mkdir(parents=True, exist_ok=True)
-    fn.write_text("#!/bin/bash\nnbdev_trust")
+    fn.write_text("#!/bin/bash\nnbdev-trust")
     os.chmod(fn, os.stat(fn).st_mode | stat.S_IEXEC)
 
     cmd = 'git config --local include.path ../.gitconfig'
@@ -219,7 +219,7 @@ def nbdev_install_hooks():
 #
 [merge "nbdev-merge"]
 	name = resolve conflicts with nbdev_fix
-	driver = nbdev_merge %O %A %B %P
+	driver = nbdev-merge %O %A %B %P
 ''')
     run(cmd)
 
