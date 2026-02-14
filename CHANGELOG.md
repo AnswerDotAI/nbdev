@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 3.0.11
+
+### New Features
+
+- Flatten `showdoc_nm` results in `_def_names` to handle list returns ([#1579](https://github.com/AnswerDotAI/nbdev/issues/1579))
+- Add `nb_frontmatter` helper and save option to `nbdev_test` ([#1578](https://github.com/AnswerDotAI/nbdev/issues/1578))
+
+### Bugs Squashed
+
+- fix reference to nbdev cli cmds ([#1577](https://github.com/AnswerDotAI/nbdev/pull/1577)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 3.0.10
 
 
