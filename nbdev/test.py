@@ -84,6 +84,7 @@ def nbdev_test(
     **kwargs):
     "Test in parallel notebooks matching `path`, passing along `flags`"
     skip_flags = get_config().tst_flags
+    if isinstance(skip_flags, str): skip_flags = skip_flags.split()
     force_flags = flags.split()
     files = nbglob(path, as_path=True, **kwargs)
     files = [f.absolute() for f in sorted(files) if _keep_file(f, ignore_fname)]
