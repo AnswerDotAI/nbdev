@@ -22,6 +22,7 @@ _RE_FM_BASE=r'''^---\s*
 _re_fm_nb = re.compile(_RE_FM_BASE+'$', flags=re.DOTALL)
 _re_fm_md = re.compile(_RE_FM_BASE, flags=re.DOTALL)
 
+# %% ../nbs/api/09_frontmatter.ipynb #1725f3b9
 def _fm2dict(s:str, nb=True):
     "Load YAML frontmatter into a `dict`"
     re_fm = _re_fm_nb if nb else _re_fm_md
@@ -42,12 +43,14 @@ def _md2dict(s:str):
         except Exception as e: warn(f'Failed to create YAML dict for:\n{r}\n\n{e}\n')
     return res
 
+# %% ../nbs/api/09_frontmatter.ipynb #4ba11b21
 def nb_frontmatter(nb):
     "Get frontmatter dict from `nb` without modifying cells"
-    for c in nb.cells:
-        if c.cell_type=='raw': return _fm2dict(c.source)
-        if c.cell_type=='markdown': return _md2dict(c.source)
-    return {}
+    raw = first(c for c in nb.cells if c.cell_type=='raw')
+    md  = first(c for c in nb.cells if c.cell_type=='markdown')
+    res = _md2dict(md.source) if md else {}
+    if raw: res.update(_fm2dict(raw.source))
+    return res
 
 # %% ../nbs/api/09_frontmatter.ipynb #1b5d9d32
 def _dict2fm(d): return f'---\n{yaml.dump(d)}\n---\n\n'
