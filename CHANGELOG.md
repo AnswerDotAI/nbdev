@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.12
+
+### Bugs Squashed
+
+- Merge raw and markdown frontmatter instead of returning only the first found ([#1580](https://github.com/AnswerDotAI/nbdev/issues/1580))
+
+
 ## 3.0.11
 
 ### New Features
