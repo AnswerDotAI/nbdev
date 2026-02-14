@@ -47,8 +47,9 @@ class insert_warning(Processor):
 _def_types = (ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)
 def _def_names(cell, shown):
     cellp = cell.parsed_()
-    return [showdoc_nm(o) for o in concat(cellp)
-            if isinstance(o,_def_types) and o.name not in shown and (o.name[0]!='_' or o.name[:2]=='__')] if cellp else []
+    nms = [showdoc_nm(o) for o in concat(cellp)
+           if isinstance(o,_def_types) and o.name not in shown and (o.name[0]!='_' or o.name[:2]=='__')] if cellp else []
+    return [n for nm in nms for n in (nm if isinstance(nm, list) else [nm])]
 
 def _get_nm(tree):
     i = tree.value.args[0]
