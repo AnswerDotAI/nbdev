@@ -79,4 +79,5 @@ include = ["nbdev"]
 custom_sidebar = true
 readme_nb = "getting_started.ipynb"
 jupyter_hooks = true
+allowed_cell_metadata_keys = ['solveit_ai']
 
