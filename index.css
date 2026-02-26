@@ -1,0 +1,218 @@
+:root {
+  --background: #33373F;
+  --background-2: #41454E;
+  --foreground: white;
+  --foreground-2: #484d54;
+  --content-width: 1000px;
+}
+
+html {
+  font-family: Inter, SF Pro Display, -apple-system, sans-serif;
+}
+
+h1, h2, h3 {
+  font-weight: normal;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  text-align: center;
+}
+
+#title-block-header {
+  display: none;
+}
+
+.navbar {
+  background: var(--background);
+  text-align: left;
+  font-size: 16px;
+}
+
+.title, .navbar-title {
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 8px;
+  margin-right: 4px;
+}
+
+.navbar-title {
+  background: linear-gradient(240.01deg, #4B555B 15.29%, rgba(67, 78, 84, 0) 138.75%);
+}
+
+.title {
+  background: linear-gradient(240.01deg, #78858C 15.29%, rgba(105, 117, 123, 0) 138.75%);
+}
+
+.content-block {
+  margin-left: 30px;
+  margin-right: 30px;
+  overflow-x: hidden;
+}
+
+@media(min-width: 900px) {
+  .content-block {
+    margin-left: 50px;
+    margin-right: 50px;
+  }
+}
+
+@media(min-width: 1200px) {
+  .content-block {
+    max-width: var(--content-width);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.hero-banner {
+  padding-top: 20px;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-banner h1 {
+  font-size: 56px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+
+.hero-banner h2 {
+  border: none;
+  font-size: 40px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+
+.hero-banner h3 {
+  color: var(--foreground);
+  font-size: 20px;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 40px;
+}
+
+@media(min-width: 900px) {
+  .hero-banner h3 {
+    max-width: 60%;
+  }
+}
+
+@media(min-width: 1200px) {
+  .hero-banner h3 {
+    max-width: 75%;
+  }
+}
+
+.mid-content {
+  width: 100%;
+  padding: 0;
+  padding-top: 80px !important;
+  padding-bottom: 80px;
+  background: linear-gradient(235.87deg, #656A75 12.29%, #33373F 107.53%);
+  overflow-x: hidden;
+}
+
+.testimonial {
+  background: rgba(51, 55, 63, 0.4);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: left;
+}
+
+.testimonial p {
+  margin: 0;
+  padding: 0;
+}
+
+.testimonial img {
+  margin: 0;
+  padding: 0;
+  display: inline;
+  float: left;
+  width: 50px;
+  margin-right: 20px;
+  border-radius: 8px;
+}
+
+.testimonial h1 {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 4px;
+}
+
+.testimonial h2 {
+  border: none;
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
+  color: #A2A8B4;
+}
+
+.testimonial h3 {
+  margin: 0;
+  margin-top: 30px;
+  font-size: 16px;
+}
+
+.feature {
+  font-size: 16px;
+  height: 210px;
+  background: var(--background-2);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature img {
+  margin-bottom: 20px;
+  width: 48px;
+}
+
+.footer {
+  color: #A2A8B4;
+  font-size: 16px;
+  margin-top: 40px;
+  padding-top: 30px !important;
+  border-top: 1px solid var(--foreground-2);
+}
+
+.btn-action-primary {
+  color: #F9FAFB;
+  background: #009AF1;
+  font-weight: 700;
+  line-height: 20px; /* identical to box height */
+}
+
+.btn-action-primary:hover, .btn-action-primary:active, .btn-action-primary:focus {
+  background: #35acf0;
+}
+
+.btn-action {
+  min-width: 165px;
+  border-radius: 8px;
+  padding: 20px 48px;
+  border: none;
+}
+
+/* Below are needed to make .ipynb equivalent to .qmd */
+
+.figure {
+  display: inline;
+}
+
+.quarto-figure {
+  margin: 0;
+}
