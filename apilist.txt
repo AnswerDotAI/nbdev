@@ -1,0 +1,548 @@
+# nbdev Module Documentation
+
+## nbdev.clean
+
+> Strip superfluous metadata from notebooks
+
+- `@call_parse def nbdev_trust(fname, force_all)`
+    Trust notebooks matching `fname`.
+
+- `def clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, clean_ids)`
+    Clean `nb` from superfluous metadata
+
+- `@call_parse def nbdev_clean(fname, clear_all, disp, stdin)`
+    Clean all notebooks in `fname` to avoid merge conflicts
+
+- `def clean_jupyter(path, model, **kwargs)`
+    Clean Jupyter `model` pre save to `path`
+
+- `@call_parse def nbdev_install_hooks()`
+    Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks
+
+## nbdev.cli
+
+> CLI commands
+
+- `@call_parse def nbdev_filter(nb_txt, fname, printit)`
+    A notebook filter for Quarto
+
+- `@call_parse @delegates(nbdev_create_config) def nbdev_new(**kwargs)`
+    Create an nbdev project.
+
+- `@call_parse def nbdev_update_license(to)`
+    Allows you to update the license of your project.
+
+- `@call_parse @delegates(nb_export, but=['procs', 'mod_maker']) def nb_export_cli(nbname, debug, **kwargs)`
+    Export a single nbdev notebook to a python script.
+
+- `@call_parse def watch_export(nbs, lib, force)`
+    Use `nb_export` on ipynb files in `nbs` directory on changes using nbdev config if available
+
+- `@call_parse def chelp()`
+    Show help for all console scripts
+
+## nbdev.config
+
+> Configuring nbdev and bootstrapping notebook export
+
+- `@call_parse def nbdev_create_config(repo, branch, user, author, author_email, description, path, min_python, license)`
+    Create a pyproject.toml config file.
+
+- `class ConfigToml`
+    - `def __init__(self, d, proj, cfg_file)`
+    - `@property def version(self)`
+    - `@property def d(self)`
+    - `def __getattr__(self, k)`
+    - `def __getitem__(self, k)`
+    - `def get(self, k, default)`
+    - `def path(self, k, default)`
+
+- `def get_config(path, also_settings)`
+    Return nbdev config.
+
+- `def create_output(txt, mime)`
+    Add a cell output containing `txt` of the `mime` text MIME sub-type
+
+- `def read_version(path)`
+    Read __version__ from `path/__init__.py`, or None if not found
+
+- `def set_version(path, version)`
+    Set __version__ in `path/__init__.py`
+
+- `def bump_version(v, part, unbump)`
+    Bump semver string `v` at index `part` (0=major, 1=minor, 2=patch)
+
+- `def update_version(path)`
+    Add __version__ to `path/__init__.py` if it doesn't exist
+
+- `def update_proj(path)`
+    Create or update `pyproject.toml` in the project root.
+
+- `def add_init(path)`
+    Add `__init__.py` in all subdirs of `path` containing python files if it's not there already.
+
+- `def import_obj(s)`
+    Import and return `module:obj` string
+
+- `def write_cells(cells, hdr, file, solo_nb)`
+    Write `cells` to `file` along with header `hdr` (mainly for nbdev internal use).
+
+## nbdev.diff
+
+> Get ipynb diffs by cell
+
+- `def read_nb_from_git(g, path, ref)`
+    Read notebook from git ref (e.g. HEAD) at path, or working dir if ref is None
+
+- `def nbs_pair(nb_path, ref_a, ref_b, f)`
+    NBs at two refs; None means working dir. By default provides HEAD and working dir
+
+- `@delegates(_cell_changes) def changed_cells(nb_path, **kwargs)`
+    Return set of cell IDs for changed/added/deleted cells between two refs
+
+- `def source_diff(old_source, new_source)`
+    Return unified diff string for source change
+
+- `@delegates(_cell_changes) def cell_diffs(nb_path, **kwargs)`
+    {cell_id:diff} for changed/added/deleted cells between two refs
+
+## nbdev.doclinks
+
+> Generating a documentation index from a module
+
+- `def patch_name(o)`
+    If `o` is decorated with `patch` or `patch_to`, return its class-prefix name
+
+- `@delegates(globtastic) def nbglob(path, skip_folder_re, file_glob, skip_file_re, key, as_path, **kwargs)`
+    Find all files in a directory matching an extension given a config key.
+
+- `def nbglob_cli(path, symlinks, file_glob, file_re, folder_re, skip_file_glob, skip_file_re, skip_folder_re)`
+    Find all files in a directory matching an extension given a config key.
+
+- `@call_parse @delegates(nbglob_cli) def nbdev_export(path, procs, **kwargs)`
+    Export notebooks in `path` to Python modules
+
+- `def create_index(url, pre)`
+    Create a documentation index from a sphinx inventory file at `url`, with optional prefix `pre`
+
+- `class NbdevLookup`
+    Mapping from symbol names to docs and source URLs
+
+    - `def __init__(self, strip_libs, incl_libs, skip_mods, ns)`
+    - `def __getitem__(self, s)`
+    - `def doc(self, sym)`
+        Link to docs for `sym`
+
+    - `def code(self, sym)`
+        Link to source code for `sym`
+
+    - `def link_line(self, l)`
+    - `def linkify(self, md)`
+
+## nbdev.export
+
+> Exporting a notebook to a library
+
+- `class ExportModuleProc`
+    A processor which exports code to a module
+
+    - `def begin(self)`
+    - `def __call__(self, cell)`
+
+- `def nb_export(nbname, lib_path, procs, name, mod_maker, debug, solo_nb)`
+    Create module(s) from notebook
+
+## nbdev.extract_attachments
+
+> A preprocessor that extracts all of the attachments from the notebook file.
+> The extracted attachments are returned in the 'resources' dictionary.
+> 
+> Based on the ExtractOutputsProcessor in nbconvert... the license for nbconvert is:
+> 
+> # Licensing terms
+> 
+> This project is licensed under the terms of the Modified BSD License
+> (also known as New or Revised or 3-Clause BSD), as follows:
+> 
+> - Copyright (c) 2001-2015, IPython Development Team
+> - Copyright (c) 2015-, Jupyter Development Team
+> 
+> All rights reserved.
+
+- `class ExtractAttachmentsPreprocessor`
+    Extracts all of the outputs from the notebook file.
+
+    - `def preprocess_cell(self, cell, resources, cell_index)`
+
+## nbdev.frontmatter
+
+> A YAML and formatted-markdown frontmatter processor
+
+- `def nb_frontmatter(nb)`
+    Get frontmatter dict from `nb` without modifying cells
+
+- `class FrontmatterProc`
+    A YAML and formatted-markdown frontmatter processor
+
+    - `def begin(self)`
+    - `def cell(self, cell)`
+    - `def end(self)`
+
+## nbdev.maker
+
+> Create one or more modules from selected notebook cells
+
+- `def find_var(lines, varname)`
+    Find the line numbers where `varname` is defined in `lines`
+
+- `def read_var(code, varname)`
+    Eval and return the value of `varname` defined in `code`
+
+- `def update_var(varname, func, fn, code)`
+    Update the definition of `varname` in file `fn`, by calling `func` with the current definition
+
+- `class ModuleMaker`
+    Helper class to create exported library from notebook source cells
+
+    - `def __init__(self, dest, name, nb_path, is_new, parse, solo_nb)`
+
+- `def decor_id(d)`
+    `id` attr of decorator, regardless of whether called as function or bare
+
+- `@patch def make_all(self, cells)`
+    Create `__all__` with all exports in `cells`
+
+- `def relative_import(name, fname, level)`
+    Convert a module `name` to a name relative to `fname`
+
+- `@patch def make(self, cells, all_cells, lib_path)`
+    Write module containing `cells` with `__all__` generated from `all_cells`
+
+## nbdev.merge
+
+> Fix merge conflicts in jupyter notebooks
+
+- `def unpatch(s)`
+    Takes a string with conflict markers and returns the two original files, and their branch names
+
+- `@call_parse def nbdev_fix(nbname, outname, nobackup, theirs, noprint)`
+    Create working notebook from conflicted notebook `nbname`
+
+- `@call_parse def nbdev_merge(base, ours, theirs, path)`
+    Git merge driver for notebooks
+
+## nbdev.migrate
+
+> Utilities for migrating to nbdev
+
+- `class MigrateProc`
+    Migrate fastpages front matter in notebooks to a raw cell.
+
+    - `def begin(self)`
+
+- `def fp_md_fm(path)`
+    Make fastpages front matter in markdown files quarto compliant.
+
+- `def migrate_nb(path, overwrite)`
+    Migrate Notebooks from nbdev v1 and fastpages.
+
+- `def migrate_md(path, overwrite)`
+    Migrate Markdown Files from fastpages.
+
+- `@call_parse def nbdev_migrate(path, no_skip)`
+    Convert all markdown and notebook files in `path` from v1 to v2
+
+- `@call_parse def nbdev_migrate_config(path)`
+    Migrate settings.ini to pyproject.toml
+
+## nbdev.process
+
+> A notebook processor
+
+- `def first_code_ln(code_list, re_pattern, lang)`
+    get first line number where code occurs, where `code_list` is a list of code
+
+- `def extract_directives(cell, remove, lang)`
+    Take leading comment directives from lines of code in `ss`, remove `#|`, and split
+
+- `def opt_set(var, newval)`
+    newval if newval else var
+
+- `class NBProcessor`
+    Process cells and nbdev comments in a notebook
+
+    - `def __init__(self, path, procs, nb, debug, rm_directives, process)`
+    - `def process(self)`
+        Process all cells with all processors
+
+
+- `class Processor`
+    Base class for processors
+
+    - `def __init__(self, nb)`
+    - `def cell(self, cell)`
+    - `def __call__(self, cell)`
+
+## nbdev.processors
+
+> Some processors for NBProcessor
+
+- `class populate_language`
+    Set cell language based on NB metadata and magics
+
+    - `def begin(self)`
+    - `def cell(self, cell)`
+
+- `class insert_warning`
+    Insert Autogenerated Warning Into Notebook after the first cell.
+
+    - `def begin(self)`
+
+- `class add_show_docs`
+    Add show_doc cells after exported cells, unless they are already documented
+
+    - `def begin(self)`
+
+- `def fdiv(attrs)`
+    Create a fenced div markdown cell in quarto
+
+- `def boxify(cells)`
+    Add a box around `cells`
+
+- `class mv_exports`
+    Move `exports` cells to after the `show_doc`
+
+    - `def begin(self)`
+
+- `def add_links(cell)`
+    Add links to markdown cells
+
+- `def add_fold(cell)`
+    Add `code-fold` to `exports` cells
+
+- `def strip_hidden_metadata(cell)`
+    Strips "hidden" metadata property from code cells so it doesn't interfere with docs rendering
+
+- `def hide_(cell)`
+    Hide cell from output
+
+- `def hide_line(cell)`
+    Hide lines of code in code cells with the directive `hide_line` at the end of a line of code
+
+- `def filter_stream_(cell, *words)`
+    Remove output lines containing any of `words` in `cell` stream output
+
+- `def ai_magics(cell)`
+    A preprocessor to convert AI magics to markdown
+
+- `def clean_magics(cell)`
+    A preprocessor to remove cell magic commands
+
+- `def rm_header_dash(cell)`
+    Remove headings that end with a dash -
+
+- `def rm_export(cell)`
+    Remove cells that are exported or hidden
+
+- `def clean_show_doc(cell)`
+    Remove ShowDoc input cells
+
+- `class exec_show_docs`
+    Execute cells needed for `show_docs` output, including exported cells and imports
+
+    - `def begin(self)`
+    - `def __call__(self, cell)`
+    - `def end(self)`
+
+- `class FilterDefaults`
+    Override `FilterDefaults` to change which notebook processors are used
+
+    - `def xtra_procs(self)`
+    - `def base_procs(self)`
+    - `def procs(self)`
+        Processors for export
+
+    - `def nb_proc(self, nb)`
+        Get an `NBProcessor` with these processors
+
+    - `def __call__(self, nb)`
+
+## nbdev.qmd
+
+> Basic qmd generation helpers (experimental)
+
+- `def meta(md, classes, style, **kwargs)`
+    A metadata section for qmd div in `{}`
+
+- `def div(txt, classes, style, **kwargs)`
+    A qmd div with optional metadata section
+
+- `def img(fname, classes, style, height, relative, link, **kwargs)`
+    A qmd image
+
+- `def btn(txt, link, classes, style, **kwargs)`
+    A qmd button
+
+- `def tbl_row(cols)`
+    Create a markdown table row from `cols`
+
+- `def tbl_sep(sizes)`
+    Create a markdown table separator with relative column size `sizes`
+
+## nbdev.quarto
+
+> Install and interact with Quarto from nbdev
+
+- `@call_parse def install_quarto()`
+    Install latest Quarto on macOS or Linux, prints instructions for Windows
+
+- `@call_parse def install()`
+    Install Quarto and the current library
+
+- `class IndentDumper`
+    - `def increase_indent(self, flow, indentless)`
+
+- `@call_parse @delegates(_nbglob_docs) def nbdev_sidebar(path, printit, force, skip_folder_re, **kwargs)`
+    Create sidebar.yml
+
+- `def refresh_quarto_yml()`
+    Generate `_quarto.yml` from `pyproject.toml`.
+
+- `@call_parse @delegates(proc_nbs) def nbdev_proc_nbs(**kwargs)`
+    Process notebooks in `path` for docs rendering
+
+- `@call_parse def nbdev_readme(path, chk_time)`
+    Create README.md from readme_nb (index.ipynb by default)
+
+- `@call_parse def nbdev_contributing(path, chk_time)`
+    Create CONTRIBUTING.md from contributing_nb (defaults to 'contributing.ipynb' if present). Skips if the file doesn't exist.
+
+- `@call_parse @delegates(_nbglob_docs) def nbdev_docs(path, n_workers, **kwargs)`
+    Create Quarto docs and README.md
+
+- `@call_parse def prepare()`
+    Export, test, and clean notebooks, and render README if needed
+
+- `@contextmanager def fs_watchdog(func, path, recursive)`
+    File system watchdog dispatching to `func`
+
+- `@call_parse @delegates(_nbglob_docs) def nbdev_preview(path, port, host, no_browser, n_workers, **kwargs)`
+    Preview docs locally
+
+## nbdev.release
+
+> Auto-generated tagged releases and release notes from GitHub issues
+
+- `class Release`
+    - `def __init__(self, owner, repo, token, **groups)`
+        Create CHANGELOG.md from GitHub issues
+
+
+- `@patch def changelog(self, debug)`
+    Create the CHANGELOG.md file, or return the proposed text if `debug` is `True`
+
+- `@patch def release(self)`
+    Tag and create a release in GitHub for the current version
+
+- `@patch def latest_notes(self)`
+    Latest CHANGELOG entry
+
+- `def push_release(token)`
+    Create a GitHub release (changelog should already be committed/pushed). Returns the release.
+
+- `@call_parse def release_git(token)`
+    Tag and create a release in GitHub for the current version
+
+- `@call_parse def release_gh(token)`
+    Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`
+
+- `def pypi_json(s)`
+    Dictionary decoded JSON for PYPI path `s`
+
+- `def latest_pypi(name)`
+    Latest version of `name` on pypi
+
+- `def pypi_details(name)`
+    Version, URL, and SHA256 for `name` from pypi
+
+- `def conda_output_path(name, build)`
+    Output path for conda build
+
+- `def write_conda_meta(path)`
+    Writes a `meta.yaml` file to the `conda` directory of the current directory
+
+- `@call_parse def write_requirements(path)`
+    Writes a `requirements.txt` file to `directory` based on pyproject.toml.
+
+- `def anaconda_upload(name, loc, user, token, env_token)`
+    Upload `name` to anaconda
+
+- `@call_parse def release_conda(path, do_build, build_args, skip_upload, mambabuild, upload_user)`
+    Create a `meta.yaml` file ready to be built into a package, and optionally build and upload it
+
+- `def chk_conda_rel(nm, apkg, channel, force)`
+    Prints GitHub tag only if a newer release exists on Pypi compared to an Anaconda Repo.
+
+- `@call_parse def release_pypi(repository, quiet)`
+    Create and upload Python package to PyPI
+
+- `@call_parse def release_both(path, do_build, build_args, skip_upload, mambabuild, upload_user, repository)`
+    Release both conda and PyPI packages
+
+- `@call_parse def nbdev_bump_version(part, unbump)`
+    Increment version in __init__.py by one
+
+## nbdev.scrubmagics
+
+> Scrub Jupyter magics from exported code
+
+- `def scrub_magics(cell)`
+    Remove Jupyter magic lines (e.g. %%time, %matplotlib) from exported code cells
+
+## nbdev.serve
+
+> A parallel ipynb processor (experimental)
+
+- `@delegates(nbglob_cli) def proc_nbs(path, n_workers, force, file_glob, file_re, **kwargs)`
+    Process notebooks in `path` for docs rendering
+
+## nbdev.showdoc
+
+> Display symbol documentation in notebook and website
+
+- `class BasicMarkdownRenderer`
+    Markdown renderer for `show_doc`
+
+
+- `def show_doc(sym, renderer, name, title_level)`
+    Show signature and docstring for `sym`
+
+- `def doc(elt)`
+    Show `show_doc` info along with link to docs
+
+- `def showdoc_nm(tree)`
+    Get the fully qualified name for showdoc.
+
+- `def colab_link(path)`
+    Get a link to the notebook at `path` on Colab
+
+## nbdev.sync
+
+> Propagate small changes in the library back to notebooks
+
+- `def absolute_import(name, fname, level)`
+    Unwarps a relative import in `name` according to `fname`
+
+- `@call_parse def nbdev_update(fname)`
+    Propagate change in modules matching `fname` to notebooks that created them
+
+## nbdev.test
+
+> Run unit tests on notebooks in parallel
+
+- `def test_nb(fn, skip_flags, force_flags, do_print, showerr, basepath, verbose, save)`
+    Execute tests in notebook in `fn` except those with `skip_flags`
+
+- `@call_parse @delegates(nbglob_cli) def nbdev_test(path, flags, n_workers, timing, do_print, pause, ignore_fname, verbose, save, **kwargs)`
+    Test in parallel notebooks matching `path`, passing along `flags`
+
