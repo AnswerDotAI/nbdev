@@ -2,6 +2,11 @@
 
 <!-- do not remove -->
 
+## 3.0.13
+
+- Update fastcore dep
+
+
 ## 3.0.12
 
 ### Bugs Squashed
