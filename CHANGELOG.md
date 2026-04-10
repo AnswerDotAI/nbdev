@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.14
+
+### New Features
+
+- Handle multiline module docstrings ([#1585](https://github.com/AnswerDotAI/nbdev/issues/1585))
+
+
 ## 3.0.13
 
 - Update fastcore dep
