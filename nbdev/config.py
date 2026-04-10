@@ -18,7 +18,7 @@ from fastcore.xdg import *
 
 import ast,importlib,warnings
 from IPython.display import Markdown
-from execnb.nbio import read_nb,NbCell
+from fastcore.nbio import read_nb,NbCell
 from urllib.error import HTTPError
 
 try: import tomllib

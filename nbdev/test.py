@@ -19,7 +19,7 @@ from .doclinks import *
 from .process import NBProcessor, nb_lang
 from .frontmatter import nb_frontmatter
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from execnb.shell import *
 
 # %% ../nbs/api/12_test.ipynb #3f4fa1ad

@@ -11,7 +11,7 @@ from fastcore.utils import *
 from fastcore.meta import delegates
 from difflib import unified_diff
 from fastgit import Git
-from execnb.nbio import *
+from fastcore.nbio import *
 
 # %% ../nbs/api/19_diff.ipynb #a8981115
 def read_nb_from_git(

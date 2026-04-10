@@ -11,7 +11,7 @@ from .config import *
 from .export import *
 from .sync import *
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from fastcore.script import *
 from fastcore import shutil
 

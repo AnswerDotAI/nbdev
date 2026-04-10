@@ -21,7 +21,7 @@ from .export import nb_export
 from .frontmatter import FrontmatterProc
 
 from fastcore.xtras import run
-from execnb.nbio import *
+from fastcore.nbio import *
 from fastcore.meta import *
 from fastcore.utils import *
 from fastcore.script import *

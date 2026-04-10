@@ -16,7 +16,7 @@ from .imports import *
 from fastcore.script import *
 from fastcore.basics import *
 from fastcore.imports import *
-from execnb.nbio import *
+from fastcore.nbio import *
 
 import ast,contextlib
 

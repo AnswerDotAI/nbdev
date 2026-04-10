@@ -10,7 +10,7 @@ import ast,warnings,stat
 from astunparse import unparse
 from textwrap import indent
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from fastcore.script import *
 from fastcore.utils import *
 from fastcore.xtras import *

@@ -10,7 +10,7 @@ from .imports import *
 from .process import *
 from .doclinks import _nbpath2html
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from fastcore.imports import *
 import yaml
 

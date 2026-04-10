@@ -14,7 +14,7 @@ from .process import _partition_cell
 from .export import *
 from .doclinks import _iter_py_cells
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from fastcore.script import *
 from fastcore.xtras import *
 

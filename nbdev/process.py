@@ -10,7 +10,7 @@ from .config import *
 from .maker import *
 from .imports import *
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from fastcore.script import *
 from fastcore.imports import *
 

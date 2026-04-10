@@ -1,5 +1,5 @@
 import os
-from execnb.nbio import read_nb,write_nb
+from fastcore.nbio import read_nb,write_nb
 from io import StringIO
 from contextlib import redirect_stdout
 

@@ -19,7 +19,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
 ]
 dynamic = ["version"]
-dependencies = [ "fastcore>=1.12.3", "execnb>=0.1.12", "astunparse", "ghapi>=1.0.3", "watchdog", "asttokens",
+dependencies = [ "fastcore>=1.12.35", "execnb>=0.1.12", "astunparse", "ghapi>=1.0.3", "watchdog", "asttokens",
     "setuptools", "build", "fastgit", "pyyaml", "tomli; python_version < '3.11'", ]
 
 [project.optional-dependencies]

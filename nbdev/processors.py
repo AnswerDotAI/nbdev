@@ -18,7 +18,7 @@ from .doclinks import *
 from .frontmatter import *
 from .frontmatter import _fm2dict
 
-from execnb.nbio import *
+from fastcore.nbio import *
 from execnb.shell import *
 from fastcore.imports import *
 from fastcore.xtras import *
