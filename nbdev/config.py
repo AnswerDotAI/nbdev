@@ -267,11 +267,6 @@ dynamic = [ "keywords", "description", "version", "dependencies", "optional-depe
 
 [tool.uv]
 cache-keys = [{ file = "pyproject.toml" }, { file = "setup.py" }]
-
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
 """
 
 # %% ../nbs/api/01_config.ipynb #f1c85f45
