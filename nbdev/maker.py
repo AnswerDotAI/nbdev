@@ -5,10 +5,6 @@
 # %% auto #0
 __all__ = ['find_var', 'read_var', 'update_var', 'ModuleMaker', 'decor_id', 'make_code_cells', 'relative_import', 'update_import']
 
-# %% ../nbs/api/02_maker.ipynb #aac32462
-#| export
-
-
 # %% ../nbs/api/02_maker.ipynb #ae4d461b
 from .config import *
 from .imports import *
@@ -23,6 +19,7 @@ import ast,contextlib
 from collections import defaultdict
 from pprint import pformat
 from textwrap import TextWrapper
+from itertools import dropwhile,takewhile
 
 # %% ../nbs/api/02_maker.ipynb #c2d38766
 def find_var(lines, varname):
@@ -178,12 +175,13 @@ def _import2relative(cells, lib_path=None):
 
 # %% ../nbs/api/02_maker.ipynb #5bff9d71
 def _retr_mdoc(cells):
-    "Search for md meta quote line, used to create module docstring"
+    "Search for md meta quote lines, used to create module docstring"
     md1 = first(o for o in cells if o.cell_type=='markdown' and o.source.startswith('# '))
     if not md1: return ''
-    summ = first(o for o in md1.source.splitlines() if o.startswith('> '))
-    if not summ: return ''
-    summ = summ.lstrip('> ').strip()
+    lines = dropwhile(lambda l: not l.startswith('> '), md1.source.splitlines())
+    lines = list(takewhile(lambda l: l.startswith('> '), lines))
+    if not lines: return ''
+    summ = '\n'.join(l.lstrip('> ').strip() for l in lines)
     return f'"""{summ}"""\n\n' if summ else ''
 
 # %% ../nbs/api/02_maker.ipynb #cdd205d6
