@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.15
+
+### New Features
+
+- Add `allowed_out_metadata_keys` support to `clean_nb` and fix nbdev-install-hooks command name ([#1588](https://github.com/AnswerDotAI/nbdev/issues/1588))
+
+
 ## 3.0.14
 
 ### New Features
