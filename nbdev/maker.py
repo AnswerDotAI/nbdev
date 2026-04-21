@@ -111,7 +111,7 @@ def make_code_cells(*ss): return dict2nb({'cells':L(ss).map(mk_cell)}).cells
 # %% ../nbs/api/02_maker.ipynb #a2546836
 def relative_import(name, fname, level=0):
     "Convert a module `name` to a name relative to `fname`"
-    assert not level
+    if level: raise ValueError(f"nbdev export does not support relative imports: module={name}, export_path={fname}")
     sname = name.replace('.','/')
     if not(os.path.commonpath([sname,fname])): return name
     rel = os.path.relpath(sname, fname)
