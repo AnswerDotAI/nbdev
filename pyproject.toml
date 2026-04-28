@@ -76,7 +76,7 @@ version = {attr = "nbdev.__version__"}
 include = ["nbdev"]
 
 [tool.nbdev]
-allowed_metadata_keys = ['solveit_dialog_mode', 'solveit_ver']
+allowed_metadata_keys = ['solveit']
 custom_sidebar = true
 readme_nb = "getting_started.ipynb"
 jupyter_hooks = true
