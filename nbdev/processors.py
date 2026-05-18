@@ -198,8 +198,9 @@ def rm_header_dash(cell):
 _hide_dirs = {'export','exporti', 'hide','default_exp'}
 
 def rm_export(cell):
-    "Remove cells that are exported or hidden"
-    if cell.directives_ and (cell.directives_.keys() & _hide_dirs): del(cell['source'])
+    "Remove code cells that are exported or hidden"
+    if cell.cell_type=='code' and cell.directives_ and (cell.directives_.keys() & _hide_dirs): del(cell['source'])
+
 
 # %% ../nbs/api/10_processors.ipynb #2d9a0a30
 _re_showdoc = re.compile(r'^show_doc', re.MULTILINE)
