@@ -30,7 +30,7 @@ class ExportModuleProc:
     def __call__(self, cell):
         src = cell.source
         if not src: return
-        if cell.cell_type=='markdown' and src.startswith('# '): self.modules['#'].append(cell)
+        if cell.cell_type=='markdown' and (src.startswith('# ') or 'export' in cell.directives_): self._exporti_(cell)
     _exports_=_export_
 
 # %% ../nbs/api/04_export.ipynb #76717e36
