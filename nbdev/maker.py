@@ -181,9 +181,9 @@ def _retr_mdoc(cells):
     lines = dropwhile(lambda l: not l.startswith('> '), md1.source.splitlines())
     lines = list(takewhile(lambda l: l.startswith('> '), lines))
     summ = '\n'.join(l.lstrip('> ').strip() for l in lines)
-    docs = L(o.source.strip() for o in cells if o.cell_type=='markdown' and 'export' in getattr(o,'directives_',{}))
+    docs = L(o.source.rstrip() for o in cells if o.cell_type=='markdown' and 'export' in getattr(o,'directives_',{}))
     mdoc = '\n\n'.join(L(summ)+docs).strip()
-    return f'"""{mdoc}"""\n\n' if mdoc else ''
+    return f'"""{mdoc}\n"""\n\n' if mdoc else ''
 
 # %% ../nbs/api/02_maker.ipynb #cdd205d6
 @patch
