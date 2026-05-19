@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.16
+
+### New Features
+
+- Md export cells to module docstring ([#1591](https://github.com/AnswerDotAI/nbdev/pull/1591)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 3.0.15
 
 ### New Features
