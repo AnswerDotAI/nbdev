@@ -175,14 +175,15 @@ def _import2relative(cells, lib_path=None):
 
 # %% ../nbs/api/02_maker.ipynb #5bff9d71
 def _retr_mdoc(cells):
-    "Search for md meta quote lines, used to create module docstring"
+    "Search for markdown cells used to create module docstring"
     md1 = first(o for o in cells if o.cell_type=='markdown' and o.source.startswith('# '))
     if not md1: return ''
     lines = dropwhile(lambda l: not l.startswith('> '), md1.source.splitlines())
     lines = list(takewhile(lambda l: l.startswith('> '), lines))
-    if not lines: return ''
     summ = '\n'.join(l.lstrip('> ').strip() for l in lines)
-    return f'"""{summ}"""\n\n' if summ else ''
+    docs = L(o.source.rstrip() for o in cells if o.cell_type=='markdown' and 'export' in getattr(o,'directives_',{}))
+    mdoc = '\n\n'.join(L(summ)+docs).strip()
+    return f'"""{mdoc}\n"""\n\n' if mdoc else ''
 
 # %% ../nbs/api/02_maker.ipynb #cdd205d6
 @patch
