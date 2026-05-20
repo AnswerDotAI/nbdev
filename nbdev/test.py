@@ -6,7 +6,7 @@
 __all__ = ['test_nb', 'nbdev_test']
 
 # %% ../nbs/api/12_test.ipynb #45e10c3f
-import time,os,sys,traceback,contextlib, inspect
+import time,os,sys,traceback,contextlib,inspect,faulthandler,signal
 from fastcore.basics import *
 from fastcore.imports import *
 from fastcore.foundation import *
@@ -32,6 +32,7 @@ def test_nb(fn,  # file name of notebook to test
             verbose=False,  # stream stdout/stderr from cells to console?
             save=False):  # write outputs back to notebook on success?
     "Execute tests in notebook in `fn` except those with `skip_flags`"
+    faulthandler.register(signal.SIGINT, all_threads=True, chain=True)
     if basepath: sys.path.insert(0, str(basepath))
     if not IN_NOTEBOOK: os.environ["IN_TEST"] = '1'
     flags=set(L(skip_flags)) - set(L(force_flags))
