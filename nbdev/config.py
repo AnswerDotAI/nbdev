@@ -267,8 +267,7 @@ def nbpath2docurl(nb_path):
     "Hosted docs URL (with `.md` suffix) for notebook `nb_path`, or '' if no `doc_host`"
     cfg = get_config()
     if not cfg.doc_host: return ''
-    nbs_path = cfg.path('nbs_path')
-    p = Path(nb_path).resolve().relative_to(nbs_path.resolve())
+    p = Path(nb_path).resolve().relative_to(cfg.path('nbs_path'))
     return f"{cfg.doc_host.rstrip('/')}{cfg.doc_baseurl}{nbpath2html(p).as_posix()}.md"
 
 # %% ../nbs/api/01_config.ipynb #163177f2
