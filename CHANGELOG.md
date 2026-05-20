@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 3.0.17
+
+### New Features
+
+- feat: add docs URL to exported module docstrings ([#1593](https://github.com/AnswerDotAI/nbdev/pull/1593)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+- Register faulthandler on SIGINT in nbdev-test for tracebacks on ctrl-c ([#1592](https://github.com/AnswerDotAI/nbdev/issues/1592))
+
+
 ## 3.0.16
 
 ### New Features
