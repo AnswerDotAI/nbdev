@@ -20,6 +20,7 @@ from .config import *
 from .doclinks import *
 from .process import NBProcessor, nb_lang
 from .frontmatter import nb_frontmatter
+from .processors import _default_exp
 
 from fastcore.nbio import *
 from execnb.shell import *
@@ -51,6 +52,8 @@ def test_nb(fn,  # file name of notebook to test
     
     start = time.time()
     k = CaptureShell(fn)
+    exp = _default_exp(nb)
+    if exp and is_nbdev(): k.user_ns['__file__'] = str(get_config().lib_path/(exp.replace('.','/') + '.py'))
     if do_print: print(f'Starting {fn}')
     try:
         with working_directory(fn.parent):
