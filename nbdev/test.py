@@ -36,35 +36,41 @@ def test_nb(fn,  # file name of notebook to test
             save=False):  # write outputs back to notebook on success?
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     faulthandler.register(signal.SIGINT, file=sys.__stderr__, all_threads=True, chain=True)
+    fn = Path(fn)
     if basepath: sys.path.insert(0, str(basepath))
-    if not IN_NOTEBOOK: os.environ["IN_TEST"] = '1'
-    flags=set(L(skip_flags)) - set(L(force_flags))
-    nb = NBProcessor(fn, rm_directives=False, process=True).nb
-    fm = nb_frontmatter(nb)
-    if str2bool(fm.get('skip_exec', False)) or nb_lang(nb) != 'python': return True, 0
-
-    def _no_eval(cell):
-        if cell.cell_type != 'code': return True
-        if 'nbdev_export'+'(' in cell.source: return True
-        direc = getattr(cell, 'directives_', {}) or {}
-        if direc.get('eval:', [''])[0].lower() == 'false': return True
-        return flags & direc.keys()
-    
-    start = time.time()
-    k = CaptureShell(fn)
-    exp = _default_exp(nb)
-    if exp and is_nbdev(): k.user_ns['__file__'] = str(get_config().lib_path/(exp.replace('.','/') + '.py'))
-    if do_print: print(f'Starting {fn}')
+    prev_test = os.environ.get('IN_TEST')
+    if not IN_NOTEBOOK: os.environ['IN_TEST'] = '1'
     try:
-        with working_directory(fn.parent):
-            k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
-            if save: write_nb(nb, fn)
-            res = True
-    except: 
-        if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
-        res=False
-    if do_print: print(f'- Completed {fn}')
-    return res,time.time()-start
+        flags=set(L(skip_flags)) - set(L(force_flags))
+        nb = NBProcessor(fn, rm_directives=False, process=True).nb
+        fm = nb_frontmatter(nb)
+        if str2bool(fm.get('skip_exec', False)) or nb_lang(nb) != 'python': return True, 0
+
+        def _no_eval(cell):
+            if cell.cell_type != 'code': return True
+            if 'nbdev_export'+'(' in cell.source: return True
+            direc = getattr(cell, 'directives_', {}) or {}
+            if direc.get('eval:', [''])[0].lower() == 'false': return True
+            return flags & direc.keys()
+
+        start = time.time()
+        k = CaptureShell(fn)
+        exp = _default_exp(nb)
+        if exp and is_nbdev(): k.user_ns['__file__'] = str(get_config().lib_path/(exp.replace('.','/') + '.py'))
+        if do_print: print(f'Starting {fn}')
+        try:
+            with working_directory(fn.parent):
+                k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
+                if save: write_nb(nb, fn)
+                res = True
+        except: 
+            if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
+            res=False
+        if do_print: print(f'- Completed {fn}')
+        return res,time.time()-start
+    finally:
+        if prev_test is None: os.environ.pop('IN_TEST', None)
+        else: os.environ['IN_TEST'] = prev_test
 
 # %% ../nbs/api/12_test.ipynb #d8bf1f1b-935d-4b69-ba96-827c5d7213f0
 def _keep_file(p:Path, # filename for which to check for `indicator_fname`
@@ -89,7 +95,8 @@ def nbdev_test(
     save:bool=False, # Write outputs back to notebooks on success?
     **kwargs):
     "Test in parallel notebooks matching `path`, passing along `flags`"
-    skip_flags = get_config().tst_flags
+    cfg = get_config(Path(path).resolve() if path else None)
+    skip_flags = cfg.tst_flags
     if isinstance(skip_flags, str): skip_flags = skip_flags.split()
     force_flags = flags.split()
     files = nbglob(path, as_path=True, **kwargs)
@@ -99,10 +106,10 @@ def nbdev_test(
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
     if IN_NOTEBOOK: kw = {'method':'spawn'} if os.name=='nt' else {'method':'forkserver'}
     else: kw = {'method':'forkserver'} if sys.platform=='darwin' else {}
-    wd_pth = get_config().nbs_path
+    wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
-                           basepath=get_config().config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
+                           basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
     passed,times = zip(*results)
     if all(passed): print("Success.")
     else: 

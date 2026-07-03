@@ -146,14 +146,16 @@ def nbdev_export(
     **kwargs):
     "Export notebooks in `path` to Python modules"
     if os.environ.get('IN_TEST',0): return
-    if not is_nbdev(): raise Exception('`nbdev-export` must be called from a directory within a nbdev project.')
-    cfg = get_config()
-    procs = procs.split() if procs else cfg.get('export_procs', [])
-    procs = [import_obj(p) for p in procs] if procs else None
-    files = nbglob(path=path, as_path=True, **kwargs).sorted('name')
-    for f in files: nb_export(f, procs=procs)
-    add_init(cfg.lib_path)
-    _build_modidx()
+    if path: path = Path(path).resolve()
+    if not is_nbdev(path): raise Exception('`nbdev-export` must be called from a directory within a nbdev project.')
+    with working_directory(get_config(path).config_path if path else '.'):
+        cfg = get_config()
+        procs = procs.split() if procs else cfg.get('export_procs', [])
+        procs = [import_obj(p) for p in procs] if procs else None
+        files = nbglob(path=path, as_path=True, **kwargs).sorted('name')
+        for f in files: nb_export(f, procs=procs)
+        add_init(cfg.lib_path)
+        _build_modidx()
 
 # %% ../nbs/api/05_doclinks.ipynb #3134c22b
 typs = 'module','class','method','function'
