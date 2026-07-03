@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.0.18
+
+### Bugs Squashed
+
+- Fix missing slash in doc URL ([#1598](https://github.com/AnswerDotAI/nbdev/issues/1598))
+
+
 ## 3.0.17
 
 ### New Features
