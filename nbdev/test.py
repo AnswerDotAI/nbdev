@@ -93,7 +93,8 @@ def nbdev_test(
     save:bool=False, # Write outputs back to notebooks on success?
     **kwargs):
     "Test in parallel notebooks matching `path`, passing along `flags`"
-    skip_flags = get_config().tst_flags
+    cfg = get_config(Path(path).resolve() if path else None)
+    skip_flags = cfg.tst_flags
     if isinstance(skip_flags, str): skip_flags = skip_flags.split()
     force_flags = flags.split()
     files = nbglob(path, as_path=True, **kwargs)
@@ -103,10 +104,10 @@ def nbdev_test(
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
     if IN_NOTEBOOK: kw = {'method':'spawn'} if os.name=='nt' else {'method':'forkserver'}
     else: kw = {'method':'forkserver'} if sys.platform=='darwin' else {}
-    wd_pth = get_config().nbs_path
+    wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
-                           basepath=get_config().config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
+                           basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
     passed,times = zip(*results)
     if all(passed): print("Success.")
     else: 
