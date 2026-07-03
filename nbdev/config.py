@@ -268,7 +268,7 @@ def nbpath2docurl(nb_path):
     cfg = get_config()
     if not cfg.doc_host: return ''
     p = Path(nb_path).resolve().relative_to(cfg.path('nbs_path'))
-    return f"{cfg.doc_host.rstrip('/')}{cfg.doc_baseurl}{nbpath2html(p).as_posix()}.md"
+    return f"{cfg.doc_host.rstrip('/')}{cfg.doc_baseurl.rstrip('/')}/{nbpath2html(p).as_posix()}.md"
 
 # %% ../nbs/api/01_config.ipynb #163177f2
 pyproj_tmpl = """[build-system]
