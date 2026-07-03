@@ -35,33 +35,40 @@ def test_nb(fn,  # file name of notebook to test
             save=False):  # write outputs back to notebook on success?
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     faulthandler.register(signal.SIGINT, file=sys.__stderr__, all_threads=True, chain=True)
+    fn = Path(fn)
     if basepath: sys.path.insert(0, str(basepath))
-    if not IN_NOTEBOOK: os.environ["IN_TEST"] = '1'
-    flags=set(L(skip_flags)) - set(L(force_flags))
-    nb = NBProcessor(fn, rm_directives=False, process=True).nb
-    fm = nb_frontmatter(nb)
-    if str2bool(fm.get('skip_exec', False)) or nb_lang(nb) != 'python': return True, 0
-
-    def _no_eval(cell):
-        if cell.cell_type != 'code': return True
-        if 'nbdev_export'+'(' in cell.source: return True
-        direc = getattr(cell, 'directives_', {}) or {}
-        if direc.get('eval:', [''])[0].lower() == 'false': return True
-        return flags & direc.keys()
-    
-    start = time.time()
-    k = CaptureShell(fn)
-    if do_print: print(f'Starting {fn}')
+    prev_test = os.environ.get('IN_TEST')
+    if not IN_NOTEBOOK: os.environ['IN_TEST'] = '1'
     try:
-        with working_directory(fn.parent):
-            k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
-            if save: write_nb(nb, fn)
-            res = True
-    except: 
-        if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
-        res=False
-    if do_print: print(f'- Completed {fn}')
-    return res,time.time()-start
+        flags=set(L(skip_flags)) - set(L(force_flags))
+        nb = NBProcessor(fn, rm_directives=False, process=True).nb
+        fm = nb_frontmatter(nb)
+        if str2bool(fm.get('skip_exec', False)) or nb_lang(nb) != 'python': return True, 0
+
+        def _no_eval(cell):
+            if cell.cell_type != 'code': return True
+            if 'nbdev_export'+'(' in cell.source: return True
+            direc = getattr(cell, 'directives_', {}) or {}
+            if direc.get('eval:', [''])[0].lower() == 'false': return True
+            return flags & direc.keys()
+
+        start = time.time()
+        k = CaptureShell(fn)
+        if do_print: print(f'Starting {fn}')
+        try:
+            with working_directory(fn.parent):
+                k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
+                if save: write_nb(nb, fn)
+                res = True
+        except: 
+            if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
+            res=False
+        if do_print: print(f'- Completed {fn}')
+        return res,time.time()-start
+    finally:
+        if prev_test is None: os.environ.pop('IN_TEST', None)
+        else: os.environ['IN_TEST'] = prev_test
+
 
 # %% ../nbs/api/12_test.ipynb #d8bf1f1b-935d-4b69-ba96-827c5d7213f0
 def _keep_file(p:Path, # filename for which to check for `indicator_fname`
