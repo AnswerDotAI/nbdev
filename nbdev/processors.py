@@ -128,7 +128,7 @@ def add_links(cell):
     if cell.cell_type == 'markdown': cell.source = nl.linkify(cell.source)
     for o in cell.get('outputs', []):
         if hasattr(o, 'data') and hasattr(o['data'], 'text/markdown'):
-            o.data['text/markdown'] = [nl.link_line(s) for s in o.data['text/markdown']]
+            o.data['text/markdown'] = nl.linkify(o.data['text/markdown'])
 
 # %% ../nbs/api/10_processors.ipynb #809e9225
 def add_fold(cell):
@@ -142,7 +142,7 @@ _re_ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 def strip_ansi(cell):
     "Strip Ansi Characters."
     for outp in cell.get('outputs', []):
-        if outp.get('name')=='stdout': outp['text'] = [_re_ansi_escape.sub('', o) for o in outp.text]
+        if outp.get('name')=='stdout': outp['text'] = _re_ansi_escape.sub('', outp.text)
 
 # %% ../nbs/api/10_processors.ipynb #640b7eca
 def strip_hidden_metadata(cell):
@@ -169,7 +169,7 @@ def filter_stream_(cell, *words):
     if not words: return
     for outp in cell.get('outputs', []):
         if outp.output_type == 'stream':
-            outp['text'] = [l for l in outp.text if not re.search('|'.join(words), l)]
+            outp['text'] = ''.join(l for l in outp.text.splitlines(True) if not re.search('|'.join(words), l))
 
 # %% ../nbs/api/10_processors.ipynb #848fd452-3d63-4c41-aaa6-e14cbeb9fdcd
 _aimagics_pattern = re.compile(r'^\s*(%%ai.? |%%ai.?$)', re.MULTILINE)
