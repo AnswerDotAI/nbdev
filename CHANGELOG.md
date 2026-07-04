@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 3.0.19
+
+### New Features
+
+- Resolve config from `path` in `nbdev_test` instead of using global config ([#1600](https://github.com/AnswerDotAI/nbdev/issues/1600))
+- Allow `nbdev_export` to run from outside project dir; properly restore `IN_TEST` env in `test_nb` ([#1599](https://github.com/AnswerDotAI/nbdev/issues/1599))
+
+### Bugs Squashed
+
+- Treat notebook text fields as strings instead of lists and match merge cells by content ([#1601](https://github.com/AnswerDotAI/nbdev/issues/1601))
+
+
 ## 3.0.18
 
 ### Bugs Squashed
