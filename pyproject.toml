@@ -82,3 +82,6 @@ readme_nb = "getting_started.ipynb"
 jupyter_hooks = true
 allowed_cell_metadata_keys = ['solveit_ai']
 
+
+[tool.chkstyle]
+skip_paths = ["_modidx.py"]
