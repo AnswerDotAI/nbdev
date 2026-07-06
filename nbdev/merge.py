@@ -46,7 +46,8 @@ def _make_conflict(a,b, branch1, branch2):
     return _make_md(f'{_BEG} {branch1}') + a+_make_md(_MID)+b + _make_md(f'{_END} {branch2}')
 
 def _merge_cells(a, b, brancha, branchb, theirs):
-    matches = SequenceMatcher(None, a, b).get_matching_blocks()
+    def _k(cs): return [(c.cell_type,c.source) for c in cs]
+    matches = SequenceMatcher(None, _k(a), _k(b)).get_matching_blocks()
     res,prev_sa,prev_sb,conflict = [],0,0,False
     for sa,sb,sz in matches:
         ca,cb = a[prev_sa:sa],b[prev_sb:sb]
