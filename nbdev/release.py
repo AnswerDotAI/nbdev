@@ -15,7 +15,7 @@ from ghapi.core import *
 
 from datetime import datetime
 from packaging.version import Version
-import shutil,subprocess
+import shutil,subprocess,asyncio
 
 from .doclinks import *
 
@@ -60,24 +60,26 @@ class Release:
         self.gh = GhApi(owner, repo, token)
         self.groups = groups
 
-    def _issues(self, label):
-        return self.gh.issues.list_for_repo(state='closed', sort='created', filter='all', since=self.commit_date, labels=label)
-    def _issue_groups(self): return parallel(self._issues, self.groups.keys(), progress=False, threadpool=True)
+    async def _issues(self, label):
+        return await self.gh.issues.list_for_repo(state='closed', sort='created', filter='all', since=self.commit_date, labels=label)
+    async def _issue_groups(self): return await asyncio.gather(*map(self._issues, self.groups.keys()))
 
 # %% ../nbs/api/18_release.ipynb #aa22dfe3
 @patch
-def changelog(self:Release,
+async def changelog(self:Release,
               debug=False): # Just print the latest changes, instead of updating file
     "Create the CHANGELOG.md file, or return the proposed text if `debug` is `True`"
     if not self.changefile.exists(): self.changefile.write_text("# Release notes\n\n<!-- do not remove -->\n")
     marker = '<!-- do not remove -->\n'
-    try: self.commit_date = (lr:=self.gh.repos.get_latest_release()).published_at
-    except HTTP404NotFoundError: lr,self.commit_date = None,'2000-01-01T00:00:004Z'
+    try: self.commit_date = (lr:=await self.gh.repos.get_latest_release()).published_at
+    except APIError as e:
+        if e.status_code != 404: raise
+        lr,self.commit_date = None,'2000-01-01T00:00:004Z'
     if lr and (Version(self.cfg.version) <= Version(lr.tag_name)): 
         print(f'Error: Version bump required: expected: >{lr.tag_name}, got: {self.cfg.version}.')
         raise SystemExit(1)
     res = f"\n## {self.cfg.version}\n"
-    issues = self._issue_groups()
+    issues = await self._issue_groups()
     res += '\n'.join(_issues_txt(*o) for o in zip(issues, self.groups.values()))
     if debug: return res
     res = self.changefile.read_text().replace(marker, marker+res+"\n")
@@ -87,11 +89,11 @@ def changelog(self:Release,
 
 # %% ../nbs/api/18_release.ipynb #068421c6
 @patch
-def release(self:Release):
+async def release(self:Release):
     "Tag and create a release in GitHub for the current version"
     ver = self.cfg.version
     notes = self.latest_notes()
-    self.gh.create_release(ver, branch=self.cfg.branch, body=notes)
+    await self.gh.create_release(ver, branch=self.cfg.branch, body=notes)
     return ver
 
 # %% ../nbs/api/18_release.ipynb #22101171
@@ -105,38 +107,38 @@ def latest_notes(self:Release):
 
 # %% ../nbs/api/18_release.ipynb #01cb1ca4
 @call_parse
-def changelog(
+async def changelog(
     debug:store_true=False,  # Print info to be added to CHANGELOG, instead of updating file
     repo:str=None,  # repo to use instead of `lib_name` from pyproject.toml
 ):
     "Create a CHANGELOG.md file from closed and labeled GitHub issues"
-    res = Release(repo=repo).changelog(debug=debug)
+    res = await Release(repo=repo).changelog(debug=debug)
     if debug: print(res)
 
 # %% ../nbs/api/18_release.ipynb #15b66643
-def push_release(token:str=None):
+async def push_release(token:str=None):
     "Create a GitHub release (changelog should already be committed/pushed). Returns the release."
-    return Release(token=token).release()
+    return await Release(token=token).release()
 
 # %% ../nbs/api/18_release.ipynb #6d3c5cd8
 @call_parse
-def release_git(token:str=None):
+async def release_git(token:str=None):
     "Tag and create a release in GitHub for the current version"
-    print(f"Released {push_release(token)}")
+    print(f"Released {await push_release(token)}")
 
 # %% ../nbs/api/18_release.ipynb #94ee72b1
 @call_parse
-def release_gh(
+async def release_gh(
     token:str=None  # Optional GitHub token (otherwise `token` file is used)
 ):
     "Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`"
     cfg = _find_config()
-    Release().changelog()
+    await Release().changelog()
     subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
     if not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
     run('git commit -am release')
     run('git push')
-    print(f"Released {push_release(token)}")
+    print(f"Released {await push_release(token)}")
 
 # %% ../nbs/api/18_release.ipynb #5b4d4aa2
 from fastcore.all import *

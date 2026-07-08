@@ -32,7 +32,8 @@ def test_nb(fn,  # file name of notebook to test
             showerr=True,  # print errors to stderr?
             basepath=None,  # path to add to sys.path
             verbose=False,  # stream stdout/stderr from cells to console?
-            save=False):  # write outputs back to notebook on success?
+            save=False,  # write outputs back to notebook on success?
+            profile:bool=None):  # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     faulthandler.register(signal.SIGINT, file=sys.__stderr__, all_threads=True, chain=True)
     fn = Path(fn)
@@ -53,7 +54,8 @@ def test_nb(fn,  # file name of notebook to test
             return flags & direc.keys()
 
         start = time.time()
-        k = CaptureShell(fn)
+        if profile is None: profile = bool(get_config(fn.parent).exec_profile)
+        k = CaptureShell(fn, profile=profile)
         if do_print: print(f'Starting {fn}')
         try:
             with working_directory(fn.parent):

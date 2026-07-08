@@ -196,10 +196,16 @@ def _ensure_quarto():
     print("Quarto is not installed. We will download and install it for you.")
     install.__wrapped__()
 
+# %% ../nbs/api/14_quarto.ipynb #66163c30
+def _chk_nbdev_yml(path):
+    "Fail early if `nbdev.yml` is missing from `path`, since without it quarto silently renders to the wrong location"
+    if not (path/'nbdev.yml').exists(): raise FileNotFoundError(f"{path/'nbdev.yml'} not found, so docs/README can not be built correctly.")
+
 # %% ../nbs/api/14_quarto.ipynb #6b880922
 def _pre_docs(path=None, n_workers:int=defaults.cpus, **kwargs):
     cfg = get_config()
     path = Path(path) if path else cfg.nbs_path
+    _chk_nbdev_yml(path)
     _ensure_quarto()
     refresh_quarto_yml()
     import nbdev.doclinks
@@ -261,6 +267,7 @@ def nbdev_readme(
     "Create README.md from readme_nb (index.ipynb by default)"
     cfg = get_config()
     path = Path(path) if path else cfg.nbs_path
+    _chk_nbdev_yml(path)
     if chk_time and _doc_mtime_not_older(cfg.config_path/'README.md', path/cfg.readme_nb): return
 
     with _SidebarYmlRemoved(path): # to avoid rendering whole website
