@@ -296,6 +296,7 @@ class NbdevLookup:
 
     def linkify(self, md):
         if md:
+            if isinstance(md,list): md = ''.join(md)
             in_fence=False
             lines = md.splitlines()
             for i,l in enumerate(lines):
