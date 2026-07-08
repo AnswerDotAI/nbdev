@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 3.1.0
+
+### New Features
+
+- Support ghapi v2 ([#1603](https://github.com/AnswerDotAI/nbdev/issues/1603))
+- Add owner/repo support, token param to changelog, and `no_changelog` flag to `release_gh` ([#1604](https://github.com/AnswerDotAI/nbdev/issues/1604))
+- Add `update_changelog` to make changelog generation idempotent by replacing existing version sections ([#1605](https://github.com/AnswerDotAI/nbdev/issues/1605))
+
+
 ## 3.0.19
 
 ### New Features

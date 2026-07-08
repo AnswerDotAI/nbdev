@@ -71,25 +71,25 @@ def _render_nb(fn, cfg):
     fn.write_text(txt)
 
 # %% ../nbs/api/13_cli.ipynb #dd385911-aa8f-44e7-8d46-7b8a20f3b010
-def _update_repo_meta(cfg):
+async def _update_repo_meta(cfg):
     "Enable gh pages and update the homepage and description in your GitHub repo."
     token=os.getenv('GITHUB_TOKEN')
     if token:
-        from ghapi.core import GhApi
+        from ghapi.core import GhApi, APIError
         api = GhApi(owner=cfg.user, repo=cfg.repo, token=token)
-        try: api.repos.update(homepage=f'{cfg.doc_host}{cfg.doc_baseurl}', description=cfg.description)
-        except HTTPError:print(f"Could not update the description & URL on the repo: {cfg.user}/{cfg.repo} using $GITHUB_TOKEN.\n"
+        try: await api.repos.update(homepage=f'{cfg.doc_host}{cfg.doc_baseurl}', description=cfg.description)
+        except APIError:print(f"Could not update the description & URL on the repo: {cfg.user}/{cfg.repo} using $GITHUB_TOKEN.\n"
                   "Use a token with the correction permissions or perform these steps manually.")
 
 # %% ../nbs/api/13_cli.ipynb #c4a663d9
 @call_parse
 @delegates(nbdev_create_config)
-def nbdev_new(**kwargs):
+async def nbdev_new(**kwargs):
     "Create an nbdev project."
     from ghapi.core import GhApi
     nbdev_create_config.__wrapped__(**kwargs)
     cfg = get_config()
-    if (Path('.git')).exists(): _update_repo_meta(cfg)
+    if (Path('.git')).exists(): await _update_repo_meta(cfg)
     else: print(f"No git repo found. Run: gh repo create {cfg.user}/{cfg.repo} --public --source=.")
     path = Path()
 
@@ -103,8 +103,8 @@ def nbdev_new(**kwargs):
     if tag is None:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', UserWarning)
-            tag = GhApi(gh_host='https://api.github.com', authenticate=False
-                       ).repos.get_latest_release(org_or_usr, repo).tag_name
+            tag = (await GhApi(gh_host='https://api.github.com', authenticate=False
+                       ).repos.get_latest_release(org_or_usr, repo)).tag_name
 
     url = f"https://github.com/{org_or_usr}/{repo}/archive/{tag}.tar.gz"
     extract_tgz(url)
@@ -137,20 +137,21 @@ mapping = {
 
 # %% ../nbs/api/13_cli.ipynb #a1116ee1-f5cb-4b63-8630-b64cd2ae3c12
 @call_parse
-def nbdev_update_license(
+async def nbdev_update_license(
     to: str=None, # update license to
 ):
     "Allows you to update the license of your project."
     from ghapi.core import GhApi
     warnings.filterwarnings("ignore")
-    avail_lic = GhApi().licenses.get_all_commonly_used().map(lambda x: x['key'])
+    api = GhApi()
+    avail_lic = (await api.licenses.get_all_commonly_used()).map(lambda x: x['key'])
 
     cfg = get_config()
     curr_lic = cfg.license
 
     mapped = mapping.get(to, None)
     if mapped not in avail_lic: raise ValueError(f"{to} is not an available license")
-    body = GhApi().licenses.get(mapped)['body']
+    body = (await api.licenses.get(mapped))['body']
 
     copyright = f"{datetime.now().year}, {cfg.author}"
     body = body.replace('[year], [fullname]', copyright)

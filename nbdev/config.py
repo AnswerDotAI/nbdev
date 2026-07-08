@@ -38,18 +38,16 @@ def _git_repo():
 
 # %% ../nbs/api/01_config.ipynb #6eeafafd
 def _get_info(owner, repo, default_branch='main', default_kw='nbdev'):
-    from ghapi.all import GhApi
-    api = GhApi(owner=owner, repo=repo, token=os.getenv('GITHUB_TOKEN'))
-    
-    try: r = api.repos.get()
-    except HTTPError:
+    from ghapi.all import call_gh, APIError
+    try: r = call_gh('repos.get', owner=owner, repo=repo)
+    except APIError:
         msg= [f"""Could not access repo: {owner}/{repo} to find your default branch - `{default_branch}` assumed.
 Edit `pyproject.toml` if this is incorrect.
 In the future, you can allow nbdev to see private repos by setting the environment variable GITHUB_TOKEN as described here:
 https://nbdev.fast.ai/api/release.html#setup"""]
         print(''.join(msg))
         return default_branch,default_kw,''
-    
+
     return r.default_branch, default_kw if not getattr(r, 'topics', []) else ' '.join(r.topics), r.description
 
 # %% ../nbs/api/01_config.ipynb #35d5c037
@@ -170,7 +168,7 @@ def _find_nbdev_pyproject(path=None):
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
     clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, custom_sidebar=False, branch='main',
-    doc_procs=[], export_procs=[])
+    doc_procs=[], export_procs=[], exec_profile=True)
 
 _path_keys = 'lib_path', 'nbs_path', 'doc_path'
 

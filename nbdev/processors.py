@@ -128,7 +128,8 @@ def add_links(cell):
     if cell.cell_type == 'markdown': cell.source = nl.linkify(cell.source)
     for o in cell.get('outputs', []):
         if hasattr(o, 'data') and hasattr(o['data'], 'text/markdown'):
-            o.data['text/markdown'] = nl.linkify(o.data['text/markdown'])
+            md = o.data['text/markdown']
+            o.data['text/markdown'] = nl.linkify(''.join(md) if isinstance(md, list) else md)
 
 # %% ../nbs/api/10_processors.ipynb #809e9225
 def add_fold(cell):
@@ -242,7 +243,7 @@ class exec_show_docs(Processor):
     "Execute cells needed for `show_docs` output, including exported cells and imports"
     def begin(self):
         if nb_lang(self.nb) != 'python': return
-        self.k = CaptureShell()
+        self.k = CaptureShell(profile=bool(get_config().exec_profile))
         self.k.run_cell('from nbdev.showdoc import show_doc')
 
     def __call__(self, cell):
