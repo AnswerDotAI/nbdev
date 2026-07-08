@@ -52,6 +52,7 @@ class Release:
             default_groups=dict(breaking="Breaking Changes", enhancement="New Features", bug="Bugs Squashed")
             groups=_load_json(self.cfg, 'label_groups') if 'label_groups' in self.cfg else default_groups
         os.chdir(self.cfg.config_path)
+        if repo and '/' in repo: owner,repo = repo.split('/', 1)
         owner,repo = owner or self.cfg.user, repo or self.cfg.repo
         token = ifnone(token, os.getenv('NBDEV_TOKEN',None))
         if not token and Path('token').exists(): token = Path('token').read_text().strip()
@@ -109,16 +110,17 @@ def latest_notes(self:Release):
 @call_parse
 async def changelog(
     debug:store_true=False,  # Print info to be added to CHANGELOG, instead of updating file
-    repo:str=None,  # repo to use instead of `lib_name` from pyproject.toml
+    repo:str=None,  # "repo" or "owner/repo" to use instead of pyproject.toml values
+    token:str=None,  # Optional GitHub token (otherwise `token` file is used)
 ):
     "Create a CHANGELOG.md file from closed and labeled GitHub issues"
-    res = await Release(repo=repo).changelog(debug=debug)
+    res = await Release(repo=repo, token=token).changelog(debug=debug)
     if debug: print(res)
 
 # %% ../nbs/api/18_release.ipynb #15b66643
-async def push_release(token:str=None):
+async def push_release(token:str=None, repo:str=None):
     "Create a GitHub release (changelog should already be committed/pushed). Returns the release."
-    return await Release(token=token).release()
+    return await Release(repo=repo, token=token).release()
 
 # %% ../nbs/api/18_release.ipynb #6d3c5cd8
 @call_parse
@@ -129,16 +131,18 @@ async def release_git(token:str=None):
 # %% ../nbs/api/18_release.ipynb #94ee72b1
 @call_parse
 async def release_gh(
-    token:str=None  # Optional GitHub token (otherwise `token` file is used)
+    token:str=None,  # Optional GitHub token (otherwise `token` file is used)
+    repo:str=None,  # "repo" or "owner/repo" to use instead of pyproject.toml values
+    no_changelog:store_true=False  # Skip changelog creation (assumes CHANGELOG.md is up to date)
 ):
     "Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`"
     cfg = _find_config()
-    await Release().changelog()
+    if not no_changelog: await Release(repo=repo).changelog()
     subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
     if not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
     run('git commit -am release')
     run('git push')
-    print(f"Released {await push_release(token)}")
+    print(f"Released {await push_release(token, repo=repo)}")
 
 # %% ../nbs/api/18_release.ipynb #5b4d4aa2
 from fastcore.all import *
