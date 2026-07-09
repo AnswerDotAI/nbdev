@@ -114,7 +114,7 @@ available commands:
     nbdev-pypi                Create and upload Python package to PyPI
     nbdev-readme              Create README.md from readme_nb (index.ipynb by default)
     nbdev-release-both        Release both conda and PyPI packages
-    nbdev-release-gh          Calls `nbdev_changelog`, lets you edit the result, then pushes to git and calls `nbdev_release_git`
+    nbdev-release-gh          Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`
     nbdev-release-git         Tag and create a release in GitHub for the current version
     nbdev-requirements        Writes a `requirements.txt` file to `directory` based on pyproject.toml.
     nbdev-sidebar             Create sidebar.yml
@@ -139,6 +139,9 @@ some_module.something()
 
 Instead, split this into two cells, one which does `import some_module`,
 and the other which does `some_module.something()`.
+
+Only top-level statements count: `try: import` blocks and imports inside
+function definitions are fine.
 
 The reason for this is that when we create your documentation website,
 we ensure that all of the signatures for functions you document are up

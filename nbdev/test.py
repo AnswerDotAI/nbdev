@@ -25,15 +25,17 @@ from fastcore.nbio import *
 from execnb.shell import *
 
 # %% ../nbs/api/12_test.ipynb #3f4fa1ad
-def test_nb(fn,  # file name of notebook to test
-            skip_flags=None,  # list of flags marking cells to skip
-            force_flags=None,  # list of flags marking cells to always run
-            do_print=False,  # print completion?
-            showerr=True,  # print errors to stderr?
-            basepath=None,  # path to add to sys.path
-            verbose=False,  # stream stdout/stderr from cells to console?
-            save=False,  # write outputs back to notebook on success?
-            profile:bool=None):  # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
+def test_nb(
+    fn,  # file name of notebook to test
+    skip_flags=None,  # list of flags marking cells to skip
+    force_flags=None,  # list of flags marking cells to always run
+    do_print=False,  # print completion?
+    showerr=True,  # print errors to stderr?
+    basepath=None,  # path to add to sys.path
+    verbose=False,  # stream stdout/stderr from cells to console?
+    save=False,  # write outputs back to notebook on success?
+    profile:bool=None # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
+):
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     faulthandler.register(signal.SIGINT, file=sys.__stderr__, all_threads=True, chain=True)
     fn = Path(fn)
@@ -73,9 +75,10 @@ def test_nb(fn,  # file name of notebook to test
 
 
 # %% ../nbs/api/12_test.ipynb #d8bf1f1b-935d-4b69-ba96-827c5d7213f0
-def _keep_file(p:Path, # filename for which to check for `indicator_fname`
-               ignore_fname:str # filename that will result in siblings being ignored
-                ) -> bool:
+def _keep_file(
+    p:Path, # filename for which to check for `indicator_fname`
+    ignore_fname:str # filename that will result in siblings being ignored
+) -> bool:
     "Returns False if `indicator_fname` is a sibling to `fname` else True"
     if p.exists(): return not bool(p.parent.ls().attrgot('name').filter(lambda x: x == ignore_fname))
     else: True
@@ -93,7 +96,8 @@ def nbdev_test(
     ignore_fname:str='.notest', # Filename that will result in siblings being ignored
     verbose:bool=False, # Print stdout/stderr from notebook cells?
     save:bool=False, # Write outputs back to notebooks on success?
-    **kwargs):
+    **kwargs
+):
     "Test in parallel notebooks matching `path`, passing along `flags`"
     cfg = get_config(Path(path).resolve() if path else None)
     skip_flags = cfg.tst_flags

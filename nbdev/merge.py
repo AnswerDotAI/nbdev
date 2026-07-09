@@ -60,11 +60,13 @@ def _merge_cells(a, b, brancha, branchb, theirs):
 
 # %% ../nbs/api/07_merge.ipynb #cc492d30
 @call_parse
-def nbdev_fix(nbname:str, # Notebook filename to fix
-               outname:str=None, # Filename of output notebook (defaults to `nbname`)
-               nobackup:bool_arg=True, # Do not backup `nbname` to `nbname`.bak if `outname` not provided
-               theirs:bool=False, # Use their outputs and metadata instead of ours
-               noprint:bool=False): # Do not print info about whether conflicts are found
+def nbdev_fix(
+    nbname:str, # Notebook filename to fix
+    outname:str=None, # Filename of output notebook (defaults to `nbname`)
+    nobackup:bool_arg=True, # Do not backup `nbname` to `nbname`.bak if `outname` not provided
+    theirs:bool=False, # Use their outputs and metadata instead of ours
+    noprint:bool=False # Do not print info about whether conflicts are found
+):
     "Create working notebook from conflicted notebook `nbname`"
     nbname = Path(nbname)
     if not nobackup and not outname: shutil.copy(nbname, nbname.with_suffix('.ipynb.bak'))

@@ -36,14 +36,15 @@ class ExportModuleProc:
     _exports_=_export_
 
 # %% ../nbs/api/04_export.ipynb #76717e36
-def nb_export(nbname:str,        # Filename of notebook 
-              lib_path:str=None, # Path to destination library.  If not in a nbdev project, defaults to current directory.
-              procs=None,        # Processors to use
-              name:str=None,     # Name of python script {name}.py to create.
-              mod_maker=ModuleMaker,
-              debug:bool=False,  # Debug mode
-              solo_nb:bool=False # Export single notebook outside of an nbdev project.
-             ):
+def nb_export(
+    nbname:str,        # Filename of notebook
+    lib_path:str=None, # Path to destination library.  If not in a nbdev project, defaults to current directory.
+    procs=None,        # Processors to use
+    name:str=None,     # Name of python script {name}.py to create.
+    mod_maker=ModuleMaker,
+    debug:bool=False,  # Debug mode
+    solo_nb:bool=False # Export single notebook outside of an nbdev project.
+):
     "Create module(s) from notebook"
     if lib_path is None: lib_path = get_config().lib_path if is_nbdev() else '.'
     exp = ExportModuleProc()

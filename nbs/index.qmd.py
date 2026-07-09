@@ -9,7 +9,7 @@ image: https://nbdev.fast.ai/images/card.png
 description: Write, test, document, and distribute software packages and technical articles — all in one place, your notebook.
 ---"""
 
-from fastcore.foundation import L
+from fastcore.foundation import L,star
 from nbdev import qmd
 
 def img(fname, classes=None, **kwargs): return qmd.img(f"images/{fname}", classes=classes, **kwargs)
@@ -45,11 +45,11 @@ def testm(im, nm, detl, txt):
 
 ### {txt}""", ["testimonial", "g-col-12", "g-col-md-6"])
 
-expert_d = qmd.div('\n'.join(testms.starmap(testm)), ['content-block', 'grid', 'gap-4'])
+expert_d = qmd.div('\n'.join(testms.map(star(testm))), ['content-block', 'grid', 'gap-4'])
 
 def feature(im, desc): return qmd.div(f"{img(im+'.svg')}\n\n{desc}\n", ['feature', 'g-col-12', 'g-col-sm-6', 'g-col-md-4'])
 
-feature_d = qmd.div('\n'.join(features.starmap(feature)), ['grid', 'gap-4'], style={"padding-bottom": "60px"})
+feature_d = qmd.div('\n'.join(features.map(star(feature))), ['grid', 'gap-4'], style={"padding-bottom": "60px"})
 
 def b(*args, **kwargs): print(banner (*args, **kwargs))
 def d(*args, **kwargs): print(qmd.div(*args, **kwargs))
