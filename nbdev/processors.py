@@ -182,11 +182,15 @@ def ai_magics(cell):
         cell.source = '\n'.join(cell.source.splitlines()[1:])
 
 # %% ../nbs/api/10_processors.ipynb #5a9c8fd4
-_magics_pattern = re.compile(r'^\s*(%%|%).*', re.MULTILINE)
+_def_strip_magics = '%load_ext %autoreload %reload_ext %matplotlib %config'
 
 def clean_magics(cell):
-    "A preprocessor to remove cell magic commands"
-    if cell.cell_type == 'code': cell.source = _magics_pattern.sub('', cell.source).strip()
+    "Remove housekeeping magics: those named in the `strip_magics` config (space-separated, default `_def_strip_magics`)"
+    mm = str(get_config().get('strip_magics', _def_strip_magics)).split()
+    if not mm or cell.cell_type != 'code': return
+    pat = re.compile(rf"^\s*({'|'.join(re.escape(m) for m in mm)})\b.*", re.MULTILINE)
+    cell.source = pat.sub('', cell.source).strip()
+
 
 # %% ../nbs/api/10_processors.ipynb #93e27a52
 _re_hdr_dash = re.compile(r'^#+\s+.*\s+-\s*$', re.MULTILINE)
