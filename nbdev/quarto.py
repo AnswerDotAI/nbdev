@@ -249,15 +249,20 @@ def _copytree(a,b):
         copy_tree(a, b)
 
 # %% ../nbs/api/14_quarto.ipynb #caeaa153
+def _readme_cands(cache, cfg):
+    "Locations where `quarto render -o README.md` may put its output, which differs by quarto version"
+    return cache/cfg.doc_path.name/'README.md', cache/'README.md'
+
 def _save_cached_readme(cache, cfg):
-    tmp_doc_path = cache/cfg.doc_path.name
-    readme = tmp_doc_path/'README.md'
-    if readme.exists():
-        readme_path = cfg.config_path/'README.md'
-        if readme_path.exists(): readme_path.unlink() # py37 doesn't have `missing_ok`
-        move(readme, cfg.config_path)
-        _rdmi = tmp_doc_path/((cache/cfg.readme_nb).stem + '_files') # Supporting files for README
-        if _rdmi.exists(): _copytree(_rdmi, cfg.config_path/_rdmi.name)
+    cands = _readme_cands(cache, cfg)
+    readme = next((f for f in cands if f.exists()), None)
+    if not readme: raise FileNotFoundError(f"quarto render did not produce a README.md in any of: {cands}")
+    readme_path = cfg.config_path/'README.md'
+    if readme_path.exists(): readme_path.unlink() # py37 doesn't have `missing_ok`
+    move(readme, cfg.config_path)
+    _rdmi = readme.parent/((cache/cfg.readme_nb).stem + '_files') # Supporting files for README
+    if _rdmi.exists(): _copytree(_rdmi, cfg.config_path/_rdmi.name)
+
 
 # %% ../nbs/api/14_quarto.ipynb #45d6bb5d
 @call_parse
@@ -272,6 +277,8 @@ def nbdev_readme(
 
     with _SidebarYmlRemoved(path): # to avoid rendering whole website
         cache = proc_nbs(path)
+        for f in _readme_cands(cache, cfg):
+            if f.exists(): f.unlink() # remove stale renders from either quarto layout
         _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute')
         
     _save_cached_readme(cache, cfg)
