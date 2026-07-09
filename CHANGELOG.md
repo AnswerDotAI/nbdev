@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 3.2.0
+
+### Breaking Changes
+
+- `clean_magics` now only strips configurable housekeeping line magics instead of all magics ([#1607](https://github.com/AnswerDotAI/nbdev/issues/1607))
+
+### New Features
+
+- Handle README.md output path differences across quarto versions ([#1606](https://github.com/AnswerDotAI/nbdev/issues/1606))
+
+
 ## 3.1.0
 
 ### New Features
