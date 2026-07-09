@@ -32,11 +32,12 @@ def _file_slug(fname):
     return dt + p.stem[11:]    
 
 # %% ../nbs/api/16_migrate.ipynb #689bf354
-def _replace_fm(d:dict, # dictionary you wish to conditionally change
-                k:str,  # key to check 
-                val:str,# value to check if d[k] == v
-                repl_dict:dict #dictionary that will be used as a replacement 
-               ):
+def _replace_fm(
+    d:dict, # dictionary you wish to conditionally change
+    k:str,  # key to check
+    val:str,# value to check if d[k] == v
+    repl_dict:dict #dictionary that will be used as a replacement
+):
     "replace key `k` in dict `d` if d[k] == val with `repl_dict`"
     if str(d.get(k, '')).lower().strip() == str(val.lower()).strip():
         d.pop(k)
@@ -191,8 +192,9 @@ def _migrate_workflows(path):
     wf_path = Path(path) / '.github/workflows'
     if not wf_path.exists(): return
     replacements = [
-        ('fastai/workflows/quarto-ghp@', 'fastai/workflows/quarto-ghp3@'),
-        ('fastai/workflows/nbdev-ci@', 'fastai/workflows/nbdev3-ci@'),
+        ('fastai/workflows/quarto-ghp@', 'AnswerDotAI/workflows/quarto-ghp3@'),
+        ('fastai/workflows/nbdev-ci@', 'AnswerDotAI/workflows/nbdev3-ci@'),
+        ('fastai/workflows/', 'AnswerDotAI/workflows/'),
     ]
     for f in (*wf_path.glob('*.yml'), *wf_path.glob('*.yaml')):
         txt = f.read_text()

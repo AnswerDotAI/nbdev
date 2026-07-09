@@ -236,7 +236,7 @@ def get_config(path=None, also_settings=False):
         nbdev = {**user, **d.get('tool', {}).get('nbdev', {})}
         return ConfigToml(nbdev, d.get('project', {}), cfg_file)
     if also_settings:
-        from fastcore.foundation import Config
+        from fastcore.xtras import Config
         cfg = Config.find('settings.ini', path)
         if cfg: return cfg
     cfg_path = Path(path or Path.cwd()).expanduser().absolute()
@@ -265,7 +265,8 @@ def nbpath2docurl(nb_path):
     "Hosted docs URL (with `.md` suffix) for notebook `nb_path`, or '' if no `doc_host`"
     cfg = get_config()
     if not cfg.doc_host: return ''
-    p = Path(nb_path).resolve().relative_to(cfg.path('nbs_path'))
+    try: p = Path(nb_path).resolve().relative_to(cfg.path('nbs_path'))
+    except ValueError: return ""
     return f"{cfg.doc_host.rstrip('/')}{cfg.doc_baseurl.rstrip('/')}/{nbpath2html(p).as_posix()}.md"
 
 # %% ../nbs/api/01_config.ipynb #163177f2

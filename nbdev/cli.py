@@ -169,18 +169,21 @@ async def nbdev_update_license(
 # %% ../nbs/api/13_cli.ipynb #412b4cd2
 @call_parse
 @delegates(nb_export, but=['procs', 'mod_maker'])
-def nb_export_cli(nbname, 
-                  debug:store_true=False, # Debug flag 
-                  **kwargs): 
+def nb_export_cli(
+    nbname,
+    debug:store_true=False, # Debug flag
+    **kwargs
+):
     "Export a single nbdev notebook to a python script."
     return nb_export(nbname=nbname, debug=debug, **kwargs)
 
 # %% ../nbs/api/13_cli.ipynb #aaa472e7
 @call_parse
-def watch_export(nbs:str=None, # Nb directory to watch for changes
-                 lib:str=None, # Export directory to write py files to
-                 force:bool=False # Ignore nbdev config if in nbdev project
-                ):
+def watch_export(
+    nbs:str=None, # Nb directory to watch for changes
+    lib:str=None, # Export directory to write py files to
+    force:bool=False # Ignore nbdev config if in nbdev project
+):
     '''Use `nb_export` on ipynb files in `nbs` directory on changes using nbdev config if available'''
     cfg = get_config() if is_nbdev() else None
     nbs = nbs or (cfg.nbs_path if cfg else '.')

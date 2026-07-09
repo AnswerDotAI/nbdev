@@ -14,10 +14,12 @@ from fastcore.utils import *
 from fastcore.meta import delegates
 
 # %% ../nbs/api/15_qmd.ipynb #5a64f1f4
-def meta(md,  # Markdown to add meta to
-         classes=None,  # List of CSS classes to add
-         style=None,  # Dict of CSS styles to add
-         **kwargs):   # Additional attributes to add to meta
+def meta(
+    md,  # Markdown to add meta to
+    classes=None,  # List of CSS classes to add
+    style=None,  # Dict of CSS styles to add
+    **kwargs # Additional attributes to add to meta
+):
     "A metadata section for qmd div in `{}`"
     if style: kwargs['style'] = "; ".join(f'{k}: {v}' for k,v in style.items())
     props = ' '.join(f'{k}="{v}"' for k,v in kwargs.items())
@@ -29,21 +31,25 @@ def meta(md,  # Markdown to add meta to
     return md + ("{" + meta + "}" if meta else "")
 
 # %% ../nbs/api/15_qmd.ipynb #52637a70
-def div(txt,  # Markdown to add meta to
-        classes=None,  # List of CSS classes to add
-        style=None,  # Dict of CSS styles to add
-        **kwargs):
+def div(
+    txt,  # Markdown to add meta to
+    classes=None,  # List of CSS classes to add
+    style=None,  # Dict of CSS styles to add
+    **kwargs
+):
     "A qmd div with optional metadata section"
     return meta("::: ", classes=classes, style=style, **kwargs) + f"\n\n{txt}\n\n:::\n\n"
 
 # %% ../nbs/api/15_qmd.ipynb #f9f499f4
-def img(fname,  # Image to link to
-        classes=None,  # List of CSS classes to add
-        style=None,   # Dict of CSS styles to add
-        height=None,  # Height attribute
-        relative=None,  # Tuple of (position,px)
-        link=False,   # Hyperlink to this image
-        **kwargs):
+def img(
+    fname,  # Image to link to
+    classes=None,  # List of CSS classes to add
+    style=None,   # Dict of CSS styles to add
+    height=None,  # Height attribute
+    relative=None,  # Tuple of (position,px)
+    link=False,   # Hyperlink to this image
+    **kwargs
+):
     "A qmd image"
     kwargs,style = kwargs or {}, style or {}
     if height: kwargs["height"]= f"{height}px"
@@ -55,23 +61,27 @@ def img(fname,  # Image to link to
     return  f'[{res}]({fname})' if link else res
 
 # %% ../nbs/api/15_qmd.ipynb #16d7aa5f
-def btn(txt, # Button text
-        link,  # Button link URL
-        classes=None,  # List of CSS classes to add
-        style=None,    # Dict of CSS styles to add
-        **kwargs):
+def btn(
+    txt, # Button text
+    link,  # Button link URL
+    classes=None,  # List of CSS classes to add
+    style=None,    # Dict of CSS styles to add
+    **kwargs
+):
     "A qmd button"
     return meta(f'[{txt}]({link})', classes=classes, style=style, role="button")
 
 # %% ../nbs/api/15_qmd.ipynb #e414ed33
-def tbl_row(cols:list,  # Auto-stringified columns to show in the row
-           ):
+def tbl_row(
+    cols:list,  # Auto-stringified columns to show in the row
+):
     "Create a markdown table row from `cols`"
     return '|' + '|'.join(str(c or '') for c in cols) + '|'
 
 # %% ../nbs/api/15_qmd.ipynb #38f0641b
-def tbl_sep(sizes:int|list=3  # List of column sizes, or single `int` if all sizes the same
-           ):
+def tbl_sep(
+    sizes:int|list=3  # List of column sizes, or single `int` if all sizes the same
+):
     "Create a markdown table separator with relative column size `sizes`"
     if isinstance(sizes,int): sizes = [3]*sizes
     return tbl_row('-'*s for s in sizes)

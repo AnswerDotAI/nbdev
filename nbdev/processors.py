@@ -223,6 +223,8 @@ def _ast_contains(trees, types):
         for node in ast.walk(tree):
             if isinstance(node, types): return True
 
+def _tl_contains(trees, types): return any(isinstance(t, types) for t in trees)
+
 def _do_eval(cell):
     if cell_lang(cell) != 'python': return
     if not cell.source or 'nbdev_export'+'()' in cell.source: return
@@ -233,7 +235,7 @@ def _do_eval(cell):
     _show_dirs = {'export','exports','exporti','exec_doc'}
     if cell.directives_.keys() & _show_dirs: return True
     if _ast_contains(trees, (ast.Import, ast.ImportFrom)):
-        if _ast_contains(trees, (ast.Expr, ast.Assign)):
+        if _tl_contains(trees, (ast.Import, ast.ImportFrom)) and _tl_contains(trees, (ast.Expr, ast.Assign)):
             warn(f'Found cells containing imports and other code. See FAQ.\n---\n{cell.source}\n---\n')
         return True
     if _show_docs(trees): return True

@@ -34,10 +34,12 @@ class BasicMarkdownRenderer(MarkdownRenderer):
         return doc+super()._repr_markdown_()
 
 # %% ../nbs/api/08_showdoc.ipynb #1256ef79
-def show_doc(sym,  # Symbol to document
-             renderer=None,  # Optional renderer (defaults to markdown)
-             name:str|None=None,  # Optionally override displayed name of `sym`
-             title_level:int=3):  # Heading level to use for symbol name
+def show_doc(
+    sym,  # Symbol to document
+    renderer=None,  # Optional renderer (defaults to markdown)
+    name:str|None=None,  # Optionally override displayed name of `sym`
+    title_level:int=3 # Heading level to use for symbol name
+):
     "Show signature and docstring for `sym`"
     if renderer is None: renderer = get_config().get('renderer', None)
     if renderer is None: renderer=BasicMarkdownRenderer
