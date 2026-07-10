@@ -24,7 +24,7 @@ dependencies = [ "fastcore>=1.14.6", "execnb>=0.2.4", "astunparse", "ghapi>=2.0.
 
 [project.optional-dependencies]
 dev = [ "ipywidgets", "nbdev-numpy", "nbdev-stdlib", "pandas", "matplotlib", "black", "svg.py", "nbclassic",
-    "pysymbol_llm", "llms-txt", "sphinx", "plum-dispatch", ]
+    "pysymbol_llm>=0.0.6", "llms-txt", "sphinx", "plum-dispatch", ]
 
 [project.urls]
 Repository = "https://github.com/AnswerDotAI/nbdev"
