@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.2.1
+
+### New Features
+
+- Add format-links, fix quarto nav regex, optimize `proc_nbs` file filtering, and add no-editor/yes flags to `release_gh` ([#1608](https://github.com/AnswerDotAI/nbdev/issues/1608))
+
+
 ## 3.2.0
 
 ### Breaking Changes
