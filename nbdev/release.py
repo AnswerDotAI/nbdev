@@ -83,9 +83,10 @@ async def changelog(self:Release,
     if lr and (Version(self.cfg.version) <= Version(lr.tag_name)): 
         print(f'Error: Version bump required: expected: >{lr.tag_name}, got: {self.cfg.version}.')
         raise SystemExit(1)
-    res = f"\n## {self.cfg.version}\n"
+    res = f"\n## {self.cfg.version}\n\n"
     issues = await self._issue_groups()
-    res += '\n'.join(_issues_txt(*o) for o in zip(issues, self.groups.values()))
+    sections = (_issues_txt(*o) for o in zip(issues, self.groups.values()))
+    res += '\n\n'.join(filter(None, sections))
     if debug: return res
     res = update_changelog(self.changefile.read_text(), self.cfg.version, res, marker)
     shutil.copy(self.changefile, self.changefile.with_suffix(".bak"))
