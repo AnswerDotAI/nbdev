@@ -29,9 +29,7 @@ def _find_config(): return get_config()
 def _issue_txt(issue):
     res = '- {} ([#{}]({}))'.format(issue.title.strip(), issue.number, issue.html_url)
     if hasattr(issue, 'pull_request'): res += ', thanks to [@{}]({})'.format(issue.user.login, issue.user.html_url)
-    res += '\n'
-    if not issue.body: return res
-    return res + f"  - {issue.body.strip()}\n"
+    return res
 
 def _issues_txt(iss, label):
     if not iss: return ''
@@ -139,13 +137,15 @@ async def release_git(token:str=None):
 async def release_gh(
     token:str=None,  # Optional GitHub token (otherwise `token` file is used)
     repo:str=None,  # "repo" or "owner/repo" to use instead of pyproject.toml values
-    no_changelog:store_true=False  # Skip changelog creation (assumes CHANGELOG.md is up to date)
+    no_changelog:store_true=False,  # Skip changelog creation (assumes CHANGELOG.md is up to date)
+    no_editor:store_true=False,  # Skip opening CHANGELOG.md in an editor
+    yes:store_true=False  # Release without asking for confirmation
 ):
-    "Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`"
+    "Create the changelog, optionally edit it, then push and create the GitHub release"
     cfg = _find_config()
     if not no_changelog: await Release(repo=repo).changelog()
-    subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
-    if not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
+    if not no_editor: subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
+    if not yes and not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
     run('git commit -am release')
     run('git push')
     print(f"Released {await push_release(token, repo=repo)}")

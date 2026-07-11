@@ -10,6 +10,7 @@ __all__ = ['proc_nbs']
 # %% ../nbs/api/17_serve.ipynb #6899a335
 import ast,subprocess,threading,sys
 from shutil import rmtree,copy2
+from fnmatch import fnmatch
 
 from fastcore.utils import *
 from fastcore.parallel import parallel
@@ -53,20 +54,27 @@ def _proc_file(s, cache, path, mtime=None):
     if md is not None: return s,d,md.strip()
     else: copy2(s,d)
 
+# %% ../nbs/api/17_serve.ipynb #eac159fb
+def _keep_file(f:Path, file_glob='', file_re=''):
+    "Keep all non-notebook files; keep notebooks matching `file_glob` and `file_re` (empty patterns match all)"
+    if f.suffix!='.ipynb': return True
+    return (not file_glob or fnmatch(f.name, file_glob)) and (not file_re or bool(re.search(file_re, f.name)))
+
 # %% ../nbs/api/17_serve.ipynb #14463227
 @delegates(nbglob_cli)
 def proc_nbs(
     path:str='', # Path to notebooks
     n_workers:int=defaults.cpus,  # Number of workers
     force:bool=False,  # Ignore cache and build all
-    file_glob:str='', # Only include files matching glob
-    file_re:str='', # Only include files matching glob
+    file_glob:str='', # Only process notebooks matching glob (other files are always included)
+    file_re:str='', # Only process notebooks matching regex (other files are always included)
     **kwargs):
     "Process notebooks in `path` for docs rendering"
     cfg = get_config()
     cache = cfg.config_path/'_proc'
     path = Path(path or cfg.nbs_path)
     files = nbglob(path, func=Path, file_glob='', file_re='', **kwargs)
+    if file_glob or file_re: files = files.filter(_keep_file, file_glob=file_glob, file_re=file_re)
     if (path/'_quarto.yml').exists(): files.append(path/'_quarto.yml')
     if (path/'_brand.yml').exists(): files.append(path/'_brand.yml')
     if (path/'_extensions').exists(): files.extend(nbglob(path/'_extensions', func=Path, file_glob='', file_re='', skip_file_re='^[.]'))
