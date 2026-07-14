@@ -25,7 +25,7 @@ def read_nb_from_git(
     path = Path(path)
     if path.is_absolute(): path = path.relative_to(g.top())
     if ref is None: return read_nb(g.top()/path)
-    raw = g.show(f'{ref}:{path}', split=False)
+    raw = g.show(f'{ref}:{path}')
     return dict2nb(json.loads(raw))
 
 # %% ../nbs/api/19_diff.ipynb #3ac25702

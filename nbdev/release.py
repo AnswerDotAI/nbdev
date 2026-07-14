@@ -40,6 +40,25 @@ def _load_json(cfg, k):
     try: return json.loads(cfg[k])
     except json.JSONDecodeError as e: raise Exception(f"Key: `{k}` in .ini file is not a valid JSON string: {e}")
 
+# %% ../nbs/api/18_release.ipynb #e5861010
+def _require_release_branch(branch):
+    if not branch: raise SystemExit('Cannot release from detached HEAD; create a maintenance branch first')
+    return branch
+
+def _release_branch(): return _require_release_branch(run('git branch --show-current').strip())
+def _is_ancestor(ref): return subprocess.run(['git', 'merge-base', '--is-ancestor', ref, 'HEAD'], capture_output=True).returncode == 0
+def _remote_shas(s): return {o.split()[0] for o in s.splitlines()}
+
+def _check_changelog_base(tag):
+    if _is_ancestor(tag): return
+    raise SystemExit(f'HEAD does not contain the latest release ({tag}). Write CHANGELOG.md manually, then run with --no_changelog.')
+
+def _release_head():
+    _release_branch()
+    head = run('git rev-parse HEAD').strip()
+    if head not in _remote_shas(run('git ls-remote --heads origin')): raise SystemExit(f'Release commit {head[:7]} is not on origin; push the current branch first')
+    return head
+
 # %% ../nbs/api/18_release.ipynb #dcaba486
 def update_changelog(txt, ver, notes, marker='<!-- do not remove -->\n'):
     "Insert `notes` into changelog `txt` after `marker`, replacing any existing section for `ver`"
@@ -80,9 +99,12 @@ async def changelog(self:Release,
     except APIError as e:
         if e.status_code != 404: raise
         lr,self.commit_date = None,'2000-01-01T00:00:004Z'
-    if lr and (Version(self.cfg.version) <= Version(lr.tag_name)): 
-        print(f'Error: Version bump required: expected: >{lr.tag_name}, got: {self.cfg.version}.')
-        raise SystemExit(1)
+    if lr:
+        run('git fetch --tags --quiet')
+        _check_changelog_base(lr.tag_name)
+        if Version(self.cfg.version) <= Version(lr.tag_name):
+            print(f'Error: Version bump required: expected: >{lr.tag_name}, got: {self.cfg.version}.')
+            raise SystemExit(1)
     res = f"\n## {self.cfg.version}\n\n"
     issues = await self._issue_groups()
     sections = (_issues_txt(*o) for o in zip(issues, self.groups.values()))
@@ -99,7 +121,7 @@ async def release(self:Release):
     "Tag and create a release in GitHub for the current version"
     ver = self.cfg.version
     notes = self.latest_notes()
-    await self.gh.create_release(ver, branch=self.cfg.branch, body=notes)
+    await self.gh.create_release(ver, branch=_release_head(), body=notes)
     return ver
 
 # %% ../nbs/api/18_release.ipynb #22101171
@@ -144,11 +166,12 @@ async def release_gh(
 ):
     "Create the changelog, optionally edit it, then push and create the GitHub release"
     cfg = _find_config()
+    _release_branch()
     if not no_changelog: await Release(repo=repo).changelog()
     if not no_editor: subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
     if not yes and not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
     run('git commit -am release')
-    run('git push')
+    run('git push --set-upstream origin HEAD')
     print(f"Released {await push_release(token, repo=repo)}")
 
 # %% ../nbs/api/18_release.ipynb #5b4d4aa2
