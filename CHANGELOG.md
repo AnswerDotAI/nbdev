@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 3.2.2
+
+### New Features
+
+- Add maintenance release support: validate branch, check changelog base, and target pushed commit ([#1610](https://github.com/AnswerDotAI/nbdev/issues/1610))
+
+### Bugs Squashed
+
+- Fix generated changelog section spacing ([#1609](https://github.com/AnswerDotAI/nbdev/issues/1609))
+
+
 ## 3.2.1
 
 ### New Features
