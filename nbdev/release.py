@@ -121,7 +121,9 @@ async def release(self:Release):
     "Tag and create a release in GitHub for the current version"
     ver = self.cfg.version
     notes = self.latest_notes()
-    await self.gh.create_release(ver, branch=_release_head(), body=notes)
+    default = (await self.gh.repos.get()).default_branch
+    latest = 'true' if _release_branch()==default else 'false'
+    await self.gh.create_release(ver, branch=_release_head(), body=notes, make_latest=latest)
     return ver
 
 # %% ../nbs/api/18_release.ipynb #22101171
