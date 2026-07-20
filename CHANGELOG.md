@@ -2,12 +2,14 @@
 
 <!-- do not remove -->
 
-## 3.2.3
+## 3.3.0
 
 ### New Features
 
-- Refactor directive parsing into cell methods, add notebook-level metadata directives, git diff driver, and structural repair ([#1613](https://github.com/AnswerDotAI/nbdev/issues/1613))
+- Refactor directive parsing into cell methods, add notebook-level metadata directives ([#1613](https://github.com/AnswerDotAI/nbdev/issues/1613))
+- Git diff driver, and structural repair ([#1613](https://github.com/AnswerDotAI/nbdev/issues/1613))
 - Mark releases as "Latest" only when releasing from the default branch ([#1611](https://github.com/AnswerDotAI/nbdev/issues/1611))
+
 
 ## 3.2.2
 
