@@ -68,7 +68,7 @@ def cell_lang(cell): return nested_attr(cell, 'metadata.language', 'python')
 def _want_doc(c):
     d = c.directives_
     show_d = set(['export', 'exports', 'exec_doc']).intersection(d)
-    return c.source and c.cell_type=='code' and show_d and 'hide' not in d and d.get('include:') != ['false']
+    return c.source and c.cell_type=='code' and show_d and 'hide' not in d and d.get('include') != 'false'
 
 class add_show_docs(Processor):
     "Add show_doc cells after exported cells, unless they are already documented"
@@ -234,7 +234,7 @@ def _do_eval(cell):
     if not cell.source or 'nbdev_export'+'()' in cell.source: return
     trees = cell.parsed_()
     if cell.cell_type != 'code' or not trees: return
-    if cell.directives_.get('eval:', [''])[0].lower() == 'false': return
+    if cell.directives_.get('eval', '').lower() == 'false': return
 
     _show_dirs = {'export','exports','exporti','exec_doc'}
     if cell.directives_.keys() & _show_dirs: return True
@@ -292,6 +292,6 @@ class FilterDefaults:
     
     def nb_proc(self, nb):
         "Get an `NBProcessor` with these processors"
-        return NBProcessor(nb=nb, procs=self.procs())
+        return NBProcessor(nb=nb, procs=self.procs(), rm_directives='quarto')
     
     def __call__(self, nb): return self.nb_proc(nb).process()

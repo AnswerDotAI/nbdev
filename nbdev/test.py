@@ -52,7 +52,7 @@ def test_nb(
             if cell.cell_type != 'code': return True
             if 'nbdev_export'+'(' in cell.source: return True
             direc = getattr(cell, 'directives_', {}) or {}
-            if direc.get('eval:', [''])[0].lower() == 'false': return True
+            if direc.get('eval', '').lower() == 'false': return True
             return flags & direc.keys()
 
         start = time.time()

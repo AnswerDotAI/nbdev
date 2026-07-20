@@ -13,6 +13,7 @@ from astunparse import unparse
 from textwrap import indent
 
 from fastcore.nbio import *
+from fastcore.nbio import _directive, _dir_line, _meta_directives, _unparse_dir
 from fastcore.script import *
 from fastcore.utils import *
 from fastcore.xtras import *
@@ -93,11 +94,13 @@ def clean_nb(
     allowed_cell_metadata_keys:list=None, # Preserve the list of keys in cell level metadata
     clean_ids=True, # Remove ids from plaintext reprs?
     allowed_out_metadata_keys:list=None, # Preserve the list of keys in output metadata
+    repair:bool=True, # Fix structural problems first (see `repair_nb`)?
 ):
     "Clean `nb` from superfluous metadata"
-    metadata_keys = {"kernelspec", "jekyll", "jupytext", "doc", "widgets"}
+    if repair: repair_nb(nb)
+    metadata_keys = {"kernelspec", "jekyll", "jupytext", "doc", "widgets", "nbdev"}
     if allowed_metadata_keys: metadata_keys.update(allowed_metadata_keys)
-    cell_metadata_keys = {"hide_input"}
+    cell_metadata_keys = {"hide_input", "nbdev"}
     if allowed_cell_metadata_keys: cell_metadata_keys.update(allowed_cell_metadata_keys)
     out_meta_keys = set()
     if allowed_out_metadata_keys: out_meta_keys.update(allowed_out_metadata_keys)
@@ -126,14 +129,73 @@ def process_write(warn_msg, proc_nb, f_in, f_out=None, disp=False):
         warn(f'{warn_msg}')
         warn(e)
 
+# %% ../nbs/api/11_clean.ipynb #f6e854ac
+def _cmt_dirs(cell):
+    "Comment directives in `cell` as `{name: value}`, plus the partitioned `(dirs,code)` lines"
+    dirs,code = cell._partition()
+    return dict(t for t in (_directive(s, cell.lang_) for s in dirs) if t),dirs,code
+
+def _rm_dir_lines(cell, dirs, code, names):
+    "Rewrite `cell` source without the directive lines in `names`"
+    cell.set_source(''.join([o for o in dirs if (t:=_directive(o, cell.lang_)) is None or t[0] not in names] + code))
+
+def _to_meta(cell, names):
+    "Move comment directives in `names` to the cell's `nbdev` metadata key"
+    cmts,dirs,code = _cmt_dirs(cell)
+    move = {k:v for k,v in cmts.items() if k in names}
+    if not move: return
+    cell.setdefault('metadata',{}).setdefault('nbdev',{}).update({k:_unparse_dir(v) for k,v in move.items()})
+    _rm_dir_lines(cell, dirs, code, move)
+
+def _to_comments(cell, names):
+    "Move directives in `names` from the cell's `nbdev` metadata key to comments"
+    move = {k:v for k,v in _meta_directives(cell).items() if k in names}
+    if not move: return
+    nbd = cell.metadata['nbdev']
+    for k in move: nbd.pop(k, None)
+    if not nbd: del cell.metadata['nbdev']
+    dirs,code = cell._partition()
+    cell.set_source(''.join(dirs + [_dir_line(k, v, cell.lang_) for k,v in move.items()] + code))
+
+# %% ../nbs/api/11_clean.ipynb #6e8d013d
+def _canon_dirs(cell):
+    "Rewrite `cell`'s comment directives in canonical form (colon-separated, bare for true)"
+    dirs,code = cell._partition()
+    new = [o if (t:=_directive(o, cell.lang_)) is None else _dir_line(*t, lang=cell.lang_) for o in dirs]
+    if new != dirs: cell.set_source(''.join(new + code))
+
+def _hoist_nb_meta(nb, names=('default_exp',)):
+    "Move notebook-scope directives in `names` to notebook metadata, dropping any cell left empty"
+    for c in list(nb.cells):
+        cmts,dirs,code = _cmt_dirs(c)
+        move = {k:v for k,v in cmts.items() if k in names}
+        if not move: continue
+        nb.setdefault('metadata',{}).setdefault('nbdev',{}).update({k:_unparse_dir(v) for k,v in move.items()})
+        _rm_dir_lines(c, dirs, code, move)
+        left = set(c.directives) - {'hide'}
+        if not left and not ''.join(c._partition()[1]).strip(): nb.cells.remove(c)
+
+def _dir_moves(nb, dirs=False, to_meta=None, to_comments=None, nb_meta=False):
+    "Apply directive migrations to loaded notebook dict `nb` in place"
+    nbo = dict2nb(nb)
+    if to_meta:
+        for c in nbo.cells: _to_meta(c, to_meta.split())
+    if to_comments:
+        for c in nbo.cells: _to_comments(c, to_comments.split())
+    if nb_meta: _hoist_nb_meta(nbo)
+    if dirs:
+        for c in nbo.cells: _canon_dirs(c)
+    nb['cells'],nb['metadata'] = nbo.cells,nbo.metadata
+
 # %% ../nbs/api/11_clean.ipynb #714357ce
-def _nbdev_clean(nb, path=None, clear_all=None):
+def _nbdev_clean(nb, path=None, clear_all=None, repair=True, dirs=False, to_meta=None, to_comments=None, nb_meta=False):
     cfg = get_config(path=path)
     clear_all = clear_all or cfg.clear_all
     allowed_metadata_keys = cfg.get("allowed_metadata_keys") or []
     allowed_cell_metadata_keys = cfg.get("allowed_cell_metadata_keys") or []
     allowed_out_metadata_keys = cfg.get("allowed_out_metadata_keys") or []
-    clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, cfg.clean_ids, allowed_out_metadata_keys)
+    if dirs or to_meta or to_comments or nb_meta: _dir_moves(nb, dirs, to_meta, to_comments, nb_meta)
+    clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, cfg.clean_ids, allowed_out_metadata_keys, repair=repair)
     if path: nbdev_trust.__wrapped__(path)
 
 # %% ../nbs/api/11_clean.ipynb #6af3b9d4
@@ -142,11 +204,16 @@ def nbdev_clean(
     fname:str=None, # A notebook name or glob to clean
     clear_all:bool=False, # Remove all cell metadata and cell outputs?
     disp:bool=False,  # Print the cleaned outputs
-    stdin:bool=False # Read notebook from input stream
+    stdin:bool=False, # Read notebook from input stream
+    repair:bool_arg=True, # Fix structural problems, e.g. stray outputs on non-code cells (see `repair_nb`)?
+    dirs:bool=False, # Rewrite comment directives in canonical form?
+    to_meta:str=None, # Space-separated directive names to move from comments to cell metadata
+    to_comments:str=None, # Space-separated directive names to move from cell metadata to comments
+    nb_meta:bool=False # Move `default_exp` into notebook metadata?
 ):
     "Clean all notebooks in `fname` to avoid merge conflicts"
     # Git hooks will pass the notebooks in stdin
-    _clean = partial(_nbdev_clean, clear_all=clear_all)
+    _clean = partial(_nbdev_clean, clear_all=clear_all, repair=repair, dirs=dirs, to_meta=to_meta, to_comments=to_comments, nb_meta=nb_meta)
     _write = partial(process_write, warn_msg='Failed to clean notebook', proc_nb=_clean)
     if stdin: return _write(f_in=sys.stdin, f_out=sys.stdout)
     if fname is None: fname = get_config().nbs_path
@@ -193,8 +260,29 @@ def _git_root():
     except OSError: return None
 
 # %% ../nbs/api/11_clean.ipynb #e6083614
+def _add_attrs(path, attrs):
+    "Append missing attribute lines to git attributes file at `path`"
+    txt = path.read_text() if path.exists() else ''
+    have = [l.split() for l in txt.splitlines()]  # whitespace-insensitive: nbdime writes its lines with tabs
+    for attr in attrs:
+        if attr.split() not in have:
+            if txt and not txt.endswith('\n'): txt+='\n'
+            txt += attr+'\n'
+    path.write_text(txt)
+
+def _cfg_drivers(loc, merge, diff):
+    "Define the `jupyternotebook` merge/diff drivers via `git config <loc>`"
+    if merge:
+        run(f'git config {loc} merge.jupyternotebook.name "resolve conflicts with nbdev_fix"')
+        run(f'git config {loc} merge.jupyternotebook.driver "nbdev-merge %O %A %B %P"')
+    if diff: run(f'git config {loc} diff.jupyternotebook.command nbdev-diff-driver')
+
 @call_parse
-def nbdev_install_hooks():
+def nbdev_install_hooks(
+    merge:bool_arg=True, # Install the notebook merge driver?
+    diff:bool_arg=True, # Install the notebook diff driver?
+    globally:bool_arg=False # Define the drivers in `~/.gitconfig` and the global attributes file, instead of repo files?
+):
     "Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks"
     cfg_path = Path.home()/'.jupyter'
     cfg_path.mkdir(exist_ok=True)
@@ -203,6 +291,16 @@ def nbdev_install_hooks():
         src = fn.read_text() if fn.exists() else ''
         upd = _add_jupyter_hooks(src, fn)
         if upd is not None: fn.write_text(upd)
+
+    nbdev_attrs = (['*.ipynb merge=jupyternotebook'] if merge else []) + (['*.ipynb diff=jupyternotebook'] if diff else [])
+    if globally:
+        _cfg_drivers('--global', merge, diff)
+        rc,p = run('git config --global --get core.attributesFile', ignore_ex=True)
+        if rc: p = os.environ.get('XDG_CONFIG_HOME', '~/.config') + '/git/attributes'
+        attrs_path = Path(p).expanduser()
+        attrs_path.parent.mkdir(parents=True, exist_ok=True)
+        _add_attrs(attrs_path, nbdev_attrs)
+        return print("Hooks are installed globally.")
 
     repo_path = _git_root()
     if repo_path is None:
@@ -215,7 +313,8 @@ def nbdev_install_hooks():
     os.chmod(fn, os.stat(fn).st_mode | stat.S_IEXEC)
 
     cmd = 'git config --local include.path ../.gitconfig'
-    (repo_path/'.gitconfig').write_text(f'''# Generated by nbdev-install-hooks
+    cfg_fn = repo_path/'.gitconfig'
+    cfg_fn.write_text(f'''# Generated by nbdev-install-hooks
 #
 # If you need to disable this instrumentation do:
 #   git config --local --unset include.path
@@ -223,19 +322,10 @@ def nbdev_install_hooks():
 # To restore:
 #   {cmd}
 #
-[merge "nbdev-merge"]
-	name = resolve conflicts with nbdev_fix
-	driver = nbdev-merge %O %A %B %P
 ''')
+    _cfg_drivers(f'--file "{cfg_fn}"', merge, diff)
     run(cmd)
 
-    attrs_path = repo_path/'.gitattributes'
-    nbdev_attr = '*.ipynb merge=nbdev-merge\n'
-    try:
-        attrs = attrs_path.read_text()
-        if nbdev_attr not in attrs:
-            if not attrs.endswith('\n'): attrs+='\n'
-            attrs_path.write_text(attrs+nbdev_attr)
-    except FileNotFoundError: attrs_path.write_text(nbdev_attr)
+    _add_attrs(repo_path/'.gitattributes', nbdev_attrs)
 
     print("Hooks are installed.")

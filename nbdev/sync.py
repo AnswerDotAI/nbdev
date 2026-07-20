@@ -12,7 +12,6 @@ from .imports import *
 from .config import *
 from .maker import *
 from .process import *
-from .process import _partition_cell
 from .export import *
 from .doclinks import _iter_py_cells
 
@@ -61,7 +60,7 @@ def _update_nb(nb_path, cells, lib_dir):
         nbcell = nb_cells_by_id.get(cell.cell_id)
         if nbcell is None:
             raise ValueError(f"Cell ID '{cell.cell_id}' not found in notebook '{nb_path}'")
-        dirs,_ = _partition_cell(nbcell, 'python')
+        dirs,_ = nbcell._partition()
         nbcell.source = ''.join(dirs) + _to_absolute(cell.code, cell.py_path, lib_dir)
     write_nb(nbp.nb, nb_path)
 
