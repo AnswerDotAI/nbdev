@@ -63,7 +63,7 @@ def _release_head():
 def update_changelog(txt, ver, notes, marker='<!-- do not remove -->\n'):
     "Insert `notes` into changelog `txt` after `marker`, replacing any existing section for `ver`"
     txt = re.sub(rf'\n## {re.escape(ver)}\n.*?(?=\n## |\Z)', '', txt, flags=re.S)
-    return txt.replace(marker, marker+notes+'\n')
+    return txt.replace(marker, marker+notes.rstrip('\n')+'\n\n').rstrip('\n')+'\n'
 
 # %% ../nbs/api/18_release.ipynb #0b36471a
 class Release:
