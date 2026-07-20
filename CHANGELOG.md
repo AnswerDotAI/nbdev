@@ -2,6 +2,44 @@
 
 <!-- do not remove -->
 
+## 3.3.0
+
+### New Features
+
+- Refactor directive parsing into cell methods, add notebook-level metadata directives ([#1613](https://github.com/AnswerDotAI/nbdev/issues/1613))
+- Git diff driver, and structural repair ([#1613](https://github.com/AnswerDotAI/nbdev/issues/1613))
+- Mark releases as "Latest" only when releasing from the default branch ([#1611](https://github.com/AnswerDotAI/nbdev/issues/1611))
+
+
+## 3.2.2
+
+### New Features
+
+- Add maintenance release support: validate branch, check changelog base, and target pushed commit ([#1610](https://github.com/AnswerDotAI/nbdev/issues/1610))
+
+### Bugs Squashed
+
+- Fix generated changelog section spacing ([#1609](https://github.com/AnswerDotAI/nbdev/issues/1609))
+
+
+## 3.2.1
+
+### New Features
+
+- Add format-links, fix quarto nav regex, optimize `proc_nbs` file filtering, and add no-editor/yes flags to `release_gh` ([#1608](https://github.com/AnswerDotAI/nbdev/issues/1608))
+
+
+## 3.2.0
+
+### Breaking Changes
+
+- `clean_magics` now only strips configurable housekeeping line magics instead of all magics ([#1607](https://github.com/AnswerDotAI/nbdev/issues/1607))
+
+### New Features
+
+- Handle README.md output path differences across quarto versions ([#1606](https://github.com/AnswerDotAI/nbdev/issues/1606))
+
+
 ## 3.1.0
 
 ### New Features

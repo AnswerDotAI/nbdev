@@ -174,6 +174,11 @@ website:
   description: "{description}"
   repo-branch: {branch}
   repo-url: "{git_url}"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown
 """
 
 # %% ../nbs/api/14_quarto.ipynb #38124450
@@ -249,30 +254,38 @@ def _copytree(a,b):
         copy_tree(a, b)
 
 # %% ../nbs/api/14_quarto.ipynb #caeaa153
+def _readme_cands(cache, cfg):
+    "Locations where `quarto render -o README.md` may put its output, which differs by quarto version"
+    return cache/cfg.doc_path.name/'README.md', cache/'README.md'
+
 def _save_cached_readme(cache, cfg):
-    tmp_doc_path = cache/cfg.doc_path.name
-    readme = tmp_doc_path/'README.md'
-    if readme.exists():
-        readme_path = cfg.config_path/'README.md'
-        if readme_path.exists(): readme_path.unlink() # py37 doesn't have `missing_ok`
-        move(readme, cfg.config_path)
-        _rdmi = tmp_doc_path/((cache/cfg.readme_nb).stem + '_files') # Supporting files for README
-        if _rdmi.exists(): _copytree(_rdmi, cfg.config_path/_rdmi.name)
+    cands = _readme_cands(cache, cfg)
+    readme = next((f for f in cands if f.exists()), None)
+    if not readme: raise FileNotFoundError(f"quarto render did not produce a README.md in any of: {cands}")
+    readme_path = cfg.config_path/'README.md'
+    if readme_path.exists(): readme_path.unlink() # py37 doesn't have `missing_ok`
+    move(readme, cfg.config_path)
+    _rdmi = readme.parent/((cache/cfg.readme_nb).stem + '_files') # Supporting files for README
+    if _rdmi.exists(): _copytree(_rdmi, cfg.config_path/_rdmi.name)
+
 
 # %% ../nbs/api/14_quarto.ipynb #45d6bb5d
 @call_parse
 def nbdev_readme(
     path:str=None, # Path to notebooks
     chk_time:bool=False): # Only build if out of date
-    "Create README.md from readme_nb (index.ipynb by default)"
+    "Create README.md from readme_nb (index.ipynb by default). Skips if the file doesn't exist."
     cfg = get_config()
     path = Path(path) if path else cfg.nbs_path
+    if not (path/cfg.readme_nb).exists(): return
     _chk_nbdev_yml(path)
     if chk_time and _doc_mtime_not_older(cfg.config_path/'README.md', path/cfg.readme_nb): return
 
     with _SidebarYmlRemoved(path): # to avoid rendering whole website
-        cache = proc_nbs(path)
-        _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute')
+        cache = proc_nbs(path, file_glob=Path(cfg.readme_nb).name)
+        for f in _readme_cands(cache, cfg):
+            if f.exists(): f.unlink() # remove stale renders from either quarto layout
+        _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve')
         
     _save_cached_readme(cache, cfg)
 
@@ -303,10 +316,16 @@ def nbdev_contributing(
     if chk_time and _doc_mtime_not_older(cfg.config_path / 'CONTRIBUTING.md' , contrib_nb_path): return
     
     with _SidebarYmlRemoved(path): # to avoid rendering whole website
-        cache = proc_nbs(path)
-        _sprun(f'cd "{cache}" && quarto render "{cache/contrib_nb_name}" -o CONTRIBUTING.md -t gfm --no-execute')
+        cache = proc_nbs(path, file_glob=Path(contrib_nb_name).name)
+        _sprun(f'cd "{cache}" && quarto render "{cache/contrib_nb_name}" -o CONTRIBUTING.md -t gfm --no-execute -M wrap:preserve')
         
     _save_cached_contributing(cache, cfg, contrib_nb_name)
+
+# %% ../nbs/api/14_quarto.ipynb #8e1627d3
+def _fix_quarto_nav(doc_path):
+    "Anchor quarto-nav.js's clean-URL regex, which otherwise breaks `index.html.md` alternate-format links (quarto-dev/quarto-cli#14667)"
+    p = Path(doc_path)/'site_libs/quarto-nav/quarto-nav.js'
+    if p.exists(): p.write_text(p.read_text().replace(r'.replace(/\/index\.html/, "/")', r'.replace(/\/index\.html(?=[?#]|$)/, "/")'))
 
 # %% ../nbs/api/14_quarto.ipynb #37d16049
 @call_parse
@@ -322,6 +341,7 @@ def nbdev_docs(
     _sprun(f'cd "{cache}" && quarto render --no-cache')
     shutil.rmtree(cfg.doc_path, ignore_errors=True)
     move(cache/cfg.doc_path.name, cfg.config_path)
+    _fix_quarto_nav(cfg.doc_path)
 
 # %% ../nbs/api/14_quarto.ipynb #23886f9c
 @call_parse

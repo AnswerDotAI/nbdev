@@ -29,9 +29,7 @@ def _find_config(): return get_config()
 def _issue_txt(issue):
     res = '- {} ([#{}]({}))'.format(issue.title.strip(), issue.number, issue.html_url)
     if hasattr(issue, 'pull_request'): res += ', thanks to [@{}]({})'.format(issue.user.login, issue.user.html_url)
-    res += '\n'
-    if not issue.body: return res
-    return res + f"  - {issue.body.strip()}\n"
+    return res
 
 def _issues_txt(iss, label):
     if not iss: return ''
@@ -42,11 +40,30 @@ def _load_json(cfg, k):
     try: return json.loads(cfg[k])
     except json.JSONDecodeError as e: raise Exception(f"Key: `{k}` in .ini file is not a valid JSON string: {e}")
 
+# %% ../nbs/api/18_release.ipynb #e5861010
+def _require_release_branch(branch):
+    if not branch: raise SystemExit('Cannot release from detached HEAD; create a maintenance branch first')
+    return branch
+
+def _release_branch(): return _require_release_branch(run('git branch --show-current').strip())
+def _is_ancestor(ref): return subprocess.run(['git', 'merge-base', '--is-ancestor', ref, 'HEAD'], capture_output=True).returncode == 0
+def _remote_shas(s): return {o.split()[0] for o in s.splitlines()}
+
+def _check_changelog_base(tag):
+    if _is_ancestor(tag): return
+    raise SystemExit(f'HEAD does not contain the latest release ({tag}). Write CHANGELOG.md manually, then run with --no_changelog.')
+
+def _release_head():
+    _release_branch()
+    head = run('git rev-parse HEAD').strip()
+    if head not in _remote_shas(run('git ls-remote --heads origin')): raise SystemExit(f'Release commit {head[:7]} is not on origin; push the current branch first')
+    return head
+
 # %% ../nbs/api/18_release.ipynb #dcaba486
 def update_changelog(txt, ver, notes, marker='<!-- do not remove -->\n'):
     "Insert `notes` into changelog `txt` after `marker`, replacing any existing section for `ver`"
     txt = re.sub(rf'\n## {re.escape(ver)}\n.*?(?=\n## |\Z)', '', txt, flags=re.S)
-    return txt.replace(marker, marker+notes+'\n')
+    return txt.replace(marker, marker+notes.rstrip('\n')+'\n\n').rstrip('\n')+'\n'
 
 # %% ../nbs/api/18_release.ipynb #0b36471a
 class Release:
@@ -82,12 +99,16 @@ async def changelog(self:Release,
     except APIError as e:
         if e.status_code != 404: raise
         lr,self.commit_date = None,'2000-01-01T00:00:004Z'
-    if lr and (Version(self.cfg.version) <= Version(lr.tag_name)): 
-        print(f'Error: Version bump required: expected: >{lr.tag_name}, got: {self.cfg.version}.')
-        raise SystemExit(1)
-    res = f"\n## {self.cfg.version}\n"
+    if lr:
+        run('git fetch --tags --quiet')
+        _check_changelog_base(lr.tag_name)
+        if Version(self.cfg.version) <= Version(lr.tag_name):
+            print(f'Error: Version bump required: expected: >{lr.tag_name}, got: {self.cfg.version}.')
+            raise SystemExit(1)
+    res = f"\n## {self.cfg.version}\n\n"
     issues = await self._issue_groups()
-    res += '\n'.join(_issues_txt(*o) for o in zip(issues, self.groups.values()))
+    sections = (_issues_txt(*o) for o in zip(issues, self.groups.values()))
+    res += '\n\n'.join(filter(None, sections))
     if debug: return res
     res = update_changelog(self.changefile.read_text(), self.cfg.version, res, marker)
     shutil.copy(self.changefile, self.changefile.with_suffix(".bak"))
@@ -100,7 +121,9 @@ async def release(self:Release):
     "Tag and create a release in GitHub for the current version"
     ver = self.cfg.version
     notes = self.latest_notes()
-    await self.gh.create_release(ver, branch=self.cfg.branch, body=notes)
+    default = (await self.gh.repos.get()).default_branch
+    latest = 'true' if _release_branch()==default else 'false'
+    await self.gh.create_release(ver, branch=_release_head(), body=notes, make_latest=latest)
     return ver
 
 # %% ../nbs/api/18_release.ipynb #22101171
@@ -139,15 +162,18 @@ async def release_git(token:str=None):
 async def release_gh(
     token:str=None,  # Optional GitHub token (otherwise `token` file is used)
     repo:str=None,  # "repo" or "owner/repo" to use instead of pyproject.toml values
-    no_changelog:store_true=False  # Skip changelog creation (assumes CHANGELOG.md is up to date)
+    no_changelog:store_true=False,  # Skip changelog creation (assumes CHANGELOG.md is up to date)
+    no_editor:store_true=False,  # Skip opening CHANGELOG.md in an editor
+    yes:store_true=False  # Release without asking for confirmation
 ):
-    "Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`"
+    "Create the changelog, optionally edit it, then push and create the GitHub release"
     cfg = _find_config()
+    _release_branch()
     if not no_changelog: await Release(repo=repo).changelog()
-    subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
-    if not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
+    if not no_editor: subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
+    if not yes and not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
     run('git commit -am release')
-    run('git push')
+    run('git push --set-upstream origin HEAD')
     print(f"Released {await push_release(token, repo=repo)}")
 
 # %% ../nbs/api/18_release.ipynb #5b4d4aa2

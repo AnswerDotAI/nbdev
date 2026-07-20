@@ -68,7 +68,7 @@ def cell_lang(cell): return nested_attr(cell, 'metadata.language', 'python')
 def _want_doc(c):
     d = c.directives_
     show_d = set(['export', 'exports', 'exec_doc']).intersection(d)
-    return c.source and c.cell_type=='code' and show_d and 'hide' not in d and d.get('include:') != ['false']
+    return c.source and c.cell_type=='code' and show_d and 'hide' not in d and d.get('include') != 'false'
 
 class add_show_docs(Processor):
     "Add show_doc cells after exported cells, unless they are already documented"
@@ -182,11 +182,15 @@ def ai_magics(cell):
         cell.source = '\n'.join(cell.source.splitlines()[1:])
 
 # %% ../nbs/api/10_processors.ipynb #5a9c8fd4
-_magics_pattern = re.compile(r'^\s*(%%|%).*', re.MULTILINE)
+_def_strip_magics = '%load_ext %autoreload %reload_ext %matplotlib %config'
 
 def clean_magics(cell):
-    "A preprocessor to remove cell magic commands"
-    if cell.cell_type == 'code': cell.source = _magics_pattern.sub('', cell.source).strip()
+    "Remove housekeeping magics: those named in the `strip_magics` config (space-separated, default `_def_strip_magics`)"
+    mm = str(get_config().get('strip_magics', _def_strip_magics)).split()
+    if not mm or cell.cell_type != 'code': return
+    pat = re.compile(rf"^\s*({'|'.join(re.escape(m) for m in mm)})\b.*", re.MULTILINE)
+    cell.source = pat.sub('', cell.source).strip()
+
 
 # %% ../nbs/api/10_processors.ipynb #93e27a52
 _re_hdr_dash = re.compile(r'^#+\s+.*\s+-\s*$', re.MULTILINE)
@@ -230,7 +234,7 @@ def _do_eval(cell):
     if not cell.source or 'nbdev_export'+'()' in cell.source: return
     trees = cell.parsed_()
     if cell.cell_type != 'code' or not trees: return
-    if cell.directives_.get('eval:', [''])[0].lower() == 'false': return
+    if cell.directives_.get('eval', '').lower() == 'false': return
 
     _show_dirs = {'export','exports','exporti','exec_doc'}
     if cell.directives_.keys() & _show_dirs: return True
@@ -288,6 +292,6 @@ class FilterDefaults:
     
     def nb_proc(self, nb):
         "Get an `NBProcessor` with these processors"
-        return NBProcessor(nb=nb, procs=self.procs())
+        return NBProcessor(nb=nb, procs=self.procs(), rm_directives='quarto')
     
     def __call__(self, nb): return self.nb_proc(nb).process()
