@@ -149,7 +149,7 @@ def _to_meta(cell, names):
 
 def _to_comments(cell, names):
     "Move directives in `names` from the cell's `nbdev` metadata key to comments"
-    move = {k:v for k,v in _meta_directives(cell).items() if k in names}
+    move = {k:v for k,v in _meta_directives(cell.get('metadata')).items() if k in names}
     if not move: return
     nbd = cell.metadata['nbdev']
     for k in move: nbd.pop(k, None)

@@ -41,7 +41,7 @@ class NBProcessor:
         self.nb = read_nb(path) if nb is None else nb
         self.lang = nb_lang(self.nb)
         for cell in self.nb.cells: cell.directives_ = cell.directives
-        nbdirs = {k:v for k,v in _meta_directives(self.nb).items() if not any(k in c.directives_ for c in self.nb.cells)}
+        nbdirs = {k:v for k,v in _meta_directives(self.nb.get('metadata')).items() if not any(k in c.directives_ for c in self.nb.cells)}
         if nbdirs:
             fc = first(c for c in self.nb.cells if c.cell_type=='code')
             if fc is not None: fc.directives_ = nbdirs | fc.directives_
