@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 3.3.1
+
+### New Features
+
+- Condense nbdev skill conventions into tighter prose with reorganized sections ([#1615](https://github.com/AnswerDotAI/nbdev/issues/1615))
+
+### Bugs Squashed
+
+- Use `.get("metadata")` when calling `_meta_directives` to safely handle cells/notebooks missing a metadata key ([#1616](https://github.com/AnswerDotAI/nbdev/issues/1616))
+- Improve `update_changelog` newline handling ([#1614](https://github.com/AnswerDotAI/nbdev/issues/1614))
+
+
 ## 3.3.0
 
 ### New Features
@@ -1190,5 +1202,3 @@
 ## Version 1.0.0
 
 - Initial release
-
-
