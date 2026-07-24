@@ -55,15 +55,18 @@ def _fetch_from_git(raise_err=False):
     "Get information for pyproject.toml from git."
     res={}
     try:
+        res['author'] = run('git config --get user.name').strip()
+        res['author_email'] = run('git config --get user.email').strip()
+    except OSError as e:
+        if raise_err: raise e
+    try:
         url = run('git config --get remote.origin.url')
         res['user'],res['repo'] = repo_details(url)
         res['branch'],res['keywords'],desc = _get_info(owner=res['user'], repo=res['repo'])
         if desc: res['description'] = desc
-        res['author'] = run('git config --get user.name').strip()
-        res['author_email'] = run('git config --get user.email').strip()
+        res['lib_name'] = res['repo'].replace('-','_')
     except OSError as e:
-        if raise_err: raise(e)
-    else: res['lib_name'] = res['repo'].replace('-','_')
+        if raise_err: raise e
     return res
 
 # %% ../nbs/api/01_config.ipynb #05aae09f
