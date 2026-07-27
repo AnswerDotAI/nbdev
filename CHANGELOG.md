@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 3.3.2
+
+### New Features
+
+- Add `exportd` directive for docstring-only cells, auto-generate package `__init__` docstrings and `llms.txt` on export ([#1619](https://github.com/AnswerDotAI/nbdev/issues/1619))
+- Add optional `name` positional arg to `nbdev_new` for scaffolding into a new directory, and make author/email fetching independent of repo URL in `_fetch_from_git` ([#1617](https://github.com/AnswerDotAI/nbdev/issues/1617))
+
+
 ## 3.3.1
 
 ### New Features
