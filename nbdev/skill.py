@@ -32,6 +32,14 @@ Markdown explains what the code cannot: why an abstraction exists, what distinct
 
 Keep docstrings to a short statement of what the symbol does. Extended explanation, examples, and warnings go in markdown cells, where they render properly and can include executable results. Document parameters and returns with docments, keeping their docs beside the signature instead of repeating it in the docstring. Backtick symbol names in prose. nbdev links them, so prefer names over hand-maintained URLs.
 
+# Module docstrings
+
+`doc(module)` shows the docstring with the API listing, and for an LLM that is usually the whole read. Treat the docstring as the module's TL;DR. Write a short summary under each major section heading and tag it `#| export`, teaching what a reader cannot guess from signatures and leaving per-function detail to the page.
+
+`#| exportd` on a code cell puts its source in the docstring as a fenced block and keeps it out of the module code. Use it for a compact runnable demo, placed after the definitions it needs. End the summary before it with a colon so the two read as one. Only exported cells join the docstring, so the pair stays adjacent there even when definition cells sit between them in the notebook.
+
+Preview the assembled docstring with `nbdev.export.nb_mdoc`, and run code to check each claim before writing it. `nbdev-export` adds the module to the generated package docstring and `llms.txt` once its docstring says more than the default summary line, so write these cells only for modules meant to be read on their own. For the package intro, tag the opening paragraphs of `index.ipynb` with `#| export`.
+
 # Examples are documentation and tests
 
 Write each example as page content first, then make it verify behavior: realistic values, the shortest path to the idea, an informative displayed result, direct assertions that reinforce the lesson, reuse of objects introduced earlier, and important errors demonstrated executably with `expect_fail` (one focused example per contract). Keep test plumbing out of reader-facing cells. Mocks, dense comprehensions, and long setup make poor documentation, so extract a tiny helper or hide the check. Assertions verify, but only the final expression's display teaches. End cells with the value worth showing, and design a compact `_repr_markdown_` or structured summary when it turns later examples into documentation for free. Plots, tables, images, and rich HTML all count as evidence. Stored outputs are part of the explanation. Keep them focused, and never dump a large structure without saying what matters in it. Test helpers come from `fastcore.test` (`test_eq`, `expect_fail`, ...), in plain code cells.
@@ -58,7 +66,7 @@ Keep imports in dedicated import cells, define values near first use, reuse esta
 
 # Directives
 
-`#| default_exp` names the module. `#| export` marks exported cells. Underscore-prefixed helpers may export without joining the public API. `#| hide` keeps necessary but distracting material off the page. `#| eval: false` is for cells that genuinely must not run, not for suppressing broken ones, and it cascades. An unevaluated cell cannot create state for later evaluated cells.
+`#| default_exp` names the module. `#| export` marks exported cells. Underscore-prefixed helpers may export without joining the public API. `#| exportd` exports a code cell's source to the module docstring instead of the module. `#| hide` keeps necessary but distracting material off the page. `#| eval: false` is for cells that genuinely must not run, not for suppressing broken ones, and it cascades. An unevaluated cell cannot create state for later evaluated cells.
 
 # nbdev v3
 
