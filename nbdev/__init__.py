@@ -1,3 +1,10 @@
+"""Create delightful software with Jupyter Notebooks
+
+Modules:
+
+- `nbdev.extract_attachments`: A preprocessor that extracts all of the attachments from the notebook file. The extracted attachments are returned in the 'resources' dictionary.
+- `nbdev.skill`: Author clear, executable nbdev notebooks where code, prose, examples, outputs, and tests form one coherent narrative."""
+
 __version__ = "3.3.2"
 
 from .doclinks import nbdev_export

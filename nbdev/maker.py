@@ -177,13 +177,17 @@ def _import2relative(cells, lib_path=None):
 
 # %% ../nbs/api/02_maker.ipynb #5bff9d71
 def _retr_mdoc(cells, nb_path=None):
-    "Search for markdown cells used to create module docstring"
+    "Module docstring from md cells with an export directive, plus `exportd` cells (code fenced)"
+    def _doc(o):
+        d = getattr(o,'directives_',{})
+        if o.cell_type=='markdown' and {'export','exportd'}&set(d): return o.source.rstrip()
+        if o.cell_type=='code' and 'exportd' in d: return fenced(o.source.rstrip(), 'python')
     md1 = first(o for o in cells if o.cell_type=='markdown' and o.source.startswith('# '))
     if not md1: return ''
     lines = dropwhile(lambda l: not l.startswith('> '), md1.source.splitlines())
     lines = list(takewhile(lambda l: l.startswith('> '), lines))
     summ = '\n'.join(l.lstrip('> ').strip() for l in lines)
-    docs = L(o.source.rstrip() for o in cells if o.cell_type=='markdown' and 'export' in getattr(o,'directives_',{}))
+    docs = L(cells).map(_doc).filter()
     mdoc = '\n\n'.join(L(summ)+docs).strip()
     url = nbpath2docurl(nb_path) if nb_path else ''
     if url: mdoc = (mdoc + f'\n\nDocs: {url}').strip()
