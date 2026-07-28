@@ -2,6 +2,26 @@
 
 <!-- do not remove -->
 
+## 3.3.2
+
+### New Features
+
+- Add `exportd` directive for docstring-only cells, auto-generate package `__init__` docstrings and `llms.txt` on export ([#1619](https://github.com/AnswerDotAI/nbdev/issues/1619))
+- Add optional `name` positional arg to `nbdev_new` for scaffolding into a new directory, and make author/email fetching independent of repo URL in `_fetch_from_git` ([#1617](https://github.com/AnswerDotAI/nbdev/issues/1617))
+
+
+## 3.3.1
+
+### New Features
+
+- Condense nbdev skill conventions into tighter prose with reorganized sections ([#1615](https://github.com/AnswerDotAI/nbdev/issues/1615))
+
+### Bugs Squashed
+
+- Use `.get("metadata")` when calling `_meta_directives` to safely handle cells/notebooks missing a metadata key ([#1616](https://github.com/AnswerDotAI/nbdev/issues/1616))
+- Improve `update_changelog` newline handling ([#1614](https://github.com/AnswerDotAI/nbdev/issues/1614))
+
+
 ## 3.3.0
 
 ### New Features
@@ -1190,5 +1210,3 @@
 ## Version 1.0.0
 
 - Initial release
-
-

@@ -11,6 +11,7 @@ __all__ = ['mapping', 'nbdev_filter', 'extract_tgz', 'nbdev_new', 'nbdev_update_
 # %% ../nbs/api/13_cli.ipynb #6a35c7c4-748f-4c82-a9bf-c780a8d83e90
 import warnings
 import time
+from typing import Annotated
 
 from .config import *
 from .process import *
@@ -72,7 +73,7 @@ def _render_nb(fn, cfg):
 
 # %% ../nbs/api/13_cli.ipynb #dd385911-aa8f-44e7-8d46-7b8a20f3b010
 async def _update_repo_meta(cfg):
-    "Enable gh pages and update the homepage and description in your GitHub repo."
+    "Update the homepage and description in your GitHub repo."
     token=os.getenv('GITHUB_TOKEN')
     if token:
         from ghapi.core import GhApi, APIError
@@ -82,24 +83,28 @@ async def _update_repo_meta(cfg):
                   "Use a token with the correction permissions or perform these steps manually.")
 
 # %% ../nbs/api/13_cli.ipynb #c4a663d9
+_pos = Annotated[str, {'opt':False, 'nargs':'?'}]  # optional positional CLI arg
+
 @call_parse
 @delegates(nbdev_create_config)
-async def nbdev_new(**kwargs):
+async def nbdev_new(
+    name:_pos=None, # Directory to create and scaffold in (defaults to the current directory)
+    template:str='answerdotai/nbdev3-template', # Template repo
+    tag:str=None, # Template release tag (defaults to the latest release)
+    **kwargs):
     "Create an nbdev project."
     from ghapi.core import GhApi
+    if name:
+        Path(name).mkdir(exist_ok=True)
+        os.chdir(name)
+        kwargs.setdefault('repo', name)
     nbdev_create_config.__wrapped__(**kwargs)
     cfg = get_config()
     if (Path('.git')).exists(): await _update_repo_meta(cfg)
     else: print(f"No git repo found. Run: gh repo create {cfg.user}/{cfg.repo} --public --source=.")
     path = Path()
 
-    _ORG_OR_USR,_REPOSITORY = 'answerdotai','nbdev3-template'
-    _TEMPLATE = f'{_ORG_OR_USR}/{_REPOSITORY}'
-    template = kwargs.get('template', _TEMPLATE)
-    try: org_or_usr, repo = template.split('/')
-    except ValueError: org_or_usr, repo = _ORG_OR_USR, _REPOSITORY
-
-    tag = kwargs.get('tag', None)
+    org_or_usr,repo = template.split('/')
     if tag is None:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', UserWarning)
