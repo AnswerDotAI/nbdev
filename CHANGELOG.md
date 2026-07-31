@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.3
+
+### New Features
+
+- Support date-based versions in `bump_version` and use spawn for parallel tests on macOS ([#1621](https://github.com/AnswerDotAI/nbdev/issues/1621))
+
+
 ## 3.3.2
 
 ### New Features
