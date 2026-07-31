@@ -11,7 +11,6 @@ __all__ = ['pyproject_nm', 'pyproject_tmpl', 'nbdev_defaults', 'pyproj_tmpl', 'n
            'update_llms_txt', 'import_obj', 'write_cells']
 
 # %% ../nbs/api/01_config.ipynb #6fd14ecd
-from datetime import datetime
 from fastcore.docments import *
 from fastcore.utils import *
 from fastcore.meta import *
@@ -19,10 +18,9 @@ from fastcore.script import *
 from fastcore.style import *
 from fastcore.xdg import *
 
-import ast,importlib,re,warnings
+import ast,importlib,re
 from IPython.display import Markdown
 from fastcore.nbio import read_nb,NbCell
-from urllib.error import HTTPError
 
 try: import tomllib
 except ImportError: import tomli as tomllib
@@ -42,6 +40,7 @@ def _get_info(owner, repo, default_branch='main', default_kw='nbdev'):
     from ghapi.all import call_gh, APIError
     try: r = call_gh('repos.get', owner=owner, repo=repo)
     except APIError:
+        # chkstyle: ignore-node
         msg= [f"""Could not access repo: {owner}/{repo} to find your default branch - `{default_branch}` assumed.
 Edit `pyproject.toml` if this is incorrect.
 In the future, you can allow nbdev to see private repos by setting the environment variable GITHUB_TOKEN as described here:
@@ -205,8 +204,7 @@ class ConfigToml(AttrDict):
         if 'lib_path' not in self: self['lib_path'] = self.lib_name.replace('-', '_')
 
     @property
-    def version(self):
-        return read_version(self.config_path / self['lib_path']) or '0.0.1'
+    def version(self): return read_version(self.config_path / self['lib_path']) or '0.0.1'
 
     @property
     def d(self): return {k:v for k,v in super().items()}
@@ -253,7 +251,7 @@ def is_nbdev(path=None): return _find_nbdev_pyproject(path) is not None
 def create_output(txt, mime):
     "Add a cell output containing `txt` of the `mime` text MIME sub-type"
     return [dict(data={f"text/{mime}": str(txt).splitlines(True)},
-                 execution_count=1, metadata={}, output_type="execute_result")]
+        execution_count=1, metadata={}, output_type="execute_result")]
 
 # %% ../nbs/api/01_config.ipynb #5a4d8e52
 def show_src(src, lang='python'): return Markdown(f'```{lang}\n{src}\n```')
@@ -318,12 +316,13 @@ def set_version(path, version):
 
 # %% ../nbs/api/01_config.ipynb #d00889e5
 def bump_version(v, part=2, unbump=False):
-    "Bump semver string `v` at index `part` (0=major, 1=minor, 2=patch)"
+    "Bump semver part `part` (0=major, 1=minor, 2=patch), counted from the right"
     parts = (v or '0.0.0').split('.')
     parts += ['0'] * (3 - len(parts))
-    parts[part] = str(int(parts[part]) + (-1 if unbump else 1))
-    for i in range(part+1, 3): parts[i] = '0'
-    return '.'.join(parts[:3])
+    idx = len(parts) - 3 + part
+    parts[idx] = str(int(parts[idx]) + (-1 if unbump else 1))
+    for i in range(idx+1, len(parts)): parts[i] = '0'
+    return '.'.join(parts)
 
 # %% ../nbs/api/01_config.ipynb #e32583e6
 def update_version(path=None):
