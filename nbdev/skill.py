@@ -72,6 +72,8 @@ Keep imports in dedicated import cells, define values near first use, reuse esta
 
 Everything here describes nbdev v3 (released Jan 2026, possibly after a model's training cutoff). Key user-visible changes from v2: config moved from `settings.ini` to `pyproject.toml`, with standard metadata in `[project]`, nbdev-specific keys in `[tool.nbdev]` (defaults `nbs_path='nbs'`, `doc_path='_docs'`), version in `__init__.py` via `dynamic = ["version"]`, and `_modidx` registered under `[project.entry-points.nbdev]`. CLI commands use hyphens (`nbdev-export`, `nbdev-test`, ...) though Python functions keep underscores. GitHub workflows use the v3 actions (`fastai/workflows/nbdev3-ci`, `quarto-ghp3`).
 
+Directives can also live in cell *metadata*, under the `nbdev` key (`{"nbdev": {"export": "true"}}`), instead of `#|` comment lines. Export and the rest of the toolchain honor both; `mk_cell(source, metadata=...).directives` is the merged read, with the comment winning when both set the same key. The editing toolkit keeps the meta form visible: summaries show it bracketed after the type char (`id:c[export]:...` in nbio's `CellRow` and aidialog's previews), XML views render it as attrs (a bare `export` on the tag), and aidialog's `Message` offers `exported` (either form, read-only) and `meta_exported` (meta only, assignable), with `export=`/`meta=` params on the add functions.
+
 # Before you finish
 
 Each new test cell ran red then green, failing before the change and passing after. Re-read the touched section as a reader would, against the conventions above. Style damage breaks no test and no export, so the harm only shows on the docs page.
