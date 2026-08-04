@@ -70,7 +70,7 @@ def proc_nbs(
     file_re:str='', # Only process notebooks matching regex (other files are always included)
     **kwargs):
     "Process notebooks in `path` for docs rendering"
-    cfg = get_config()
+    cfg = get_config(path or None)
     cache = cfg.config_path/'_proc'
     path = Path(path or cfg.nbs_path)
     files = nbglob(path, func=Path, file_glob='', file_re='', **kwargs)

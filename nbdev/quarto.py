@@ -208,8 +208,10 @@ def _chk_nbdev_yml(path):
 
 # %% ../nbs/api/14_quarto.ipynb #6b880922
 def _pre_docs(path=None, n_workers:int=defaults.cpus, **kwargs):
-    cfg = get_config()
-    path = Path(path) if path else cfg.nbs_path
+    cfg = get_config(path)
+    path = Path(path).absolute() if path else cfg.nbs_path
+    if not (path/'nbdev.yml').exists(): path = cfg.nbs_path  # given a project root, fall back to its configured nbs
+    os.chdir(cfg.config_path)  # bare `get_config()` runs downstream (including in render workers), so anchor the cwd
     _chk_nbdev_yml(path)
     _ensure_quarto()
     refresh_quarto_yml()
@@ -272,12 +274,14 @@ def _save_cached_readme(cache, cfg):
 # %% ../nbs/api/14_quarto.ipynb #45d6bb5d
 @call_parse
 def nbdev_readme(
-    path:str=None, # Path to notebooks
+    path:str=None, # Path to notebooks (or project root)
     chk_time:bool=False): # Only build if out of date
     "Create README.md from readme_nb (index.ipynb by default). Skips if the file doesn't exist."
-    cfg = get_config()
-    path = Path(path) if path else cfg.nbs_path
+    cfg = get_config(path)
+    path = Path(path).absolute() if path else cfg.nbs_path
+    if not (path/cfg.readme_nb).exists(): path = cfg.nbs_path  # given a project root, fall back to its configured nbs
     if not (path/cfg.readme_nb).exists(): return
+    os.chdir(cfg.config_path)  # bare `get_config()` runs downstream (including in render workers), so anchor the cwd
     _chk_nbdev_yml(path)
     if chk_time and _doc_mtime_not_older(cfg.config_path/'README.md', path/cfg.readme_nb): return
 
