@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.4
+
+### New Features
+
+- Fix `nbdev_docs`/`nbdev_readme` to work from any directory or project root ([#1622](https://github.com/AnswerDotAI/nbdev/issues/1622))
+
+
 ## 3.3.3
 
 ### New Features
