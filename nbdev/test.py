@@ -20,6 +20,7 @@ from .config import *
 from .doclinks import *
 from .process import NBProcessor, nb_lang
 from .frontmatter import nb_frontmatter
+from .processors import _default_exp
 
 from fastcore.nbio import *
 from execnb.shell import *
@@ -58,6 +59,8 @@ def test_nb(
         start = time.time()
         if profile is None: profile = bool(get_config(fn.parent).exec_profile)
         k = CaptureShell(fn, profile=profile)
+        exp = _default_exp(nb)
+        if exp and is_nbdev(fn.parent): k.user_ns['__file__'] = str(get_config(fn.parent).lib_path/(exp.replace('.','/') + '.py'))
         if do_print: print(f'Starting {fn}')
         try:
             with working_directory(fn.parent):
@@ -72,7 +75,6 @@ def test_nb(
     finally:
         if prev_test is None: os.environ.pop('IN_TEST', None)
         else: os.environ['IN_TEST'] = prev_test
-
 
 # %% ../nbs/api/12_test.ipynb #d8bf1f1b-935d-4b69-ba96-827c5d7213f0
 def _keep_file(
