@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 3.3.5
+
+### New Features
+
+- verbose flag ([#1623](https://github.com/AnswerDotAI/nbdev/issues/1623))
+
+### Bugs Squashed
+
+- Fix release: raise clear error when user/repo cannot be inferred, correct malformed default changelog timestamp ([#1624](https://github.com/AnswerDotAI/nbdev/issues/1624))
+
+
 ## 3.3.4
 
 ### New Features
