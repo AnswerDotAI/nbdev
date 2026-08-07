@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.6
+
+### New Features
+
+- Move frontmatter parsing to fastcore ([#1625](https://github.com/AnswerDotAI/nbdev/issues/1625))
+
+
 ## 3.3.5
 
 ### New Features
