@@ -11,7 +11,7 @@ __all__ = ['MigrateProc', 'fp_md_fm', 'migrate_nb', 'migrate_md', 'nbdev_migrate
 from .process import *
 from fastcore.nbio import first_code_ln, langs
 from .frontmatter import *
-from .frontmatter import _fm2dict, _re_fm_md, _dict2fm, _insertfm
+from .frontmatter import _fm2dict_md, _re_fm_md, _dict2fm, _insertfm
 from .processors import *
 from .config import get_config, read_nb, set_version, pyproject_tmpl, nbdev_defaults
 from .sync import write_nb
@@ -98,7 +98,7 @@ def fp_md_fm(path):
     "Make fastpages front matter in markdown files quarto compliant."
     p = Path(path)
     md = p.read_text()
-    fm = _fm2dict(md, nb=False)
+    fm = _fm2dict_md(md)
     if fm:
         fm = _fp_convert(fm, path)
         return _re_fm_md.sub(_dict2fm(fm), md)

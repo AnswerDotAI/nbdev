@@ -18,7 +18,6 @@ from .process import *
 from .showdoc import *
 from .doclinks import *
 from .frontmatter import *
-from .frontmatter import _fm2dict
 
 from fastcore.nbio import *
 from execnb.shell import *
