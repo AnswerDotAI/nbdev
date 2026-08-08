@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.7
+
+### New Features
+
+- Make `test_nb` async for execnb 0.3; run via asyncio.run in parallel workers and `run_sync` in `exec_show_docs` ([#1626](https://github.com/AnswerDotAI/nbdev/issues/1626))
+
+
 ## 3.3.6
 
 ### New Features
