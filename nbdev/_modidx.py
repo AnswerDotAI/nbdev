@@ -385,5 +385,6 @@ d = { 'settings': { 'branch': 'main',
                             'nbdev.sync.absolute_import': ('api/sync.html#absolute_import', 'nbdev/sync.py'),
                             'nbdev.sync.nbdev_update': ('api/sync.html#nbdev_update', 'nbdev/sync.py')},
             'nbdev.test': { 'nbdev.test._keep_file': ('api/test.html#_keep_file', 'nbdev/test.py'),
+                            'nbdev.test._test_nb_sync': ('api/test.html#_test_nb_sync', 'nbdev/test.py'),
                             'nbdev.test.nbdev_test': ('api/test.html#nbdev_test', 'nbdev/test.py'),
                             'nbdev.test.test_nb': ('api/test.html#test_nb', 'nbdev/test.py')}}}
