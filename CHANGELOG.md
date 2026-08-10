@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 3.3.8
+
+### New Features
+
+- Honor notebook-level `eval` directives in nbdev-test ([#1627](https://github.com/AnswerDotAI/nbdev/pull/1627)), thanks to [@jph00](https://github.com/jph00)
+
+### Bugs Squashed
+
+- Fix failing tests: add missing tempfile import in 04_export ([#1620](https://github.com/AnswerDotAI/nbdev/pull/1620)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 3.3.7
 
 ### New Features
