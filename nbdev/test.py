@@ -8,7 +8,7 @@ Docs: https://nbdev.fast.ai/api/test.html.md"""
 __all__ = ['test_nb', 'nbdev_test']
 
 # %% ../nbs/api/12_test.ipynb #45e10c3f
-import time,os,sys,traceback,contextlib,inspect,faulthandler,signal,asyncio
+import time,os,sys,traceback,contextlib,inspect,signal,asyncio
 from fastcore.basics import *
 from fastcore.imports import *
 from fastcore.foundation import *
@@ -24,6 +24,16 @@ from .frontmatter import nb_frontmatter
 from fastcore.nbio import *
 from execnb.shell import *
 
+# %% ../nbs/api/12_test.ipynb #dc8994ac
+_cur_nb = [None]
+
+def _int_handler(signum, frame):
+    "Dump the running notebook's stack and exit; installed on SIGINT by `test_nb`"
+    if _cur_nb[0] is not None:
+        stk = ''.join(traceback.format_stack(frame))
+        os.write(2, f'\n=== nbdev-test interrupted: {_cur_nb[0]} ===\n{stk}'.encode())
+    os._exit(130)
+
 # %% ../nbs/api/12_test.ipynb #3f4fa1ad
 async def test_nb(
     fn,  # file name of notebook to test
@@ -37,8 +47,9 @@ async def test_nb(
     profile:bool=None # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
 ):
     "Execute tests in notebook in `fn` except those with `skip_flags`"
-    faulthandler.register(signal.SIGINT, file=sys.__stderr__, all_threads=True, chain=True)
+    if not IN_NOTEBOOK: signal.signal(signal.SIGINT, _int_handler)
     fn = Path(fn)
+    _cur_nb[0] = fn
     if basepath: sys.path.insert(0, str(basepath))
     prev_test = os.environ.get('IN_TEST')
     if not IN_NOTEBOOK: os.environ['IN_TEST'] = '1'
@@ -69,6 +80,7 @@ async def test_nb(
         if do_print: print(f'- Completed {fn}')
         return res,time.time()-start
     finally:
+        _cur_nb[0] = None
         if prev_test is None: os.environ.pop('IN_TEST', None)
         else: os.environ['IN_TEST'] = prev_test
 
@@ -114,8 +126,12 @@ def nbdev_test(
     else: kw = {'method':'spawn'} if sys.platform=='darwin' else {}
     wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
-        results = parallel(_test_nb_sync, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
-                           basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
+        try:
+            results = parallel(_test_nb_sync, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
+                               basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
+        except KeyboardInterrupt:
+            sys.stderr.write('\nnbdev-test interrupted; in-flight notebook stacks shown above\n')
+            sys.exit(130)
     passed,times = zip(*results)
     if all(passed): print("Success.")
     else: 
