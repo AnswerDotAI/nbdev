@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 3.3.11
+
+### New Features
+
+- Revert `test_nb` to sync API using execnb 0.3.2 CaptureShell loop thread, add `cell_timeout` option and leaked-task warning ([#1632](https://github.com/AnswerDotAI/nbdev/issues/1632))
+- Include asyncio task await chains in nbdev-test SIGINT stack dump, so hangs suspended in coroutines show where they are stuck ([#1631](https://github.com/AnswerDotAI/nbdev/issues/1631))
+- Show which notebook each worker was running on ctrl-c during `nbdev_test`, replacing faulthandler with a custom SIGINT handler ([#1630](https://github.com/AnswerDotAI/nbdev/issues/1630))
+
+
 ## 3.3.10
 
 ### Bugs Squashed
