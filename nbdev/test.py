@@ -8,7 +8,7 @@ Docs: https://nbdev.fast.ai/api/test.html.md"""
 __all__ = ['test_nb', 'nbdev_test']
 
 # %% ../nbs/api/12_test.ipynb #45e10c3f
-import time,os,sys,io,traceback,contextlib,inspect,signal,asyncio
+import time,os,sys,io,traceback,contextlib,inspect,signal,asyncio,threading
 from fastcore.basics import *
 from fastcore.imports import *
 from fastcore.foundation import *
@@ -26,6 +26,7 @@ from execnb.shell import *
 
 # %% ../nbs/api/12_test.ipynb #dc8994ac
 _cur_nb = [None]
+_cur_shell = [None]
 
 def _await_chain(t):
     "One frame per coroutine in task `t`'s await chain, deepest last: where a suspended hang actually sits"
@@ -40,15 +41,21 @@ def _int_handler(signum, frame):
     if _cur_nb[0] is not None:
         buf = io.StringIO()
         traceback.print_stack(frame, file=buf)
-        with contextlib.suppress(RuntimeError):  # no running loop: sync frames already cover it
-            for t in asyncio.all_tasks():
-                print(f'\n{t}', file=buf)
-                buf.writelines(traceback.StackSummary.extract(_await_chain(t)).format())
+        k = _cur_shell[0]
+        if k is not None:
+            f = sys._current_frames().get(k._thread.ident)
+            if f is not None:
+                print('\n--- shell loop thread ---', file=buf)
+                traceback.print_stack(f, file=buf)
+            with contextlib.suppress(RuntimeError):
+                for t in asyncio.all_tasks(k.loop):
+                    print(f'\n{t}', file=buf)
+                    buf.writelines(traceback.StackSummary.extract(_await_chain(t)).format())
         os.write(2, f'\n=== nbdev-test interrupted: {_cur_nb[0]} ===\n{buf.getvalue()}'.encode())
     os._exit(130)
 
 # %% ../nbs/api/12_test.ipynb #3f4fa1ad
-async def test_nb(
+def test_nb(
     fn,  # file name of notebook to test
     skip_flags=None,  # list of flags marking cells to skip
     force_flags=None,  # list of flags marking cells to always run
@@ -57,10 +64,11 @@ async def test_nb(
     basepath=None,  # path to add to sys.path
     verbose=False,  # stream stdout/stderr from cells to console?
     save=False,  # write outputs back to notebook on success?
-    profile:bool=None # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
+    profile:bool=None, # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
+    cell_timeout:int=600  # seconds before each cell times out (None: no limit)
 ):
     "Execute tests in notebook in `fn` except those with `skip_flags`"
-    if not IN_NOTEBOOK: signal.signal(signal.SIGINT, _int_handler)
+    if not IN_NOTEBOOK and threading.current_thread() is threading.main_thread(): signal.signal(signal.SIGINT, _int_handler)
     fn = Path(fn)
     _cur_nb[0] = fn
     if basepath: sys.path.insert(0, str(basepath))
@@ -81,25 +89,24 @@ async def test_nb(
         start = time.time()
         if profile is None: profile = bool(get_config(fn.parent).exec_profile)
         k = CaptureShell(fn, profile=profile)
+        _cur_shell[0] = k
         if do_print: print(f'Starting {fn}')
         try:
             with working_directory(fn.parent):
-                await k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose)
+                k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose, cell_timeout=cell_timeout)
                 if save: write_nb(nb, fn)
                 res = True
         except: 
             if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
             res=False
+        if k.leaks and showerr: sys.stderr.write(f'{fn}: {len(k.leaks)} leaked task(s) survived cancellation\n')
         if do_print: print(f'- Completed {fn}')
         return res,time.time()-start
     finally:
-        _cur_nb[0] = None
+        _cur_nb[0] = _cur_shell[0] = None
         if prev_test is None: os.environ.pop('IN_TEST', None)
         else: os.environ['IN_TEST'] = prev_test
 
-
-# %% ../nbs/api/12_test.ipynb #12516e0a
-def _test_nb_sync(fn, **kwargs): return asyncio.run(test_nb(fn, **kwargs))
 
 # %% ../nbs/api/12_test.ipynb #d8bf1f1b-935d-4b69-ba96-827c5d7213f0
 def _keep_file(
@@ -123,6 +130,7 @@ def nbdev_test(
     ignore_fname:str='.notest', # Filename that will result in siblings being ignored
     verbose:bool=False, # Print stdout/stderr from notebook cells?
     save:bool=False, # Write outputs back to notebooks on success?
+    cell_timeout:int=600, # Seconds before each cell times out (0: no limit)
     **kwargs
 ):
     "Test in parallel notebooks matching `path`, passing along `flags`"
@@ -140,8 +148,9 @@ def nbdev_test(
     wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         try:
-            results = parallel(_test_nb_sync, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
-                               basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save, **kw)
+            results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
+                               basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save,
+                               cell_timeout=cell_timeout or None, **kw)
         except KeyboardInterrupt:
             sys.stderr.write('\nnbdev-test interrupted; in-flight notebook stacks shown above\n')
             sys.exit(130)

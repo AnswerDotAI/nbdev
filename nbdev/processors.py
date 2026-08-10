@@ -12,8 +12,6 @@ __all__ = ['populate_language', 'insert_warning', 'cell_lang', 'add_show_docs', 
 # %% ../nbs/api/10_processors.ipynb #2398f5ef-06d3-4890-8a54-7cf4f81f3894
 import ast
 
-from fastcore.aio import run_sync
-
 from .config import *
 from .imports import *
 from .process import *
@@ -257,7 +255,7 @@ class exec_show_docs(Processor):
         if not self.nb.has_docs_ or not hasattr(self, 'k'): return
         fm = getattr(self.nb, 'frontmatter_', {})
         if str2bool(fm.get('skip_showdoc', False)): return
-        if _do_eval(cell): run_sync(self.k.cell(cell))
+        if _do_eval(cell): self.k.cell(cell)
         title = fm.get('title', '')
         if self.k.exc: 
             raise Exception(f"Error{' in notebook: '+title if title else ''} in cell {cell.idx_} :\n{cell.source}") from self.k.exc
