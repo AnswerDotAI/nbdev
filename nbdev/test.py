@@ -48,12 +48,11 @@ async def test_nb(
         fm = nb_frontmatter(nb)
         if str2bool(fm.get('skip_exec', False)) or nb_lang(nb) != 'python': return True, 0
 
+        dflt = fm_default_eval(fm)
         def _no_eval(cell):
             if cell.cell_type != 'code': return True
-            if 'nbdev_export'+'(' in cell.source: return True
-            direc = getattr(cell, 'directives_', {}) or {}
-            if direc.get('eval', '').lower() == 'false': return True
-            return flags & direc.keys()
+            if not does_cell_eval(cell, dflt): return True
+            return flags & (getattr(cell, 'directives_', {}) or {}).keys()
 
         start = time.time()
         if profile is None: profile = bool(get_config(fn.parent).exec_profile)
