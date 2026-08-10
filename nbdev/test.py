@@ -8,7 +8,7 @@ Docs: https://nbdev.fast.ai/api/test.html.md"""
 __all__ = ['test_nb', 'nbdev_test']
 
 # %% ../nbs/api/12_test.ipynb #45e10c3f
-import time,os,sys,traceback,contextlib,inspect,signal,asyncio
+import time,os,sys,io,traceback,contextlib,inspect,signal,asyncio
 from fastcore.basics import *
 from fastcore.imports import *
 from fastcore.foundation import *
@@ -27,11 +27,24 @@ from execnb.shell import *
 # %% ../nbs/api/12_test.ipynb #dc8994ac
 _cur_nb = [None]
 
+def _await_chain(t):
+    "One frame per coroutine in task `t`'s await chain, deepest last: where a suspended hang actually sits"
+    co = t.get_coro()
+    while co is not None:
+        f = getattr(co, 'cr_frame', None) or getattr(co, 'ag_frame', None) or getattr(co, 'gi_frame', None)
+        if f is not None: yield f, f.f_lineno
+        co = getattr(co, 'cr_await', None) or getattr(co, 'ag_await', None) or getattr(co, 'gi_yieldfrom', None)
+
 def _int_handler(signum, frame):
     "Dump the running notebook's stack and exit; installed on SIGINT by `test_nb`"
     if _cur_nb[0] is not None:
-        stk = ''.join(traceback.format_stack(frame))
-        os.write(2, f'\n=== nbdev-test interrupted: {_cur_nb[0]} ===\n{stk}'.encode())
+        buf = io.StringIO()
+        traceback.print_stack(frame, file=buf)
+        with contextlib.suppress(RuntimeError):  # no running loop: sync frames already cover it
+            for t in asyncio.all_tasks():
+                print(f'\n{t}', file=buf)
+                buf.writelines(traceback.StackSummary.extract(_await_chain(t)).format())
+        os.write(2, f'\n=== nbdev-test interrupted: {_cur_nb[0]} ===\n{buf.getvalue()}'.encode())
     os._exit(130)
 
 # %% ../nbs/api/12_test.ipynb #3f4fa1ad
