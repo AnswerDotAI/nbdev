@@ -339,9 +339,9 @@ def nbdev_docs(
     **kwargs):
     "Create Quarto docs and README.md"
     cache,cfg,path = _pre_docs(path, n_workers=n_workers, **kwargs)
+    _sprun(f'cd "{cache}" && quarto render --no-cache')
     nbdev_readme.__wrapped__(path=path, chk_time=True)
     nbdev_contributing.__wrapped__(path=path, chk_time=True)
-    _sprun(f'cd "{cache}" && quarto render --no-cache')
     shutil.rmtree(cfg.doc_path, ignore_errors=True)
     move(cache/cfg.doc_path.name, cfg.config_path)
     _fix_quarto_nav(cfg.doc_path)

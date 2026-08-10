@@ -84,6 +84,7 @@ def proc_nbs(
     cache.mkdir(parents=True, exist_ok=True)
     cache_mtime = cache.stat().st_mtime
     if force or (cache.exists() and cache_mtime<chk_mtime): rmtree(cache)
+    (cache/'_quarto.yml').unlink(missing_ok=True)  # single-doc renders strip the staged copy in place (`_strip_sidebar`), so always restage it
 
     files = files.map(_proc_file, mtime=cache_mtime, cache=cache, path=path).filter()
     kw = {} if IN_NOTEBOOK else {'method':'spawn'}
