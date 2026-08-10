@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.10
+
+### Bugs Squashed
+
+- Fix docs render: restage `_quarto`.yml in `proc_nbs` after sidebar stripping, and render before README/contributing generation ([#1629](https://github.com/AnswerDotAI/nbdev/issues/1629))
+
+
 ## 3.3.9
 
 ### New Features
