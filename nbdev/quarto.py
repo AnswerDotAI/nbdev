@@ -236,17 +236,16 @@ def _doc_mtime_not_older(readme_path, readme_nb_path):
     return readme_path.exists() and readme_path.stat().st_mtime>=readme_nb_path.stat().st_mtime
 
 # %% ../nbs/api/14_quarto.ipynb #7b70b5c8
-class _SidebarYmlRemoved:
-    "Context manager for `nbdev-readme` to avoid rendering whole docs website"
-    def __init__(self,path): self._path=path
-    def __enter__(self):
-        self._yml_path = self._path/'sidebar.yml'
-        self._moved=False
-        if self._yml_path.exists():
-            self._yml_path.rename(self._path/'sidebar.yml.bak')
-            self._moved=True
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        if self._moved: (self._path/'sidebar.yml.bak').rename(self._yml_path)
+def _strip_sidebar(cache):
+    "Drop website sidebar config from the staged copy at `cache`, so single-doc renders skip nav resolution (see quarto-dev/quarto-cli#14757)"
+    p = Path(cache)/'_quarto.yml'
+    if not p.exists(): return
+    cfg = yaml.safe_load(p.read_text())
+    (cfg.get('website') or {}).pop('sidebar', None)
+    mf = cfg.get('metadata-files')
+    if mf and 'sidebar.yml' in mf: mf.remove('sidebar.yml')
+    (Path(cache)/'sidebar.yml').unlink(missing_ok=True)
+    p.write_text(yaml.dump(cfg, sort_keys=False))
 
 # %% ../nbs/api/14_quarto.ipynb #49661bbf
 def _copytree(a,b):
@@ -285,12 +284,12 @@ def nbdev_readme(
     _chk_nbdev_yml(path)
     if chk_time and _doc_mtime_not_older(cfg.config_path/'README.md', path/cfg.readme_nb): return
 
-    with _SidebarYmlRemoved(path): # to avoid rendering whole website
-        cache = proc_nbs(path, file_glob=Path(cfg.readme_nb).name)
-        for f in _readme_cands(cache, cfg):
-            if f.exists(): f.unlink() # remove stale renders from either quarto layout
-        _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve')
-        
+    cache = proc_nbs(path, file_glob=Path(cfg.readme_nb).name)
+    _strip_sidebar(cache)  # to avoid rendering whole website
+    for f in _readme_cands(cache, cfg):
+        if f.exists(): f.unlink() # remove stale renders from either quarto layout
+    _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve')
+
     _save_cached_readme(cache, cfg)
 
 # %% ../nbs/api/14_quarto.ipynb #ef3f1e1f
@@ -319,9 +318,9 @@ def nbdev_contributing(
     if not contrib_nb_path.exists(): return
     if chk_time and _doc_mtime_not_older(cfg.config_path / 'CONTRIBUTING.md' , contrib_nb_path): return
     
-    with _SidebarYmlRemoved(path): # to avoid rendering whole website
-        cache = proc_nbs(path, file_glob=Path(contrib_nb_name).name)
-        _sprun(f'cd "{cache}" && quarto render "{cache/contrib_nb_name}" -o CONTRIBUTING.md -t gfm --no-execute -M wrap:preserve')
+    cache = proc_nbs(path, file_glob=Path(contrib_nb_name).name)
+    _strip_sidebar(cache)  # to avoid rendering whole website
+    _sprun(f'cd "{cache}" && quarto render "{cache/contrib_nb_name}" -o CONTRIBUTING.md -t gfm --no-execute -M wrap:preserve')
         
     _save_cached_contributing(cache, cfg, contrib_nb_name)
 
