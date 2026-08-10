@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.9
+
+### New Features
+
+- Strip sidebar config from staged `_quarto`.yml instead of renaming source sidebar.yml when rendering README/CONTRIBUTING ([#1628](https://github.com/AnswerDotAI/nbdev/issues/1628))
+
+
 ## 3.3.8
 
 ### New Features
