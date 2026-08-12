@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 3.3.12
+
+### New Features
+
+- Clean up stale generated docs: revert `__init__` docstring to description and delete generated llms.txt when nothing is documented ([#1634](https://github.com/AnswerDotAI/nbdev/issues/1634))
+- Increase default diff line truncation width from 120 to 180 via new MAXLEN constant in nbdev/diff.py ([#1633](https://github.com/AnswerDotAI/nbdev/issues/1633))
+
+
 ## 3.3.11
 
 ### New Features
