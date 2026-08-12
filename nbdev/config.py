@@ -417,13 +417,16 @@ def update_init_mdoc(path=None, desc=None):
     "Write `pkg_mdoc` as the docstring of `path/__init__.py`, replacing any existing docstring"
     path = Path(path or get_config().lib_path)
     mdoc = pkg_mdoc(path, desc=desc)
-    if not mdoc: return
     fn = path/'__init__.py'
     txt = fn.read_text(encoding='utf-8') if fn.exists() else ''
     body = ast.parse(txt).body
-    rest = txt
+    rest,cur = txt,''
     if body and isinstance(body[0], ast.Expr) and isinstance(getattr(body[0].value, 'value', None), str):
+        cur = body[0].value.value
         rest = ''.join(txt.splitlines(keepends=True)[body[0].end_lineno:])
+    if not mdoc:
+        if '\nModules:\n' not in cur: return
+        mdoc = desc if desc is not None else get_config().description
     res = f'"""{mdoc}"""\n'
     if rest.strip(): res += '\n'+rest.lstrip('\n')
     fn.write_text(res, encoding='utf-8')
@@ -447,11 +450,13 @@ def pkg_llms(path=None, desc=None, index_nb=None):
     return '\n\n'.join(filter(None, parts)) + '\n'
 
 def update_llms_txt(path=None, fn=None, desc=None, index_nb=None):
-    "Write `pkg_llms` to `fn` when it's absent or generated (has the nbdev marker); never touch a hand-written file"
+    "Write `pkg_llms` to `fn` when it's absent or generated (has the nbdev marker)"
     if fn is None: fn = get_config().nbs_path/'llms.txt'
     txt = pkg_llms(path, desc=desc, index_nb=index_nb)
-    if not txt: return
     if fn.exists() and _llms_marker not in fn.read_text(encoding='utf-8'): return
+    if not txt:
+        if fn.exists(): fn.unlink()
+        return
     fn.write_text(txt, encoding='utf-8')
 
 # %% ../nbs/api/01_config.ipynb #95cebda6
