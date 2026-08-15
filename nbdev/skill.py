@@ -40,19 +40,19 @@ Keep docstrings to a short statement of what the symbol does. Extended explanati
 
 Preview the assembled docstring with `nbdev.export.nb_mdoc`, and run code to check each claim before writing it. `nbdev-export` adds the module to the generated package docstring and `llms.txt` once its docstring says more than the default summary line, so write these cells only for modules meant to be read on their own. For the package intro, tag the opening paragraphs of `index.ipynb` with `#| export`.
 
-# Examples are documentation and tests
+# Lesson cells
 
-Write each example as page content first, then make it verify behavior: realistic values, the shortest path to the idea, an informative displayed result, direct assertions that reinforce the lesson, reuse of objects introduced earlier, and important errors demonstrated executably with `expect_fail` (one focused example per contract). Keep test plumbing out of reader-facing cells. Mocks, dense comprehensions, and long setup make poor documentation, so extract a tiny helper or hide the check. Assertions verify, but only the final expression's display teaches. End cells with the value worth showing, and design a compact `_repr_markdown_` or structured summary when it turns later examples into documentation for free. Plots, tables, images, and rich HTML all count as evidence. Stored outputs are part of the explanation. Keep them focused, and never dump a large structure without saying what matters in it. Test helpers come from `fastcore.test` (`test_eq`, `expect_fail`, ...), in plain code cells.
+An nbdev notebook has no test cells (rare `#| hide` checks aside). It has *lesson cells*: code cells that teach a point on the page, whose displayed result is the evidence and whose assertions keep the lesson honest forever. Write each one as page content first, then make it verify behavior: realistic values, the shortest path to the idea, an informative displayed result, direct assertions that reinforce the lesson, reuse of objects introduced earlier, and important errors demonstrated executably with `expect_fail` (one focused example per contract). Keep check plumbing out of reader-facing cells. Mocks, dense comprehensions, and long setup make poor documentation, so extract a tiny helper or hide the check. Assertions verify, but only the final expression's display teaches. End cells with the value worth showing, and design a compact `_repr_markdown_` or structured summary when it turns later examples into documentation for free. Plots, tables, images, and rich HTML all count as evidence. Stored outputs are part of the explanation. Keep them focused, and never dump a large structure without saying what matters in it. Assertion helpers come from `fastcore.test` (`test_eq`, `expect_fail`, ...), in plain code cells.
 
 # Tells
 
-Some patterns in a test or example cell can be spotted mechanically, and each reliably signals a rewrite that would improve the page. Each is a strong hint rather than a law. In particular, a comment sometimes states a constraint the code cannot show, and such a comment stays.
+Some patterns in a lesson cell can be spotted mechanically, and each reliably signals a rewrite that would improve the page. Each is a strong hint rather than a law. In particular, a comment sometimes states a constraint the code cannot show, and such a comment stays.
 
 - A comment in an example cell usually marks where the cell should split in two. Split there, and grow the comment into a markdown cell introducing what the next code cell shows.
 - Comments numbering steps mark a tutorial sequence. Give each step its own markdown and code pair.
 - A `print` whose f-string wraps a result in a sentence is prose in code. The sentence belongs in markdown, and the value belongs at the end of the cell as its displayed result.
 - A `print(x)` as a cell's last line hides the rich repr. End with bare `x` instead.
-- A test or example cell that doesn't end in an evaluation to display (its last line is an assertion or an assignment) verifies without teaching. End with the value the checks are about.
+- A lesson cell that doesn't end in an evaluation to display (its last line is an assertion or an assignment) verifies without teaching. End with the value the checks are about.
 - One name reassigned through stages in a single cell hides the intermediate values, which are the point. Give each stage its own cell, ending with a display.
 - Blank lines dividing a cell into groups mark candidate cell boundaries, and each group needs its own sentence of markdown.
 - Adjacent near-duplicate cells differing in one argument are a comparison written as copies. Make the difference the narrative ("with `strict=True` the same call raises...").
@@ -62,7 +62,7 @@ Some patterns in a test or example cell can be spotted mechanically, and each re
 
 # State flows downward
 
-Keep imports in dedicated import cells, define values near first use, reuse established objects, don't reassign names later cells depend on, introduce shared setup explicitly, and end exploratory cells with the expression whose output records what was learned, so a reader never searches far upward for where a value came from. The import rule is strict and covers test cells. The docs build runs each import-containing cell in a fresh namespace where no other cell has run, so a cell mixing imports with other code breaks the build or silently runs at documentation time.
+Keep imports in dedicated import cells, define values near first use, reuse established objects, don't reassign names later cells depend on, introduce shared setup explicitly, and end exploratory cells with the expression whose output records what was learned, so a reader never searches far upward for where a value came from. The import rule is strict and covers lesson cells. The docs build runs each import-containing cell in a fresh namespace where no other cell has run, so a cell mixing imports with other code breaks the build or silently runs at documentation time.
 
 # Directives
 
@@ -76,5 +76,5 @@ Directives can also live in cell *metadata*, under the `nbdev` key (`{"nbdev": {
 
 # Before you finish
 
-Each new test cell ran red then green, failing before the change and passing after. Re-read the touched section as a reader would, against the conventions above. Style damage breaks no test and no export, so the harm only shows on the docs page.
+A behavior change means revising the lesson cells it touches: prose, displayed output, and assertions move together. Where you revised or added an assertion, check it fails against the old code and passes against the new. Many changes need no new cell at all - never add one merely to witness a change. Re-read the touched section as a reader would, against the conventions above. Style damage breaks no test and no export, so the harm only shows on the docs page.
 """
