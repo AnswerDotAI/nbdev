@@ -22,6 +22,15 @@ Open with an H1 title cell plus `>` subtitle line, introduce the page in a sente
 
 Add the smallest useful implementation, explain what it does and why it has that form, demonstrate it executably, assert where that improves the example, display the result a reader should notice, move on. A cell may bundle several closely related checks, but needs a markdown introduction saying what it establishes. If the introduction gets complicated, split the cell. Prefer extending an existing example over adding a near-duplicate cell. Build classes incrementally with `@patch` so each method sits beside its explanation, unless splitting makes the API harder to understand.
 
+# Authoring sequence
+
+Read the whole notebook before changing it. The interleaved prose, examples, and stored outputs are the design rationale. For a new notebook, first read enough of a role-model notebook, such as claudette's `00_core.ipynb`, to learn the literate form.
+
+Pick the place in the narrative where the change belongs. Write the lesson cell for the new behavior first. Run the cells above that place when it needs earlier state. Run the new cell and see it fail. Add a markdown cell above it that introduces the behavior it demonstrates. Add the implementation cell above that. Run the implementation, then the lesson cell, and see it pass.
+
+For a bug fix, do not add a new lesson cell by default. A regression test per fix is a pytest habit. Revise an existing lesson cell so its example passes through the bug's path, and see it fail before the fix. When no revision fits the example, add one assertion line to it. When the fix changes no documented behavior, change no cells.
+
+Explore inside the notebook, not in the kernel. A check that answered your question while building answers it for the next reader. Keep it as a lesson cell, or delete it before finishing when it taught nothing worth keeping.
 # Helpers
 
 Internal use is often the first evidence an abstraction is worth exposing, not a reason to hide it. Reserve underscores for machinery with no coherent independent contract. A helper only useful to the library itself hints at an awkward internal design.
