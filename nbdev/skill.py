@@ -1,4 +1,4 @@
-"""Author clear, executable nbdev notebooks where code, prose, examples, outputs, and tests form one coherent narrative.
+"""Author clear, executable nbdev notebooks where code, prose, examples, outputs, and tests form one coherent narrative. Trigger: ALWAYS read this before ANY notebook edit.
 
 # The notebook is the product
 
