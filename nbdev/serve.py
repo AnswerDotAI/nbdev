@@ -87,7 +87,7 @@ def proc_nbs(
     (cache/'_quarto.yml').unlink(missing_ok=True)  # single-doc renders strip the staged copy in place (`_strip_sidebar`), so always restage it
 
     files = files.map(_proc_file, mtime=cache_mtime, cache=cache, path=path).filter()
-    kw = {} if IN_NOTEBOOK else {'method':'spawn'}
+    kw = {} if in_notebook() else {'method':'spawn'}
     parallel(nbdev.serve_drv.main, files, n_workers=n_workers, pause=0.01, **kw)
     if cache.exists(): cache.touch()
     return cache
