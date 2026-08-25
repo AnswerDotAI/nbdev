@@ -65,7 +65,8 @@ def test_nb(
     verbose=False,  # stream stdout/stderr from cells to console?
     save=False,  # write outputs back to notebook on success?
     profile:bool=None, # load the IPython profile, as `ipykernel` does? (default: `exec_profile` config key)
-    cell_timeout:int=600  # seconds before each cell times out (None: no limit)
+    cell_timeout:int=600, # seconds before each cell times out (None: no limit)
+    cell_timing_min:float=None # print cells slower than this many seconds (None: no timing output)
 ):
     "Execute tests in notebook in `fn` except those with `skip_flags`"
     if not IN_NOTEBOOK and threading.current_thread() is threading.main_thread(): signal.signal(signal.SIGINT, _int_handler)
@@ -86,6 +87,10 @@ def test_nb(
             if not does_cell_eval(cell, dflt): return True
             return flags & (getattr(cell, 'directives_', {}) or {}).keys()
 
+        def _postproc(cell):
+            elapsed = cell.metadata['execution']['total']
+            if cell_timing_min is not None and elapsed > cell_timing_min: print(f'{fn.name}:{cell.id}: {elapsed:.3f}s')
+
         start = time.time()
         if profile is None: profile = bool(get_config(fn.parent).exec_profile)
         k = CaptureShell(fn, profile=profile)
@@ -93,7 +98,7 @@ def test_nb(
         if do_print: print(f'Starting {fn}')
         try:
             with working_directory(fn.parent):
-                k.run_all(nb, exc_stop=True, preproc=_no_eval, verbose=verbose, cell_timeout=cell_timeout)
+                k.run_all(nb, exc_stop=True, preproc=_no_eval, postproc=_postproc, verbose=verbose, cell_timeout=cell_timeout)
                 if save: write_nb(nb, fn)
                 res = True
         except: 
@@ -131,6 +136,7 @@ def nbdev_test(
     verbose:bool=False, # Print stdout/stderr from notebook cells?
     save:bool=False, # Write outputs back to notebooks on success?
     cell_timeout:int=600, # Seconds before each cell times out (0: no limit)
+    cell_timing_min:float=None, # Print cells slower than this many seconds (None: no timing output)
     **kwargs
 ):
     "Test in parallel notebooks matching `path`, passing along `flags`"
@@ -150,7 +156,7 @@ def nbdev_test(
         try:
             results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
                                basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save,
-                               cell_timeout=cell_timeout or None, **kw)
+                               cell_timeout=cell_timeout or None, cell_timing_min=cell_timing_min, **kw)
         except KeyboardInterrupt:
             sys.stderr.write('\nnbdev-test interrupted; in-flight notebook stacks shown above\n')
             sys.exit(130)
