@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 3.3.13
+
+### New Features
+
+- Add `cell_timing_min` option to `nbdev_test` to report cells exceeding a time threshold ([#1637](https://github.com/AnswerDotAI/nbdev/issues/1637))
+- Support post-release version bumps ([#1635](https://github.com/AnswerDotAI/nbdev/pull/1635)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.3.12
 
 ### New Features
