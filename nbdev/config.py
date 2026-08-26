@@ -130,7 +130,7 @@ def nbdev_create_config(
     author = author or inf.get('author', '')
     if not author: raise ValueError("Could not infer `author` from git. Please pass --author explicitly.")
     author_email = author_email or inf.get('author_email', '')
-    if not author_email: raise ValueError("Could not infer `author_email` from git. Please pass --author_email explicitly.")
+    if not author_email: raise ValueError("Could not infer `author_email` from git. Please pass --author-email explicitly.")
     branch = branch or inf.get('branch', 'main')
     description = description or inf.get('description', '')
     
