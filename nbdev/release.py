@@ -51,7 +51,7 @@ def _remote_shas(s): return {o.split()[0] for o in s.splitlines()}
 
 def _check_changelog_base(tag):
     if _is_ancestor(tag): return
-    raise SystemExit(f'HEAD does not contain the latest release ({tag}). Write CHANGELOG.md manually, then run with --no_changelog.')
+    raise SystemExit(f'HEAD does not contain the latest release ({tag}). Write CHANGELOG.md manually, then run with --no-changelog.')
 
 def _release_head():
     _release_branch()
@@ -335,7 +335,7 @@ def release_conda(
     if skip_upload: return print(loc)
     if not upload_user: upload_user = get_config().conda_user
     if not upload_user: return print("`conda_user` not in pyproject.toml and no `upload_user` passed. Cannot upload")
-    if 'anaconda upload' not in res: return print(f"{res}\n\nFailed. Check auto-upload not set in .condarc. Try `--do_build False`.")
+    if 'anaconda upload' not in res: return print(f"{res}\n\nFailed. Check auto-upload not set in .condarc. Try `--do-build False`.")
     return anaconda_upload(name, loc)
 
 # %% ../nbs/api/18_release.ipynb #0500d972
