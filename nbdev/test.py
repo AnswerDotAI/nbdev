@@ -69,12 +69,12 @@ def test_nb(
     cell_timing_min:float=None # print cells slower than this many seconds (None: no timing output)
 ):
     "Execute tests in notebook in `fn` except those with `skip_flags`"
-    if not IN_NOTEBOOK and threading.current_thread() is threading.main_thread(): signal.signal(signal.SIGINT, _int_handler)
+    if not in_notebook() and threading.current_thread() is threading.main_thread(): signal.signal(signal.SIGINT, _int_handler)
     fn = Path(fn)
     _cur_nb[0] = fn
     if basepath: sys.path.insert(0, str(basepath))
     prev_test = os.environ.get('IN_TEST')
-    if not IN_NOTEBOOK: os.environ['IN_TEST'] = '1'
+    if not in_notebook(): os.environ['IN_TEST'] = '1'
     try:
         flags=set(L(skip_flags)) - set(L(force_flags))
         nb = NBProcessor(fn, rm_directives=False, process=True).nb
@@ -149,7 +149,7 @@ def nbdev_test(
     if len(files)==0: return print('No files were eligible for testing')
 
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
-    if IN_NOTEBOOK: kw = {'method':'spawn'} if os.name=='nt' or sys.platform=='darwin' else {'method':'forkserver'}
+    if in_notebook(): kw = {'method':'spawn'} if os.name=='nt' or sys.platform=='darwin' else {'method':'forkserver'}
     else: kw = {'method':'spawn'} if sys.platform=='darwin' else {}
     wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
