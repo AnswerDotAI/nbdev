@@ -154,9 +154,10 @@ def nbdev_export(
         procs = [import_obj(p) for p in procs] if procs else None
         files = nbglob(path=path, as_path=True, **kwargs).sorted('name')
         for f in files: nb_export(f, procs=procs)
-        add_init(cfg.lib_path)
-        update_llms_txt()
-        _build_modidx()
+        if cfg.lib_path.exists():
+            add_init(cfg.lib_path)
+            update_llms_txt()
+            _build_modidx()
 
 # %% ../nbs/api/05_doclinks.ipynb #3134c22b
 typs = 'module','class','method','function'
