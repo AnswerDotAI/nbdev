@@ -123,7 +123,7 @@ def _keep_file(
     else: True
 
 # %% ../nbs/api/12_test.ipynb #f8cc6a61-a48e-4ab1-89a9-18316ca795d6
-@call_parse
+@call_parse(pos=['path'])
 @delegates(nbglob_cli)
 def nbdev_test(
     path:str=None,  # A notebook name or glob to test
