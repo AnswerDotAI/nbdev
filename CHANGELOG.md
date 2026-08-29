@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 3.3.14
+
+### New Features
+
+- `nbdev-test` takes its path as a positional argument ([#1641](https://github.com/AnswerDotAI/nbdev/pull/1641)), thanks to [@jph00](https://github.com/jph00)
+
+### Bugs Squashed
+
+- Don't scaffold an empty package when `nbdev-export` exports nothing ([#1640](https://github.com/AnswerDotAI/nbdev/pull/1640)), thanks to [@jph00](https://github.com/jph00)
+- Update CLI flags for fastcore.script hyphenation ([#1638](https://github.com/AnswerDotAI/nbdev/pull/1638)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.3.13
 
 ### New Features
