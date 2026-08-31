@@ -75,7 +75,7 @@ Keep imports in dedicated import cells, define values near first use, reuse esta
 
 # Directives
 
-`#| default_exp` names the module. `#| export` marks exported cells. Underscore-prefixed helpers may export without joining the public API. `#| exportd` exports a code cell's source to the module docstring instead of the module. `#| hide` keeps necessary but distracting material off the page. `#| eval: false` is for cells that genuinely must not run, not for suppressing broken ones, and it cascades. An unevaluated cell cannot create state for later evaluated cells.
+`#| default_exp` names the module. `#| export` marks exported cells. Underscore-prefixed helpers may export without joining the public API. `#| exportd` exports a code cell's source to the module docstring instead of the module. `#| hide` keeps necessary but distracting material off the page. `#| eval: false` is for cells that genuinely must not run, not for suppressing broken ones. An unevaluated cell cannot create state for later evaluated cells.
 
 # nbdev v3
 
