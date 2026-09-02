@@ -6,7 +6,7 @@ Modules:
 - `nbdev.moddocs`: # Module docs: creating them from existing notebooks
 - `nbdev.skill`: Author clear, executable nbdev notebooks where code, prose, examples, outputs, and tests form one coherent narrative. Trigger: ALWAYS read this before ANY notebook edit."""
 
-__version__ = "3.3.15"
+__version__ = "3.3.16"
 
 from .doclinks import nbdev_export
 from .showdoc import show_doc
