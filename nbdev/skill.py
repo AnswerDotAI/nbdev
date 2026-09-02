@@ -87,5 +87,5 @@ Directives can also live in cell *metadata*, under the `nbdev` key (`{"nbdev": {
 
 A behavior change means revising the lesson cells it touches: prose, displayed output, and assertions move together. Where you revised or added an assertion, check it fails against the old code and passes against the new. Many changes need no new cell at all - never add one merely to witness a change. Re-read the touched section as a reader would, against the conventions above. Style damage breaks no test and no export, so the harm only shows on the docs page.
 
-Run notebooks with `nbdev-test --cell-timeout 60 --cell-timing-min 2 <nb>`. The default cell timeout is 600s, so a stalled cell (a dead server, an unbounded network wait) sits silently for ten minutes; the short timeout fails loudly naming the stuck cell, and the timing report names any cell slower than 2s, which is how a notebook that quietly stopped replaying its recorded HTTP gets noticed. A genuinely slow notebook gets a higher bound stated per run, not a removed one.
+Run notebooks with `nbdev-test <nb>`.
 """
