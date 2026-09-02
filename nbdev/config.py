@@ -123,13 +123,13 @@ def nbdev_create_config(
     path.mkdir(exist_ok=True, parents=True)
     
     # Infer from git if not provided
-    inf = _fetch_from_git()
+    inf,ucfg = _fetch_from_git(),_user_config()
     repo = repo or inf.get('repo') or path.resolve().name
-    user = user or inf.get('user', '')
+    user = user or inf.get('user') or ucfg.get('user', '')
     if not user: raise ValueError("Could not infer `user` from git. Please pass --user explicitly.")
-    author = author or inf.get('author', '')
+    author = author or inf.get('author') or ucfg.get('author', '')
     if not author: raise ValueError("Could not infer `author` from git. Please pass --author explicitly.")
-    author_email = author_email or inf.get('author_email', '')
+    author_email = author_email or inf.get('author_email') or ucfg.get('author_email', '')
     if not author_email: raise ValueError("Could not infer `author_email` from git. Please pass --author-email explicitly.")
     branch = branch or inf.get('branch', 'main')
     description = description or inf.get('description', '')
@@ -171,7 +171,7 @@ def _find_nbdev_pyproject(path=None):
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
     clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, custom_sidebar=False, branch='main',
-    doc_procs=[], export_procs=[], exec_profile=True)
+    doc_procs=[], export_procs=[], exec_profile=True, cell_timeout=600)
 
 _path_keys = 'lib_path', 'nbs_path', 'doc_path'
 

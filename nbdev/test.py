@@ -135,12 +135,13 @@ def nbdev_test(
     ignore_fname:str='.notest', # Filename that will result in siblings being ignored
     verbose:bool=False, # Print stdout/stderr from notebook cells?
     save:bool=False, # Write outputs back to notebooks on success?
-    cell_timeout:int=600, # Seconds before each cell times out (0: no limit)
-    cell_timing_min:float=None, # Print cells slower than this many seconds (None: no timing output)
+    cell_timeout:int=None, # Seconds before each cell times out (0: no limit; default `cell_timeout` config, 600)
+    cell_timing_min:float=None, # Print cells slower than this many seconds (default `cell_timing_min` config, else none)
     **kwargs
 ):
     "Test in parallel notebooks matching `path`, passing along `flags`"
     cfg = get_config(Path(path).resolve() if path else None)
+    cell_timeout,cell_timing_min = ifnone(cell_timeout, cfg.cell_timeout),ifnone(cell_timing_min, cfg.get('cell_timing_min'))
     skip_flags = cfg.tst_flags
     if isinstance(skip_flags, str): skip_flags = skip_flags.split()
     force_flags = flags.split()
