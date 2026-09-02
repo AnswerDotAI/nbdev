@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.15
+
+### New Features
+
+- Read nbdev-test cell timeout and timing threshold, and nbdev-create-config identity fields, from user config ([#1642](https://github.com/AnswerDotAI/nbdev/pull/1642)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.3.14
 
 ### New Features
