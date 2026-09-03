@@ -173,7 +173,7 @@ async def release_gh(
     if not no_changelog: await Release(repo=repo).changelog()
     if not no_editor: subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
     if not yes and not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
-    run('git commit -am release')
+    run('git commit -am release', ignore_ex=True)   # a changelog committed earlier leaves nothing to commit
     run('git push --set-upstream origin HEAD')
     print(f"Released {await push_release(token, repo=repo)}")
 
