@@ -316,19 +316,19 @@ def set_version(path, version):
 
 # %% ../nbs/api/01_config.ipynb #d00889e5
 def bump_version(v, part=None, unbump=False):
-    "Bump `.postN` by default when present, otherwise a semver part counted from the right"
+    "Bump `.postN` by default when present, otherwise the part at 0-based index `part` of `v` (0=major, 1=minor, 2=patch), defaulting to the last part"
     v = v or '0.0.0'
     post = re.fullmatch(r'(.*)\.post(\d+)', v)
     if part is None and post:
         n = max(0, int(post[2]) + (-1 if unbump else 1))
         return f'{post[1]}.post{n}'
-    if part is None: part = 2
     parts = (post[1] if post else v).split('.')
     parts += ['0'] * (3 - len(parts))
-    idx = len(parts) - 3 + part
-    parts[idx] = str(int(parts[idx]) + (-1 if unbump else 1))
-    for i in range(idx+1, len(parts)): parts[i] = '0'
+    if part is None: part = len(parts) - 1
+    parts[part] = str(int(parts[part]) + (-1 if unbump else 1))
+    for i in range(part+1, len(parts)): parts[i] = '0'
     return '.'.join(parts)
+
 
 # %% ../nbs/api/01_config.ipynb #e32583e6
 def update_version(path=None):
