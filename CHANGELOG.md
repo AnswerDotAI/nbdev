@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 3.3.16
+
+### New Features
+
+- Clarify and condense notebook-authoring guidance ([#1644](https://github.com/AnswerDotAI/nbdev/pull/1644)), thanks to [@jph00](https://github.com/jph00)
+
+### Bugs Squashed
+
+- Do not fail release when the changelog commit already captured all changes ([#1643](https://github.com/AnswerDotAI/nbdev/issues/1643))
+
+
 ## 3.3.15
 
 ### New Features
