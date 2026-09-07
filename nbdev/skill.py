@@ -18,7 +18,7 @@ Develop one idea at a time: small implementation, explanation, executable lesson
 
 For new behavior, choose its narrative position, write the lesson first, run preceding cells as needed, and see it fail. Add its markdown introduction and implementation above it, then run implementation and lesson to see it pass. For bugs, revise an existing example to exercise the failing path; if no revision fits, add an assertion to it. If no documented behavior changes, change no lesson cells. Never add a cell merely to witness a fix.
 
-Read existing examples before experimenting. Explore in the notebook, not in a separate kernel check; retain useful explorations as lessons and delete those that teach nothing worth keeping.
+Read existing examples before experimenting. Explore in the notebook, not in a separate kernel check; retain useful explorations as lessons and delete those that teach nothing worth keeping. Always try to leave a notebook better than you found it.
 
 Reserve underscore names for machinery without a coherent independent contract. Internal use can justify exposing an abstraction; helpers useful only internally may indicate awkward design.
 
