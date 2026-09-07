@@ -386,7 +386,7 @@ def release_both(
 # %% ../nbs/api/18_release.ipynb #c0f64b2c
 @call_parse
 def nbdev_bump_version(
-    part:int=None,  # Release part to bump; defaults to post when present, otherwise patch
+    part:int=None,  # 0-based version part to bump (0=major, 1=minor, 2=patch); defaults to post when present, otherwise the last part
     unbump:bool=False):  # Reduce version instead of increasing it
     "Increment version in __init__.py by one"
     cfg = get_config()
