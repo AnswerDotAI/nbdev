@@ -102,7 +102,7 @@ def test_nb(
                 if save: write_nb(nb, fn)
                 res = True
         except: 
-            if showerr: sys.stderr.write(k.prettytb(fname=fn)+'\n')
+            if showerr: sys.stderr.write((k.prettytb(fname=fn) or traceback.format_exc())+'\n')
             res=False
         if k.leaks and showerr: sys.stderr.write(f'{fn}: {len(k.leaks)} leaked task(s) survived cancellation\n')
         if do_print: print(f'- Completed {fn}')
