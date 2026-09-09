@@ -388,5 +388,7 @@ d = { 'settings': { 'branch': 'main',
             'nbdev.test': { 'nbdev.test._await_chain': ('api/test.html#_await_chain', 'nbdev/test.py'),
                             'nbdev.test._int_handler': ('api/test.html#_int_handler', 'nbdev/test.py'),
                             'nbdev.test._keep_file': ('api/test.html#_keep_file', 'nbdev/test.py'),
+                            'nbdev.test._skip_cell': ('api/test.html#_skip_cell', 'nbdev/test.py'),
+                            'nbdev.test.nb_test_cells': ('api/test.html#nb_test_cells', 'nbdev/test.py'),
                             'nbdev.test.nbdev_test': ('api/test.html#nbdev_test', 'nbdev/test.py'),
                             'nbdev.test.test_nb': ('api/test.html#test_nb', 'nbdev/test.py')}}}
