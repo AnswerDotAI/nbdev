@@ -2,6 +2,58 @@
 
 <!-- do not remove -->
 
+## 3.3.18
+
+### New Features
+
+- Add `nb_test_cells` and optional `test_setup` hook run before parallel testing; write test errors to `sys.__stderr__` to avoid captured streams ([#1646](https://github.com/AnswerDotAI/nbdev/issues/1646))
+
+
+## 3.3.17
+
+### New Features
+
+- Cell diffs show context, outputs, directives, and word-level changes ([#1645](https://github.com/AnswerDotAI/nbdev/pull/1645)), thanks to [@jph00](https://github.com/jph00)
+
+
+## 3.3.16
+
+### New Features
+
+- Clarify and condense notebook-authoring guidance ([#1644](https://github.com/AnswerDotAI/nbdev/pull/1644)), thanks to [@jph00](https://github.com/jph00)
+
+### Bugs Squashed
+
+- Do not fail release when the changelog commit already captured all changes ([#1643](https://github.com/AnswerDotAI/nbdev/issues/1643))
+
+
+## 3.3.15
+
+### New Features
+
+- Read nbdev-test cell timeout and timing threshold, and nbdev-create-config identity fields, from user config ([#1642](https://github.com/AnswerDotAI/nbdev/pull/1642)), thanks to [@jph00](https://github.com/jph00)
+
+
+## 3.3.14
+
+### New Features
+
+- `nbdev-test` takes its path as a positional argument ([#1641](https://github.com/AnswerDotAI/nbdev/pull/1641)), thanks to [@jph00](https://github.com/jph00)
+
+### Bugs Squashed
+
+- Don't scaffold an empty package when `nbdev-export` exports nothing ([#1640](https://github.com/AnswerDotAI/nbdev/pull/1640)), thanks to [@jph00](https://github.com/jph00)
+- Update CLI flags for fastcore.script hyphenation ([#1638](https://github.com/AnswerDotAI/nbdev/pull/1638)), thanks to [@jph00](https://github.com/jph00)
+
+
+## 3.3.13
+
+### New Features
+
+- Add `cell_timing_min` option to `nbdev_test` to report cells exceeding a time threshold ([#1637](https://github.com/AnswerDotAI/nbdev/issues/1637))
+- Support post-release version bumps ([#1635](https://github.com/AnswerDotAI/nbdev/pull/1635)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.3.12
 
 ### New Features
@@ -560,7 +612,7 @@
 
 ### New Features
 
-- Add --no_browser option to nbdev_preview ([#1400](https://github.com/fastai/nbdev/pull/1400)), thanks to [@bamford](https://github.com/bamford)
+- Add --no-browser option to nbdev_preview ([#1400](https://github.com/fastai/nbdev/pull/1400)), thanks to [@bamford](https://github.com/bamford)
 - added conda_user and package_data to cfg_tail ([#1351](https://github.com/fastai/nbdev/pull/1351)), thanks to [@dsm-72](https://github.com/dsm-72)
 - add repo and tag options to `nbdev_new` ([#1350](https://github.com/fastai/nbdev/pull/1350)), thanks to [@dsm-72](https://github.com/dsm-72)
 
@@ -888,7 +940,7 @@
 - Add `custom_quarto_yml` setting ([#842](https://github.com/fastai/nbdev/pull/842)), thanks to [@benoit-cty](https://github.com/benoit-cty)
 - Display multiline docstrings ([#841](https://github.com/fastai/nbdev/issues/841))
 - Include filename in `nbdev_export` warning when nbdev1 syntax is used ([#835](https://github.com/fastai/nbdev/issues/835))
-- Streamline `nbdev_new`: outputs are now in color, you can pass `--lib_name`, and it calls `nbdev_export` ([#820](https://github.com/fastai/nbdev/pull/820)), thanks to [@seeM](https://github.com/seeM)
+- Streamline `nbdev_new`: outputs are now in color, you can pass `--lib-name`, and it calls `nbdev_export` ([#820](https://github.com/fastai/nbdev/pull/820)), thanks to [@seeM](https://github.com/seeM)
 - A command for uploading to the test pypi server ([#818](https://github.com/fastai/nbdev/pull/818)), thanks to [@tourdownunder](https://github.com/tourdownunder)
 - Include notebook title in `nbdev_preview` error message ([#802](https://github.com/fastai/nbdev/issues/802))
 - Migrate collapsible code cell directives ([#783](https://github.com/fastai/nbdev/pull/783)), thanks to [@hamelsmu](https://github.com/hamelsmu)
