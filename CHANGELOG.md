@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.18
+
+### New Features
+
+- Add `nb_test_cells` and optional `test_setup` hook run before parallel testing; write test errors to `sys.__stderr__` to avoid captured streams ([#1646](https://github.com/AnswerDotAI/nbdev/issues/1646))
+
+
 ## 3.3.17
 
 ### New Features
