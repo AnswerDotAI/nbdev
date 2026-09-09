@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.17
+
+### New Features
+
+- Cell diffs show context, outputs, directives, and word-level changes ([#1645](https://github.com/AnswerDotAI/nbdev/pull/1645)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.3.16
 
 ### New Features
