@@ -6,7 +6,7 @@ Modules:
 - `nbdev.moddocs`: # Module docs: creating them from existing notebooks
 - `nbdev.skill`: Author nbdev notebooks as source, documentation, examples, and tests. Ensure this guidance is in context before any notebook edit."""
 
-__version__ = "3.3.17"
+__version__ = "3.3.18"
 
 from .doclinks import nbdev_export
 from .showdoc import show_doc
