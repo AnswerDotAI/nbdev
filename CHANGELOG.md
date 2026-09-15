@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 3.3.19
+
+### New Features
+
+- Add `path_glob`/`path_re` filters to `nbglob_cli` and let `nbdev_test` treat a non-existent path as a full-path glob ([#1647](https://github.com/AnswerDotAI/nbdev/issues/1647))
+- Use `in_notebook()` function instead of `IN_NOTEBOOK` constant ([#1636](https://github.com/AnswerDotAI/nbdev/pull/1636)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 3.3.18
 
 ### New Features
