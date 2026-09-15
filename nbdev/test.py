@@ -143,7 +143,7 @@ def _keep_file(
 @call_parse(pos=['path'])
 @delegates(nbglob_cli)
 def nbdev_test(
-    path:str=None,  # A notebook name or glob to test
+    path:str=None,  # A notebook, directory, or full-path glob to test
     flags:str='',  # Space separated list of test flags to run that are normally ignored
     n_workers:int=None,  # Number of workers
     timing:bool=False,  # Time each notebook to see which are slow
@@ -157,6 +157,7 @@ def nbdev_test(
     **kwargs
 ):
     "Test in parallel notebooks matching `path`, passing along `flags`"
+    if path and not Path(path).exists(): kwargs['path_glob'],path = os.path.abspath(path),Path.cwd()
     cfg = get_config(Path(path).resolve() if path else None)
     cell_timeout,cell_timing_min = ifnone(cell_timeout, cfg.cell_timeout),ifnone(cell_timing_min, cfg.get('cell_timing_min'))
     skip_flags = cfg.tst_flags

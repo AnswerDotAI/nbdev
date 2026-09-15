@@ -129,12 +129,15 @@ def nbglob_cli(
     symlinks:bool=False, # Follow symlinks?
     file_glob:str='*.ipynb', # Only include files matching glob
     file_re:str=None, # Only include files matching regex
+    path_glob:str=None, # Only include files whose full paths match glob (wildcards match separators)
+    path_re:str=None, # Only include files whose full paths match regex
     folder_re:str=None, # Only enter folders matching regex
     skip_file_glob:str=None, # Skip files matching glob
     skip_file_re:str='^[_.]', # Skip files matching regex
     skip_folder_re:str = '^[_.]'): # Skip folders matching regex
     "Find all files in a directory matching an extension given a config key."
-    return nbglob(path, symlinks=symlinks, file_glob=file_glob, file_re=file_re, folder_re=folder_re,
+    return nbglob(path, symlinks=symlinks, file_glob=file_glob, file_re=file_re,
+                  path_glob=path_glob, path_re=path_re, folder_re=folder_re,
                   skip_file_glob=skip_file_glob, skip_file_re=skip_file_re, skip_folder_re=skip_folder_re)
 
 # %% ../nbs/api/05_doclinks.ipynb #5e6fbe08
