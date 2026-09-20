@@ -71,7 +71,7 @@ def _fetch_from_git(raise_err=False):
 
 # %% ../nbs/api/01_config.ipynb #05aae09f
 pyproject_tmpl = '''[build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -80,7 +80,7 @@ dynamic = ["version"]
 description = "{description}"
 readme = "README.md"
 requires-python = ">={min_python}"
-license = {{text = "{license}"}}
+license = "{license}"
 authors = [{{name = "{author}", email = "{author_email}"}}]
 keywords = {keywords}
 classifiers = [

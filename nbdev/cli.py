@@ -156,16 +156,16 @@ async def nbdev_update_license(
 
     mapped = mapping.get(to, None)
     if mapped not in avail_lic: raise ValueError(f"{to} is not an available license")
-    body = (await api.licenses.get(mapped))['body']
+    lic = await api.licenses.get(mapped)
 
     copyright = f"{datetime.now().year}, {cfg.author}"
-    body = body.replace('[year], [fullname]', copyright)
+    body = lic['body'].replace('[year], [fullname]', copyright)
     body = body.replace('[year] [fullname]', copyright)
 
     # Update pyproject.toml
     pyproj = cfg.config_file
     content = pyproj.read_text()
-    content = re.sub(r'^(license\s*=\s*\{text\s*=\s*").*?(")', rf'\g<1>{to}\2', content, flags=re.MULTILINE)
+    content = re.sub(r'^license\s*=.*$', f'license = "{lic.spdx_id}"', content, flags=re.MULTILINE)
     pyproj.write_text(content)
 
     Path('LICENSE').write_text(body)
