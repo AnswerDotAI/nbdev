@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.20
+
+### Bugs Squashed
+
+- fix license format ([#1648](https://github.com/AnswerDotAI/nbdev/issues/1648))
+
+
 ## 3.3.19
 
 ### New Features
