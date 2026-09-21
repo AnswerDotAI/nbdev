@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.21
+
+### New Features
+
+- Name the exception in `exec_show_docs` errors, and leave symbol-less modules out of `_modidx.py` ([#1649](https://github.com/AnswerDotAI/nbdev/pull/1649)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 3.3.20
 
 ### Bugs Squashed
