@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "nbdev"
 description = "Create delightful software with Jupyter Notebooks"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [{name = "Jeremy Howard and the fast.ai community", email = "j@fast.ai"}]
 keywords = ["nbdev", "fastai", "jupyter", "notebook", "export"]
 classifiers = [
@@ -16,7 +16,6 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "License :: OSI Approved :: Apache Software License",
 ]
 dynamic = ["version"]
 dependencies = [ "fastcore>=2.2.28", "execnb>=0.3.3", "astunparse", "ghapi>=2.0.2", "watchdog", "asttokens",
