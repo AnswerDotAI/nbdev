@@ -92,7 +92,7 @@ def _get_modidx(py_path, code_root, nbs_path):
             if isinstance(tree, ast.ClassDef):
                 for t2 in tree.body:
                     if isinstance(t2, _def_types): _stor(f'{tree.name}.{t2.name}')
-    return {mod_name: d}
+    return {mod_name: d} if d else {}
 
 # %% ../nbs/api/05_doclinks.ipynb #587df0d4
 def _build_modidx(dest=None, nbs_path=None, skip_exists=False):
