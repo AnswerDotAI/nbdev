@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.22
+
+### New Features
+
+- Add parallel Quarto rendering for nbdev-docs and nbdev-preview, remove stale cached pages ([#1651](https://github.com/AnswerDotAI/nbdev/issues/1651))
+
+
 ## 3.3.21
 
 ### New Features
