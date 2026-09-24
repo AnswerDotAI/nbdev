@@ -6,7 +6,7 @@ Modules:
 - `nbdev.moddocs`: # Module docs: creating them from existing notebooks
 - `nbdev.skill`: Write, read and review nbdev notebooks as source, documentation, examples and tests. You MUST read this before any work on a project with notebooks."""
 
-__version__ = "3.3.22"
+__version__ = "3.3.23"
 
 from .doclinks import nbdev_export
 from .showdoc import show_doc
