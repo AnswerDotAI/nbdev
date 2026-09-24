@@ -56,7 +56,9 @@ You can also run `nbdev-help` from the terminal to see the full list of availabl
     nbdev-conda               Create a `meta.yaml` file ready to be built into a package, and optionally build and upload it
     nbdev-contributing        Create CONTRIBUTING.md from contributing_nb (defaults to 'contributing.ipynb' if present). Skips if the file doesn't exist.
     nbdev-create-config       Create a pyproject.toml config file.
-    nbdev-docs                Create Quarto docs and README.md
+    nbdev-diff                Cell-level diffs for changed notebooks between two git refs
+    nbdev-diff-driver         Git external diff driver for notebooks; installed by `nbdev-install-hooks`
+    nbdev-docs                Create Quarto docs
     nbdev-export              Export notebooks in `path` to Python modules
     nbdev-filter              A notebook filter for Quarto
     nbdev-fix                 Create working notebook from conflicted notebook `nbname`
@@ -72,9 +74,9 @@ You can also run `nbdev-help` from the terminal to see the full list of availabl
     nbdev-preview             Preview docs locally
     nbdev-proc-nbs            Process notebooks in `path` for docs rendering
     nbdev-pypi                Create and upload Python package to PyPI
-    nbdev-readme              Create README.md from readme_nb (index.ipynb by default)
+    nbdev-readme              Create README.md from readme_nb (index.ipynb by default). Skips if the file doesn't exist.
     nbdev-release-both        Release both conda and PyPI packages
-    nbdev-release-gh          Calls `nbdev-changelog`, lets you edit the result, then pushes to git and calls `nbdev-release-git`
+    nbdev-release-gh          Create the changelog, optionally edit it, then push and create the GitHub release
     nbdev-release-git         Tag and create a release in GitHub for the current version
     nbdev-requirements        Writes a `requirements.txt` file to `directory` based on pyproject.toml.
     nbdev-sidebar             Create sidebar.yml

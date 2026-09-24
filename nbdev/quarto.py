@@ -339,11 +339,9 @@ def nbdev_docs(
     path:str=None, # Path to notebooks
     n_workers:int=defaults.cpus,  # Preprocessing and Quarto workers (0 or 1: serial)
     **kwargs):
-    "Create Quarto docs and README.md"
-    cache,cfg,path = _pre_docs(path, n_workers=n_workers, **kwargs)
+    "Create Quarto docs"
+    cache,cfg,_ = _pre_docs(path, n_workers=n_workers, **kwargs)
     render_quarto(cache, cache/cfg.doc_path.name, n_workers=n_workers)
-    nbdev_readme.__wrapped__(path=path, chk_time=True)
-    nbdev_contributing.__wrapped__(path=path, chk_time=True)
     shutil.rmtree(cfg.doc_path, ignore_errors=True)
     move(cache/cfg.doc_path.name, cfg.config_path)
     _fix_quarto_nav(cfg.doc_path)
