@@ -38,15 +38,12 @@ def _is_qpy(path:Path):
         if vl[0]=='---' and vl[-1]=='---': return '\n'.join(vl[1:-1])
 
 # %% ../nbs/api/17_serve.ipynb #abc3835a
-def _proc_file(s, cache, path, mtime=None):
+def _proc_file(s, cache, path):
     skips = ('_proc', '_docs', '_site', 'pyproject.toml')
     if not s.is_file() or any(o[0]=='.' or o in skips for o in s.parts): return
     d = cache/s.relative_to(path)
     if s.suffix=='.py': d = d.with_suffix('')
-    if d.exists():
-        dtime = d.stat().st_mtime
-        if mtime: dtime = max(dtime, mtime)
-        if s.stat().st_mtime<=dtime: return
+    if d.exists() and s.stat().st_mtime<=d.stat().st_mtime: return
 
     d.parent.mkdir(parents=True, exist_ok=True)
     if s.suffix=='.ipynb': return s,d,FilterDefaults
@@ -59,6 +56,15 @@ def _keep_file(f:Path, file_glob='', file_re=''):
     "Keep all non-notebook files; keep notebooks matching `file_glob` and `file_re` (empty patterns match all)"
     if f.suffix!='.ipynb': return True
     return (not file_glob or fnmatch(f.name, file_glob)) and (not file_re or bool(re.search(file_re, f.name)))
+
+# %% ../nbs/api/17_serve.ipynb #ff47fad5
+def _rm_stale(cache:Path, path:Path):
+    "Remove pages in `cache` whose source in `path` no longer exists"
+    for d in list(cache.rglob('*')):
+        rel = d.relative_to(cache)
+        if d.suffix not in ('.ipynb','.qmd','.md') or any(o[0]=='.' for o in rel.parts): continue
+        s = path/rel
+        if not (s.exists() or s.with_name(s.name+'.py').exists()): d.unlink()
 
 # %% ../nbs/api/17_serve.ipynb #14463227
 @delegates(nbglob_cli)
@@ -77,6 +83,7 @@ def proc_nbs(
     if file_glob or file_re: files = files.filter(_keep_file, file_glob=file_glob, file_re=file_re)
     if (path/'_quarto.yml').exists(): files.append(path/'_quarto.yml')
     if (path/'_brand.yml').exists(): files.append(path/'_brand.yml')
+    files.extend(nbglob(path, func=Path, file_glob='_metadata.y*ml', skip_file_re='^[.]'))
     if (path/'_extensions').exists(): files.extend(nbglob(path/'_extensions', func=Path, file_glob='', file_re='', skip_file_re='^[.]'))
 
     # If pyproject.toml or filter script newer than cache folder modified, delete cache
@@ -85,8 +92,9 @@ def proc_nbs(
     cache_mtime = cache.stat().st_mtime
     if force or (cache.exists() and cache_mtime<chk_mtime): rmtree(cache)
     (cache/'_quarto.yml').unlink(missing_ok=True)  # single-doc renders strip the staged copy in place (`_strip_sidebar`), so always restage it
+    _rm_stale(cache, path)
 
-    files = files.map(_proc_file, mtime=cache_mtime, cache=cache, path=path).filter()
+    files = files.map(_proc_file, cache=cache, path=path).filter()
     kw = {} if in_notebook() else {'method':'spawn'}
     parallel(nbdev.serve_drv.main, files, n_workers=n_workers, pause=0.01, **kw)
     if cache.exists(): cache.touch()

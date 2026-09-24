@@ -191,7 +191,9 @@ def _retr_mdoc(cells, nb_path=None):
     mdoc = '\n\n'.join(L(summ)+docs).strip()
     url = nbpath2docurl(nb_path) if nb_path else ''
     if url: mdoc = (mdoc + f'\n\nDocs: {url}').strip()
-    return f'"""{mdoc}"""\n\n' if mdoc else ''
+    if not mdoc: return ''
+    r = 'r' if '\\' in mdoc else ''
+    return f'{r}"""{mdoc}"""\n\n'
 
 # %% ../nbs/api/02_maker.ipynb #cdd205d6
 @patch
