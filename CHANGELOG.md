@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.24
+
+### Bugs Squashed
+
+- Use `config_path` instead of `lib_path`.parent for project root in `add_init`, install, conda meta and pypi upload ([#1653](https://github.com/AnswerDotAI/nbdev/issues/1653))
+
+
 ## 3.3.23
 
 ### New Features
