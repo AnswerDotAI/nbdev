@@ -63,8 +63,8 @@ def install_quarto():
 def install():
     "Install Quarto and the current library"
     install_quarto.__wrapped__()
-    d = get_config().lib_path
-    if (d/'__init__.py').exists(): system(f'pip install -e "{d.parent}[dev]"')
+    cfg = get_config()
+    if (cfg.lib_path/'__init__.py').exists(): system(f'pip install -e "{cfg.config_path}[dev]"')
 
 # %% ../nbs/api/14_quarto.ipynb #b93f6def
 def _pre(p,b=True): return '    ' * (len(p.parts)) + ('- ' if b else '  ')
@@ -201,7 +201,7 @@ def refresh_quarto_yml():
 def _ensure_quarto():
     if shutil.which('quarto'): return
     print("Quarto is not installed. We will download and install it for you.")
-    install.__wrapped__()
+    install_quarto.__wrapped__()
 
 # %% ../nbs/api/14_quarto.ipynb #66163c30
 def _chk_nbdev_yml(path):

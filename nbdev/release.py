@@ -260,7 +260,7 @@ def _get_conda_meta():
         'source': {'url':rel['url'], 'sha256':rel['digests']['sha256']}
     }
 
-    _dir = cfg.lib_path.parent
+    _dir = cfg.config_path
     readme = _dir/'README.md'
     descr = readme.read_text() if readme.exists() else ''
     d2 = {
@@ -360,7 +360,7 @@ def release_pypi(
     verbose:bool=False # Pass --verbose to twine upload
 ):
     "Create and upload Python package to PyPI"
-    _dir = get_config().lib_path.parent
+    _dir = get_config().config_path
     q = ' --quiet' if quiet else ''
     p = ' --disable-progress-bar' if quiet else ''
     system(f'cd {_dir}  && rm -rf dist build && python -m build{q}')

@@ -360,7 +360,7 @@ def add_init(path=None):
         subds = (os.listdir(r/d) for d in ds)
         if _has_py(fs) or any(filter(_has_py, subds)) and not (r/_init).exists(): (r/_init).touch()
     if get_config().get('put_version_in_init', True): update_version(path)
-    if get_config().get('update_pyproject', True): update_proj(path.parent)
+    if get_config().get('update_pyproject', True): update_proj(get_config().config_path)
     update_init_mdoc(path)
 
 # %% ../nbs/api/01_config.ipynb #a01b98bb
