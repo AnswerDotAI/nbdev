@@ -262,13 +262,13 @@ def _git_root():
 # %% ../nbs/api/11_clean.ipynb #e6083614
 def _add_attrs(path, attrs):
     "Append missing attribute lines to git attributes file at `path`"
-    txt = path.read_text() if path.exists() else ''
+    txt = path.read_text(encoding='utf-8') if path.exists() else ''
     have = [l.split() for l in txt.splitlines()]  # whitespace-insensitive: nbdime writes its lines with tabs
     for attr in attrs:
         if attr.split() not in have:
             if txt and not txt.endswith('\n'): txt+='\n'
             txt += attr+'\n'
-    path.write_text(txt)
+    path.write_text(txt, encoding='utf-8', newline='\n')
 
 def _cfg_drivers(loc, merge, diff):
     "Define the `jupyternotebook` merge/diff drivers via `git config <loc>`"
@@ -288,9 +288,9 @@ def nbdev_install_hooks(
     cfg_path.mkdir(exist_ok=True)
     cfg_fns = [cfg_path/f'jupyter_{o}_config.py' for o in ('notebook','server')]
     for fn in cfg_fns:
-        src = fn.read_text() if fn.exists() else ''
+        src = fn.read_text(encoding='utf-8') if fn.exists() else ''
         upd = _add_jupyter_hooks(src, fn)
-        if upd is not None: fn.write_text(upd)
+        if upd is not None: fn.write_text(upd, encoding='utf-8', newline='\n')
 
     nbdev_attrs = (['*.ipynb merge=jupyternotebook'] if merge else []) + (['*.ipynb diff=jupyternotebook'] if diff else [])
     if globally:
@@ -309,8 +309,8 @@ def nbdev_install_hooks(
     hook_path = repo_path/'.git'/'hooks'
     fn = hook_path/'post-merge'
     hook_path.mkdir(parents=True, exist_ok=True)
-    fn.write_text("#!/bin/bash\nnbdev-trust")
-    os.chmod(fn, os.stat(fn).st_mode | stat.S_IEXEC)
+    fn.write_text('#!/bin/bash\nnbdev-trust', encoding='utf-8', newline='\n')
+    if os.name != 'nt': os.chmod(fn, os.stat(fn).st_mode | stat.S_IEXEC)
 
     cmd = 'git config --local include.path ../.gitconfig'
     cfg_fn = repo_path/'.gitconfig'
@@ -322,7 +322,7 @@ def nbdev_install_hooks(
 # To restore:
 #   {cmd}
 #
-''')
+''', encoding='utf-8', newline='\n')
     _cfg_drivers(f'--file "{cfg_fn}"', merge, diff)
     run(cmd)
 

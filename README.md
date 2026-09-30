@@ -25,7 +25,7 @@
 
 ## Install
 
-nbdev works on macOS, Linux, and most Unix-style operating systems. It works on Windows under WSL, but not under cmd or Powershell.
+nbdev works on macOS, Linux, and Windows (including cmd and PowerShell).
 
 You can install nbdev with pip:
 
@@ -65,7 +65,7 @@ You can also run `nbdev-help` from the terminal to see the full list of availabl
     nbdev-help                Show help for all console scripts
     nbdev-install             Install Quarto and the current library
     nbdev-install-hooks       Install Jupyter and git hooks to automatically clean, trust, and fix merge conflicts in notebooks
-    nbdev-install-quarto      Install latest Quarto on macOS or Linux, prints instructions for Windows
+    nbdev-install-quarto      Install latest Quarto on macOS, Linux, or Windows
     nbdev-merge               Git merge driver for notebooks
     nbdev-migrate             Convert all markdown and notebook files in `path` from v1 to v2
     nbdev-migrate-config      Migrate settings.ini to pyproject.toml

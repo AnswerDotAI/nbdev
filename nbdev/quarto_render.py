@@ -24,15 +24,15 @@ def _merge_site(outputs, dest):
     sitemap = None
     for output in outputs:
         idx = output/'index.html'
-        if idx.exists() and (homepage is None or 'http-equiv="refresh"' not in idx.read_text()): homepage = idx
+        if idx.exists() and (homepage is None or 'http-equiv="refresh"' not in idx.read_text(encoding='utf-8')): homepage = idx
         if (output/'search.json').exists():
-            for entry in json.loads((output/'search.json').read_text()): search[entry['href']] = entry
+            for entry in json.loads((output/'search.json').read_text(encoding='utf-8')): search[entry['href']] = entry
         if (output/'sitemap.xml').exists():
             sitemap = ET.parse(output/'sitemap.xml')
             for entry in sitemap.getroot(): urls[entry.find('{*}loc').text] = entry
         shutil.copytree(output, dest, dirs_exist_ok=True)
     if homepage: shutil.copy2(homepage, dest/'index.html')
-    if search: (dest/'search.json').write_text(json.dumps(list(search.values())))
+    if search: (dest/'search.json').write_text(json.dumps(list(search.values())), encoding='utf-8', newline='\n')
     if sitemap is not None:
         sitemap.getroot()[:] = urls.values()
         ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')

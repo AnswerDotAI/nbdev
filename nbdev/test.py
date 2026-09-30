@@ -22,6 +22,7 @@ from .process import NBProcessor, nb_lang
 from .frontmatter import nb_frontmatter
 
 from fastcore.nbio import *
+from .sync import write_nb
 from execnb.shell import *
 
 # %% ../nbs/api/12_test.ipynb #dc8994ac
@@ -170,12 +171,16 @@ def nbdev_test(
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
     if in_notebook(): kw = {'method':'spawn'} if os.name=='nt' or sys.platform=='darwin' else {'method':'forkserver'}
     else: kw = {'method':'spawn'} if sys.platform=='darwin' else {}
+    test_fn = test_nb
+    if os.name == 'nt' and getattr(test_fn, '__module__', '') == '__main__':
+        import nbdev.test
+        test_fn = nbdev.test.test_nb
     wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         setup = cfg.get('test_setup')
         if setup: import_obj(setup)([c for f in files for c in nb_test_cells(f, skip_flags, force_flags)])
         try:
-            results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
+            results = parallel(test_fn, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
                 basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save,
                 cell_timeout=cell_timeout or None, cell_timing_min=cell_timing_min, **kw)
         except KeyboardInterrupt:

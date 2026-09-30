@@ -100,8 +100,8 @@ def _git_rebase_head():
 def _git_merge_file(base, ours, theirs):
     "`git merge-file` with expected labels depending on if a `merge` or `rebase` is in-progress"
     l_theirs = _git_rebase_head() or _git_branch_merge() or 'THEIRS'
-    cmd = f"git merge-file -L HEAD -L BASE -L '{l_theirs}' {ours} {base} {theirs}"
-    return subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    cmd = ['git', 'merge-file', '-L', 'HEAD', '-L', 'BASE', '-L', l_theirs, str(ours), str(base), str(theirs)]
+    return subprocess.run(cmd, capture_output=True, text=True)
 
 # %% ../nbs/api/07_merge.ipynb #40796199
 @call_parse

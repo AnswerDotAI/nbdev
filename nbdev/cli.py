@@ -46,11 +46,11 @@ def nbdev_filter(
     os.environ["IN_TEST"] = "1"
     try: filt = globals()[get_config().get('exporter', 'FilterDefaults')]()
     except FileNotFoundError: filt = FilterDefaults()
-    if fname:        nb_txt = Path(fname).read_text()
+    if fname:        nb_txt = Path(fname).read_text(encoding='utf-8')
     elif not nb_txt: nb_txt = sys.stdin.read()
     nb = dict2nb(loads(nb_txt))
     if printit:
-        with open(os.devnull, 'w', encoding="utf-8") as dn:
+        with open(os.devnull, 'w', encoding='utf-8', newline='\n') as dn:
             with redirect_stdout(dn): filt(nb)
     else: filt(nb)
     res = nb2str(nb)
@@ -66,10 +66,10 @@ def extract_tgz(url, dest='.'):
 # %% ../nbs/api/13_cli.ipynb #60df4b28
 def _render_nb(fn, cfg):
     "Render templated values like `{{lib_name}}` in notebook at `fn` from `cfg`"
-    txt = fn.read_text()
+    txt = fn.read_text(encoding='utf-8')
     txt = txt.replace('from your_lib.core', f'from {cfg.lib_path}.core') # for compatibility with old templates
     for k,v in cfg.items(): txt = txt.replace('{{'+k+'}}', str(v))
-    fn.write_text(txt)
+    fn.write_text(txt, encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/13_cli.ipynb #dd385911-aa8f-44e7-8d46-7b8a20f3b010
 async def _update_repo_meta(cfg):
@@ -164,11 +164,11 @@ async def nbdev_update_license(
 
     # Update pyproject.toml
     pyproj = cfg.config_file
-    content = pyproj.read_text()
+    content = pyproj.read_text(encoding='utf-8')
     content = re.sub(r'^license\s*=.*$', f'license = "{lic.spdx_id}"', content, flags=re.MULTILINE)
-    pyproj.write_text(content)
+    pyproj.write_text(content, encoding='utf-8', newline='\n')
 
-    Path('LICENSE').write_text(body)
+    Path('LICENSE').write_text(body, encoding='utf-8', newline='\n')
     print(f"License updated from {curr_lic} to {to}")
 
 # %% ../nbs/api/13_cli.ipynb #412b4cd2
