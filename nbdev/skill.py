@@ -1,6 +1,6 @@
 """Write, read and review nbdev notebooks as source, documentation, examples and tests. You MUST read this before any work on a project with notebooks.
 
-# Source
+## Source
 
 Write notebooks to be read top-to-bottom, interleaving implementation, explanation, examples, outputs, and failure demonstrations. Follow these conventions in published libraries. In internal projects, match the surrounding notebooks.
 
@@ -10,7 +10,7 @@ Understand and review work through the notebooks and their `git diff`, never gen
 
 For project-level questions, read `nbs/index.ipynb`, the source of README.md; regenerate with `nbdev-readme` after changes.
 
-# Structure and authoring
+## Structure and authoring
 
 Choose tutorial, how-to, explanation, or reference. Open with an H1 title cell and `>` subtitle, then a brief introduction. Use H2s for major concepts without fragmenting short narratives. Each heading belongs in its own markdown cell so Jupyter can collapse sections.
 
@@ -18,13 +18,13 @@ Before changing a notebook, read the whole notebook or a summary of every cell. 
 
 Develop one idea at a time: a small implementation, its explanation, and a lesson if it's a substantive API. Introduce each lesson in markdown; split it when the introduction becomes complicated. Extend existing examples rather than adding near-duplicates. Build classes with `@patch` beside each method's explanation unless that obscures the API.
 
-When new behavior needs a lesson, choose its narrative position, write the lesson first, run preceding cells as needed, and see it fail. Add its markdown introduction and implementation above it, then run both to see it pass. For bugs, revise an existing example to exercise the failing path; if no revision fits, add an assertion to it. If no documented behavior changes, change no lesson cells. Never add a cell merely to witness a fix.
+When new behavior needs a lesson (which it often doesn't, if it's trivial logic that doesn't need teaching), choose its narrative position, write the lesson first (or better still, slightly modify and existing listen), run preceding cells as needed, and see it fail. Add its markdown introduction and implementation above it, then run both to see it pass. For bugs, revise an existing example to exercise the failing path; if no revision fits, add an assertion to it. If no documented behavior changes, change no lesson cells. Never add a cell merely to witness a fix.
 
 Read existing examples before experimenting. Explore in the notebook, not in a separate kernel check; keep useful explorations as lessons and delete the rest. Always try to leave a notebook better than you found it.
 
 Reserve underscore names for machinery without a coherent independent contract, not for everything used only internally. If a helper is only useful internally, the design is often awkward.
 
-# Prose and module documentation
+## Prose and module documentation
 
 In markdown, explain rationale, distinctions and guarantees. Don't narrate code line by line or write filler transitions. Place markdown where it reads correctly on the generated page, normally after the definition. Use short symbol docstrings, parameter/return docments beside signatures, and backticked symbol names for nbdev links. Extended explanation, examples, and warnings belong in markdown.
 
@@ -34,7 +34,7 @@ In markdown, explain rationale, distinctions and guarantees. Don't narrate code 
 
 Check claims by running code before documenting them; preview assembly with `nbdev.export.nb_mdoc`. `nbdev-export` lists a module in package documentation and `llms.txt` if its docstring has more than the default summary. Only extend docstrings of modules read on their own. Export the opening paragraphs of `index.ipynb` for the package intro.
 
-# Lesson cells
+## Lesson cells
 
 A notebook guides a reader through what the code does. Readability comes first.
 
@@ -59,7 +59,7 @@ Consider a rewrite when you see these:
 - Show errors with `expect_fail`, not `try`/`except`. Move long docstrings to markdown.
 - Resolve TODO/FIXME example comments or move them to issues.
 
-# State and execution
+## State and execution
 
 Define values near first use, introduce shared setup, reuse established objects, and don't reassign names later cells depend on. End exploratory cells with the expression recording what was learned when useful.
 
@@ -67,7 +67,7 @@ Keep imports in dedicated cells, including in lessons: docs builds execute impor
 
 Stored outputs are generated and may be stale during editing. Don't stop work, clear them by hand, or edit notebook JSON because they no longer match the source. At PR time, regenerate them with `nbdev-test --save` if the project keeps saved outputs.
 
-# Directives and nbdev v3
+## Directives and nbdev v3
 
 - `#| default_exp` names the generated module; `#| export` includes a cell there. Exported underscore helpers need not be public.
 - `#| hide` hides distracting necessities from the page.
@@ -76,7 +76,7 @@ Stored outputs are generated and may be stale during editing. Don't stop work, c
 
 nbdev v3 (Jan 2026) uses `pyproject.toml`, not `settings.ini`: metadata in `[project]`, nbdev settings in `[tool.nbdev]` (default `nbs_path='nbs'`, `doc_path='_docs'`), version in `__init__.py` via `dynamic = ["version"]`, and `_modidx` in `[project.entry-points.nbdev]`. CLIs use hyphens (`nbdev-export`, `nbdev-test`); Python names retain underscores. GitHub actions are `fastai/workflows/nbdev3-ci` and `quarto-ghp3`.
 
-# Finish
+## Finish
 
 Revise affected prose, displays, and assertions together; changed assertions must fail on old code and pass on new. Re-read the touched narrative for readability. Run `nbdev-test <nb>`.
 """
