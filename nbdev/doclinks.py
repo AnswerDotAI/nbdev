@@ -213,27 +213,27 @@ def _get_exps(mod):
 def _lineno(sym, fname): return _get_exps(fname).get(sym, None) if fname else None
 
 # %% ../nbs/api/05_doclinks.ipynb #c1b8c9fa
-def _qual_sym(s, settings):
+def _qual_sym(s, settings, local=False):
     "Get qualified nb, py, and github paths for a symbol s"
     if not isinstance(s,tuple): return s
     nb,py = s
     nbbase = urljoin(settings["doc_host"]+'/',settings["doc_baseurl"])
-    nb = urljoin(nbbase+'/', nb)
+    nb = '/' + nb.lstrip('/') if local else urljoin(nbbase+'/', nb)
     gh = urljoin(settings["git_url"]+'/', f'blob/{settings["branch"]}/{py}')
     return nb,py,gh
 
-def _qual_mod(mod_d, settings): return {sym:_qual_sym(s, settings) for sym,s in mod_d.items()}
-def _qual_syms(entries):
+def _qual_mod(mod_d, settings, local=False): return {sym:_qual_sym(s, settings, local) for sym,s in mod_d.items()}
+def _qual_syms(entries, local=False):
     settings = entries['settings']
     if 'doc_host' not in settings: return entries
-    return {'syms': {mod:_qual_mod(d, settings) for mod,d in entries['syms'].items()}, 'settings':settings}
+    return {'syms': {mod:_qual_mod(d, settings, local) for mod,d in entries['syms'].items()}, 'settings':settings}
 
 # %% ../nbs/api/05_doclinks.ipynb #53505fa4
 _re_backticks = re.compile(r'`([^`\s]+?)(?:\(\))?`')
 
 # %% ../nbs/api/05_doclinks.ipynb #3a24b883
 @lru_cache(None)
-def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
+def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None, local_lib=None):
     cfg = get_config(also_settings=True)
     if strip_libs is None:
         try: strip_libs = cfg.get('strip_libs') or cfg.lib_name
@@ -248,7 +248,7 @@ def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
     
     for o in eps:
         if incl_libs is not None and o.dist.name not in incl_libs: continue
-        try: entries[o.name] = _qual_syms(o.load())
+        try: entries[o.name] = _qual_syms(o.load(), local=o.name in tuplify(local_lib))
         except Exception: pass
     py_syms = merge(*L(o['syms'].values() for o in entries.values()).concat())
     for m in strip_libs:
@@ -266,8 +266,8 @@ def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
 # %% ../nbs/api/05_doclinks.ipynb #3257b6bf
 class NbdevLookup:
     "Mapping from symbol names to docs and source URLs"
-    def __init__(self, strip_libs=None, incl_libs=None, skip_mods=None, ns=None):
-        self.entries,self.syms = _build_lookup_table(strip_libs, incl_libs, skip_mods)
+    def __init__(self, strip_libs=None, incl_libs=None, skip_mods=None, ns=None, local_lib=None):
+        self.entries,self.syms = _build_lookup_table(strip_libs, incl_libs, skip_mods, local_lib)
         self.aliases = {n:o.__name__ for n,o in (ns or {}).items() if isinstance(o, ModuleType)}
         
     def __getitem__(self, s): 

@@ -13,6 +13,7 @@ __all__ = ['BASE_QUARTO_URL', 'install_quarto', 'install', 'IndentDumper', 'nbde
 import subprocess,sys,shutil,ast,warnings,traceback
 from os import system
 from contextlib import contextmanager
+from inspect import signature
 
 from .config import *
 from .doclinks import *
@@ -75,7 +76,7 @@ def _sort(a):
 
 _def_file_re = r'\.(?:ipynb|qmd|html)$'
 
-@delegates
+@delegates(nbglob)
 def _nbglob_docs(
     path:str=None, # Path to notebooks
     file_glob:str=None, # Only include files matching glob    
@@ -272,12 +273,19 @@ def _save_cached_readme(cache, cfg):
     if _rdmi.exists(): _copytree(_rdmi, cfg.config_path/_rdmi.name)
 
 
+# %% ../nbs/api/14_quarto.ipynb #803e45af
+def _octavo(path=None):
+    if not (get_config(path).nbs_path/'octavo.yml').is_file(): return None
+    from nbdev import octavo
+    return octavo
+
 # %% ../nbs/api/14_quarto.ipynb #45d6bb5d
 @call_parse
 def nbdev_readme(
     path:str=None, # Path to notebooks (or project root)
     chk_time:bool=False): # Only build if out of date
     "Create README.md from readme_nb (index.ipynb by default). Skips if the file doesn't exist."
+    if backend:=_octavo(path): return backend.octavo_readme(path, chk_time=chk_time)
     cfg = get_config(path)
     path = Path(path).absolute() if path else cfg.nbs_path
     if not (path/cfg.readme_nb).exists(): path = cfg.nbs_path  # given a project root, fall back to its configured nbs
@@ -313,6 +321,7 @@ def nbdev_contributing(
     chk_time:bool=False  # Only build if out-of-date
 ):
     """Create CONTRIBUTING.md from contributing_nb (defaults to 'contributing.ipynb' if present). Skips if the file doesn't exist."""
+    if backend:=_octavo(path): return backend.octavo_readme(path, chk_time=chk_time, contributing=True)
     cfg = get_config()
     path = Path(path) if path else cfg.nbs_path
     contrib_nb_name = cfg.get('contributing_nb', 'contributing.ipynb')
@@ -339,7 +348,12 @@ def nbdev_docs(
     path:str=None, # Path to notebooks
     n_workers:int=defaults.cpus,  # Preprocessing and Quarto workers (0 or 1: serial)
     **kwargs):
-    "Create Quarto docs"
+    "Build docs with the backend selected by the project's configuration"
+    if (backend:=_octavo(path)):
+        params = signature(_nbglob_docs).parameters
+        unsupported = [k for k,v in kwargs.items() if k not in params or v != params[k].default]
+        if unsupported: raise ValueError(f'Octavo does not support these Quarto file filters: {", ".join(unsupported)}')
+        return backend.octavo_docs(path)
     cache,cfg,_ = _pre_docs(path, n_workers=n_workers, **kwargs)
     render_quarto(cache, cache/cfg.doc_path.name, n_workers=n_workers)
     shutil.rmtree(cfg.doc_path, ignore_errors=True)
@@ -354,7 +368,7 @@ def prepare():
     nbdev_export.__wrapped__()
     nbdev.test.nbdev_test.__wrapped__()
     nbdev.clean.nbdev_clean.__wrapped__()
-    refresh_quarto_yml()
+    if not _octavo(): refresh_quarto_yml()
     nbdev_readme.__wrapped__(chk_time=True)
     nbdev_contributing.__wrapped__(chk_time=True)
 
