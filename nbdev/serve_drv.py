@@ -1,20 +1,20 @@
 import os
-from fastcore.nbio import read_nb,write_nb
+from fastcore.nbio import read_nb,nb2str
 from io import StringIO
 from contextlib import redirect_stdout
 
 def exec_scr(src, dst, md):
     f = StringIO()
     g = {}
-    with redirect_stdout(f): exec(compile(src.read_text(), src, 'exec'), g)
+    with redirect_stdout(f): exec(compile(src.read_text(encoding='utf-8'), src, 'exec'), g)
     res = ""
     if md: res += "---\n" + md + "\n---\n\n"
-    dst.write_text(res + f.getvalue())
+    dst.write_text(res + f.getvalue(), encoding='utf-8', newline='\n')
 
 def exec_nb(src, dst, cb):
     nb = read_nb(src)
     cb()(nb)
-    write_nb(nb, dst)
+    dst.write_text(nb2str(nb), encoding='utf-8', newline='\n')
 
 def main(o):
     src,dst,x = o

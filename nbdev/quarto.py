@@ -27,8 +27,8 @@ from .quarto_render import render_quarto
 import yaml
 
 # %% ../nbs/api/14_quarto.ipynb #aae2d2be-ad03-4536-bf70-c4575f39cea3
-def _sprun(cmd):
-    try: subprocess.check_output(cmd, shell=True)
+def _sprun(cmd, cwd=None):
+    try: subprocess.check_output(cmd, cwd=cwd)
     except subprocess.CalledProcessError as cpe: sys.exit(cpe.returncode)
 
 # %% ../nbs/api/14_quarto.ipynb #75e4b6a1
@@ -40,15 +40,24 @@ def _install_linux():
     system(f'curl -LO {BASE_QUARTO_URL}quarto-linux-{machine}64.deb')
     system(f'sudo dpkg -i quarto-linux-{machine}64.deb && rm quarto-linux-{machine}64.deb')
     
+def _install_windows():
+    subprocess.run(['winget', 'install', '--exact', '--id', 'Posit.Quarto'], check=True)
+
 def _install_mac():
     system(f'curl -LO {BASE_QUARTO_URL}quarto-macos.pkg')
     system('sudo installer -pkg quarto-macos.pkg -target / && rm quarto-macos.pkg')
 
 @call_parse
 def install_quarto():
-    "Install latest Quarto on macOS or Linux, prints instructions for Windows"
+    "Install latest Quarto on macOS, Linux, or Windows"
+    if sys.platform == 'win32':
+        if shutil.which('winget'):
+            print("Installing or upgrading Quarto via winget...")
+            _install_windows()
+        else: print('Please visit https://quarto.org/docs/get-started/ to install Quarto')
+        return
     if sys.platform not in ('darwin','linux'):
-        return print('Please visit https://quarto.org/docs/get-started/ to install quarto')
+        return print('Please visit https://quarto.org/docs/get-started/ to install Quarto')
     print("Installing or upgrading quarto -- this requires root access.")
     system('sudo touch .installing')
     try:
@@ -64,7 +73,7 @@ def install():
     "Install Quarto and the current library"
     install_quarto.__wrapped__()
     cfg = get_config()
-    if (cfg.lib_path/'__init__.py').exists(): system(f'pip install -e "{cfg.config_path}[dev]"')
+    if (cfg.lib_path/'__init__.py').exists(): subprocess.run([sys.executable, '-m', 'pip', 'install', '-e', f'{cfg.config_path}[dev]'], check=True)
 
 # %% ../nbs/api/14_quarto.ipynb #b93f6def
 def _pre(p,b=True): return '    ' * (len(p.parts)) + ('- ' if b else '  ')
@@ -139,7 +148,7 @@ def nbdev_sidebar(
     yml = yaml.dump(parsed_struct, Dumper=IndentDumper, sort_keys=False)
 
     if printit: return print(yml)
-    if not yml_path.exists() or yml_path.read_text() != yml: yml_path.write_text(yml)
+    if not yml_path.exists() or yml_path.read_text(encoding='utf-8') != yml: yml_path.write_text(yml, encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/14_quarto.ipynb #aabf2f15
 _quarto_yml="""project:
@@ -191,11 +200,11 @@ def refresh_quarto_yml():
     vals['doc_path'] = cfg.doc_path.name
     if 'title' not in vals: vals['title'] = vals['lib_name']
     text = _nbdev_yml.format(**vals)
-    if not ny.exists() or ny.read_text() != text: ny.write_text(text)
+    if not ny.exists() or ny.read_text(encoding='utf-8') != text: ny.write_text(text, encoding='utf-8', newline='\n')
     qy = cfg.nbs_path/'_quarto.yml'
     if 'custom_quarto_yml' in cfg: print("NB: `_quarto.yml` is no longer auto-updated. Remove `custom_quarto_yml` from `pyproject.toml`")
     if qy.exists() and not str2bool(cfg.get('custom_quarto_yml', True)): qy.unlink()
-    if not qy.exists(): qy.write_text(_quarto_yml)
+    if not qy.exists(): qy.write_text(_quarto_yml, encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/14_quarto.ipynb #975d370e
 def _ensure_quarto():
@@ -242,12 +251,12 @@ def _strip_sidebar(cache):
     "Drop website sidebar config from the staged copy at `cache`, so single-doc renders skip nav resolution (see quarto-dev/quarto-cli#14757)"
     p = Path(cache)/'_quarto.yml'
     if not p.exists(): return
-    cfg = yaml.safe_load(p.read_text())
+    cfg = yaml.safe_load(p.read_text(encoding='utf-8'))
     (cfg.get('website') or {}).pop('sidebar', None)
     mf = cfg.get('metadata-files')
     if mf and 'sidebar.yml' in mf: mf.remove('sidebar.yml')
     (Path(cache)/'sidebar.yml').unlink(missing_ok=True)
-    p.write_text(yaml.dump(cfg, sort_keys=False))
+    p.write_text(yaml.dump(cfg, sort_keys=False), encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/14_quarto.ipynb #49661bbf
 def _copytree(a,b):
@@ -290,7 +299,7 @@ def nbdev_readme(
     _strip_sidebar(cache)  # to avoid rendering whole website
     for f in _readme_cands(cache, cfg):
         if f.exists(): f.unlink() # remove stale renders from either quarto layout
-    _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve')
+    _sprun(['quarto', 'render', str(cache/cfg.readme_nb), '-o', 'README.md', '-t', 'gfm', '--no-execute', '-M', 'wrap:preserve'], cwd=cache)
 
     _save_cached_readme(cache, cfg)
 
@@ -322,7 +331,7 @@ def nbdev_contributing(
     
     cache = proc_nbs(path, file_glob=Path(contrib_nb_name).name)
     _strip_sidebar(cache)  # to avoid rendering whole website
-    _sprun(f'cd "{cache}" && quarto render "{cache/contrib_nb_name}" -o CONTRIBUTING.md -t gfm --no-execute -M wrap:preserve')
+    _sprun(['quarto', 'render', str(cache/contrib_nb_name), '-o', 'CONTRIBUTING.md', '-t', 'gfm', '--no-execute', '-M', 'wrap:preserve'], cwd=cache)
         
     _save_cached_contributing(cache, cfg, contrib_nb_name)
 
@@ -330,7 +339,7 @@ def nbdev_contributing(
 def _fix_quarto_nav(doc_path):
     "Anchor quarto-nav.js's clean-URL regex, which otherwise breaks `index.html.md` alternate-format links (quarto-dev/quarto-cli#14667)"
     p = Path(doc_path)/'site_libs/quarto-nav/quarto-nav.js'
-    if p.exists(): p.write_text(p.read_text().replace(r'.replace(/\/index\.html/, "/")', r'.replace(/\/index\.html(?=[?#]|$)/, "/")'))
+    if p.exists(): p.write_text(p.read_text(encoding='utf-8').replace(r'.replace(/\/index\.html/, "/")', r'.replace(/\/index\.html(?=[?#]|$)/, "/")'), encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/14_quarto.ipynb #37d16049
 @call_parse

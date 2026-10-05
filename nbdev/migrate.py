@@ -97,7 +97,7 @@ class MigrateProc(Processor):
 def fp_md_fm(path):
     "Make fastpages front matter in markdown files quarto compliant."
     p = Path(path)
-    md = p.read_text()
+    md = p.read_text(encoding='utf-8')
     fm = _fm2dict_md(md)
     if fm:
         fm = _fp_convert(fm, path)
@@ -166,7 +166,7 @@ def migrate_nb(path, overwrite=True):
 def migrate_md(path, overwrite=True):
     "Migrate Markdown Files from fastpages."
     txt = fp_md_fm(path)
-    if overwrite: path.write_text(txt)
+    if overwrite: path.write_text(txt, encoding='utf-8', newline='\n')
     return txt
 
 # %% ../nbs/api/16_migrate.ipynb #3eb0cd02-e1ee-4910-be82-570434b974b5
@@ -198,9 +198,9 @@ def _migrate_workflows(path):
         ('fastai/workflows/', 'AnswerDotAI/workflows/'),
     ]
     for f in (*wf_path.glob('*.yml'), *wf_path.glob('*.yaml')):
-        txt = f.read_text()
+        txt = f.read_text(encoding='utf-8')
         for old, new in replacements: txt = txt.replace(old, new)
-        f.write_text(txt)
+        f.write_text(txt, encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/16_migrate.ipynb #1ca2d1b3
 def _toml_val(v):
@@ -276,5 +276,5 @@ def nbdev_migrate_config(path:str='.'):  # Project root containing settings.ini
     if not ini.exists(): return print(f"No settings.ini found at {ini}")
     cfg = Config(path, 'settings.ini')
     txt = _nbdev_migrate_config(cfg.d, path)
-    (path/'pyproject.toml').write_text(txt)
+    (path/'pyproject.toml').write_text(txt, encoding='utf-8', newline='\n')
     print(f"Created {path/'pyproject.toml'}. You can now delete {ini} and setup.py (if present)")

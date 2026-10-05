@@ -79,7 +79,7 @@ class Release:
         owner,repo = owner or self.cfg.user, repo or self.cfg.repo
         if not owner or not repo: raise Exception("Could not infer `user`/`repo` from config: add a `Repository` key under `[project.urls]` in pyproject.toml, or pass `repo='owner/repo'`")
         token = ifnone(token, os.getenv('NBDEV_TOKEN',None))
-        if not token and Path('token').exists(): token = Path('token').read_text().strip()
+        if not token and Path('token').exists(): token = Path('token').read_text(encoding='utf-8').strip()
         token = ifnone(token, os.getenv('GITHUB_TOKEN',None))
         if not token: raise Exception('Failed to find token')
         self.gh = GhApi(owner, repo, token)
@@ -94,7 +94,7 @@ class Release:
 async def changelog(self:Release,
               debug=False): # Just print the latest changes, instead of updating file
     "Create the CHANGELOG.md file, or return the proposed text if `debug` is `True`"
-    if not self.changefile.exists(): self.changefile.write_text("# Release notes\n\n<!-- do not remove -->\n")
+    if not self.changefile.exists(): self.changefile.write_text('# Release notes\n\n<!-- do not remove -->\n', encoding='utf-8', newline='\n')
     marker = '<!-- do not remove -->\n'
     try: self.commit_date = (lr:=await self.gh.repos.get_latest_release()).published_at
     except APIError as e:
@@ -111,9 +111,9 @@ async def changelog(self:Release,
     sections = (_issues_txt(*o) for o in zip(issues, self.groups.values()))
     res += '\n\n'.join(filter(None, sections))
     if debug: return res
-    res = update_changelog(self.changefile.read_text(), self.cfg.version, res, marker)
+    res = update_changelog(self.changefile.read_text(encoding='utf-8'), self.cfg.version, res, marker)
     shutil.copy(self.changefile, self.changefile.with_suffix(".bak"))
-    self.changefile.write_text(res)
+    self.changefile.write_text(res, encoding='utf-8', newline='\n')
     run(f'git add {self.changefile}')
 
 # %% ../nbs/api/18_release.ipynb #068421c6
@@ -132,7 +132,7 @@ async def release(self:Release):
 def latest_notes(self:Release):
     "Latest CHANGELOG entry"
     if not self.changefile.exists(): return ''
-    its = re.split(r'^## ', self.changefile.read_text(), flags=re.MULTILINE)
+    its = re.split(r'^## ', self.changefile.read_text(encoding='utf-8'), flags=re.MULTILINE)
     if not len(its)>0: return ''
     return '\n'.join(its[1].splitlines()[1:]).strip()
 
@@ -171,7 +171,7 @@ async def release_gh(
     cfg = _find_config()
     _release_branch()
     if not no_changelog: await Release(repo=repo).changelog()
-    if not no_editor: subprocess.run([os.environ.get('EDITOR','nano'), cfg.config_path/'CHANGELOG.md'])
+    if not no_editor: subprocess.run([os.environ.get('EDITOR', 'notepad' if os.name == 'nt' else 'nano'), cfg.config_path/'CHANGELOG.md'])
     if not yes and not input("Make release now? (y/n) ").lower().startswith('y'): sys.exit(1)
     run('git commit -am release', ignore_ex=True)   # a changelog committed earlier leaves nothing to commit
     run('git push --set-upstream origin HEAD')
@@ -214,7 +214,7 @@ from subprocess import Popen, PIPE, CalledProcessError
 
 def _run(cmd):
     res = ""
-    with Popen(shlex.split(cmd), stdout=PIPE, bufsize=1, text=True, encoding="utf-8") as p:
+    with Popen(shlex.split(cmd, posix=os.name != 'nt'), stdout=PIPE, bufsize=1, text=True, encoding="utf-8") as p:
         for line in p.stdout:
             print(line, end='')
             res += line
@@ -233,7 +233,7 @@ def _write_yaml(path, name, d1, d2):
     p = path/name
     p.mkdir(exist_ok=True, parents=True)
     yaml.SafeDumper.ignore_aliases = lambda *args : True
-    with (p/'meta.yaml').open('w', encoding="utf-8") as f:
+    with (p/'meta.yaml').open('w', encoding='utf-8', newline='\n') as f:
         yaml.safe_dump(d1, f)
         yaml.safe_dump(d2, f)
 
@@ -262,7 +262,7 @@ def _get_conda_meta():
 
     _dir = cfg.config_path
     readme = _dir/'README.md'
-    descr = readme.read_text() if readme.exists() else ''
+    descr = readme.read_text(encoding='utf-8') if readme.exists() else ''
     d2 = {
         'build': {'number': '0', 'noarch': 'python',
                   'script': '{{ PYTHON }} -m pip install . -vv'},
@@ -291,7 +291,7 @@ def write_requirements(path:str=''):
     cfg = get_config()
     d = Path(path) if path else cfg.config_path
     req = '\n'.join(['\n'.join(cfg.get(k) or []) for k in ['requirements', 'pip_requirements']])
-    (d/'requirements.txt').mk_write(req)
+    (d/'requirements.txt').write_text(req, encoding='utf-8', newline='\n')
 
 # %% ../nbs/api/18_release.ipynb #715ae3ac
 CONDA_WARNING='Conda support for nbdev is deprecated and scheduled for removal in a future version.'
@@ -361,11 +361,16 @@ def release_pypi(
 ):
     "Create and upload Python package to PyPI"
     _dir = get_config().config_path
-    q = ' --quiet' if quiet else ''
-    p = ' --disable-progress-bar' if quiet else ''
-    system(f'cd {_dir}  && rm -rf dist build && python -m build{q}')
-    v = ' --verbose' if verbose else ''
-    system(f'twine upload{v} --repository {repository}{p} {_dir}/dist/*')
+    for name in ('dist', 'build'):
+        shutil.rmtree(_dir/name, ignore_errors=True)
+    build_cmd = [sys.executable, '-m', 'build']
+    if quiet: build_cmd.append('--quiet')
+    subprocess.run(build_cmd, cwd=_dir, check=True)
+    upload_cmd = [sys.executable, '-m', 'twine', 'upload', '--repository', repository]
+    if quiet: upload_cmd.append('--disable-progress-bar')
+    if verbose: upload_cmd.append('--verbose')
+    upload_cmd.extend(map(str, sorted((_dir/'dist').iterdir())))
+    subprocess.run(upload_cmd, check=True)
 
 # %% ../nbs/api/18_release.ipynb #06edfcb0
 @call_parse
