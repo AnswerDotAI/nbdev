@@ -1,7 +1,7 @@
 import json, shutil, subprocess, pytest
 from xml.etree import ElementTree as ET
 from fastcore.test import test_eq as teq
-from nbdev.quarto_render import render_quarto
+from nbdev.quarto_render import render_quarto, quarto_stale
 from nbdev.quarto import nbdev_readme, refresh_quarto_yml
 from nbdev.readme_filter import doc_link
 from fastcore.nbio import new_nb, mk_cell, write_nb
@@ -65,14 +65,17 @@ title: {name}
 Page {name}. [Alpha](alpha.qmd#detail). [Download](data.txt).
 ''')
     (root/'data.txt').write_text('shared resource')
-    serial, parallel = tmp_path/'serial', tmp_path/'parallel'
+    (root/'other.qmd').write_text('---\noutput-file: renamed.html\n---\n# Other')
+    serial, parallel = tmp_path/'serial', root/'_site'
+    assert quarto_stale(root, parallel)
     render_quarto(root, serial, n_workers=1)
     render_quarto(root, parallel, n_workers=2)
+    assert not quarto_stale(root, parallel)
     search = lambda d: {e['href']: e['text'] for e in json.loads((d/'search.json').read_text())}
     urls = lambda d: {e.text for e in ET.parse(d/'sitemap.xml').findall('.//{*}loc')}
     teq(search(serial), search(parallel))
     teq(urls(serial), urls(parallel))
-    teq(len(urls(parallel)), 3)
+    teq(len(urls(parallel)), 4)
     for name in ('index', 'alpha', 'beta'):
         html = (parallel/f'{name}.html').read_text()
         assert 'alpha.html#detail' in html and 'data.txt' in html
@@ -81,7 +84,9 @@ Page {name}. [Alpha](alpha.qmd#detail). [Download](data.txt).
     assert (parallel/'site_libs').is_dir()
     assert 'http-equiv="refresh"' not in (parallel/'index.html').read_text()
     (root/'beta.qmd').write_text('---\ntitle: beta\n---\n## Detail\n\nUpdated beta.')
+    assert quarto_stale(root, parallel)
     subprocess.run(['quarto', 'render', 'beta.qmd', '--quiet', '--output-dir', str(parallel)], cwd=root, check=True)
+    assert not quarto_stale(root, parallel)
     teq(set(search(serial)), set(search(parallel)))
     assert 'Updated beta.' in search(parallel)['beta.html#detail']
     (root/'beta.qmd').write_text('---\nfilters: [missing.lua]\n---\nBroken.')
