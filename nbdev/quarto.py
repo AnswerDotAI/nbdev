@@ -290,7 +290,9 @@ def nbdev_readme(
     _strip_sidebar(cache)  # to avoid rendering whole website
     for f in _readme_cands(cache, cfg):
         if f.exists(): f.unlink() # remove stale renders from either quarto layout
-    _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve')
+    from nbdev import readme_filter
+    filt = fr""" -M 'filters:["{readme_filter.__file__}"]'""" if cfg.doc_host else ''
+    _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve{filt}')
 
     _save_cached_readme(cache, cfg)
 

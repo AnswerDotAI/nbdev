@@ -2,6 +2,41 @@ import json, shutil, subprocess, pytest
 from xml.etree import ElementTree as ET
 from fastcore.test import test_eq as teq
 from nbdev.quarto_render import render_quarto
+from nbdev.quarto import nbdev_readme, refresh_quarto_yml
+from nbdev.readme_filter import doc_link
+from fastcore.nbio import new_nb, mk_cell, write_nb
+
+
+@pytest.mark.skipif(not shutil.which('quarto'), reason='requires Quarto')
+def test_readme_links(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path/'pyproject.toml').write_text(r'''[project]
+name = "example"
+[project.urls]
+Documentation = "https://example.com/project/"
+[tool.nbdev]
+''')
+    nbs = tmp_path/'nbs'
+    nbs.mkdir()
+    base = 'https://example.com/project/'
+    links = [('guide/01_Intro.ipynb?q=1#intro', base+'guide/intro.html?q=1#intro'),
+        ('guide/02_intro.qmd', base+'guide/02_intro.html'), ('guide/intro.html', base+'guide/intro.html'),
+        ('/llms.txt', base+'llms.txt'), ('llms-ctx.txt', base+'llms-ctx.txt'),
+        ('https://other.com/guide.html', 'https://other.com/guide.html'),
+        ('#section', '#section'), ('LICENSE', 'LICENSE')]
+    text = '\n\n'.join([*(f'[Link]({src})' for src,_ in links),
+        r'[Reference][guide] ![Image](image.png)', r'[guide]: guide/01_Intro.ipynb#intro',
+        '```markdown\n[Example](guide/01_Intro.ipynb)\n```'])
+    write_nb(new_nb([mk_cell('# Example', 'markdown'), mk_cell(text, 'markdown')]), nbs/'index.ipynb')
+    refresh_quarto_yml()
+    nbdev_readme.__wrapped__()
+    result = (tmp_path/'README.md').read_text()
+    for _,dest in links: assert f']({dest})' in result
+    assert f'[Reference]({base}guide/intro.html#intro)' in result
+    assert '![Image](image.png)' in result and '[Example](guide/01_Intro.ipynb)' in result
+    teq(doc_link('../guide/01_intro.ipynb', base, 'start'), base+'guide/intro.html')
+    teq(doc_link('/llms.txt', base, 'start'), base+'llms.txt')
+    teq(doc_link('//other.com/llms.txt', base), '//other.com/llms.txt')
 
 
 @pytest.mark.skipif(not shutil.which('quarto'), reason='requires Quarto')
