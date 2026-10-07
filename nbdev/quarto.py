@@ -76,7 +76,7 @@ def _sort(a):
 
 _def_file_re = r'\.(?:ipynb|qmd|html)$'
 
-@delegates(nbglob)
+@delegates
 def _nbglob_docs(
     path:str=None, # Path to notebooks
     file_glob:str=None, # Only include files matching glob    
@@ -400,6 +400,11 @@ def nbdev_preview(
     n_workers:int=defaults.cpus,  # Preprocessing and Quarto workers (0 or 1: serial)
     **kwargs):
     "Preview docs locally"
+    if backend:=_octavo(path):
+        params = signature(_nbglob_docs).parameters
+        unsupported = [k for k,v in kwargs.items() if k not in params or v != params[k].default]
+        if unsupported: raise ValueError(f'Octavo does not support these Quarto flags: {", ".join(unsupported)}')
+        return backend.octavo_preview(path, port=port, host=host, no_browser=no_browser)
     os.environ['QUARTO_PREVIEW']='1'
     cache,cfg,path = _pre_docs(path, n_workers=n_workers, **kwargs)
     site = cache/cfg.doc_path.name
