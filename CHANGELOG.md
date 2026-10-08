@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.25
+
+### New Features
+
+- Rewrite relative notebook, qmd, html and txt links in README to hosted docs URLs via a Quarto filter when `doc_host` is configured ([#1655](https://github.com/AnswerDotAI/nbdev/issues/1655))
+
+
 ## 3.3.24
 
 ### Bugs Squashed

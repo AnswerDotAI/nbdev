@@ -24,7 +24,7 @@ from fastcore.shutil import rmtree,move,copytree
 from fastcore.meta import delegates
 from .serve import proc_nbs,_proc_file
 from . import serve_drv
-from .quarto_render import render_quarto
+from .quarto_render import render_quarto, quarto_stale
 import yaml
 
 # %% ../nbs/api/14_quarto.ipynb #aae2d2be-ad03-4536-bf70-c4575f39cea3
@@ -298,7 +298,9 @@ def nbdev_readme(
     _strip_sidebar(cache)  # to avoid rendering whole website
     for f in _readme_cands(cache, cfg):
         if f.exists(): f.unlink() # remove stale renders from either quarto layout
-    _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve')
+    from nbdev import readme_filter
+    filt = fr""" -M 'filters:["{readme_filter.__file__}"]'""" if cfg.doc_host else ''
+    _sprun(f'cd "{cache}" && quarto render "{cache/cfg.readme_nb}" -o README.md -t gfm --no-execute -M wrap:preserve{filt}')
 
     _save_cached_readme(cache, cfg)
 
@@ -409,7 +411,7 @@ def nbdev_preview(
     cache,cfg,path = _pre_docs(path, n_workers=n_workers, **kwargs)
     site = cache/cfg.doc_path.name
     if not (render or site.exists()) and cfg.doc_path.exists(): copytree(cfg.doc_path, site)
-    if render or not site.exists(): render_quarto(cache, site, n_workers=n_workers)
+    if render or not site.exists() or quarto_stale(cache, site): render_quarto(cache, site, n_workers=n_workers)
     xtra = []
     if port: xtra += ['--port', str(port)]
     if host: xtra += ['--host', host]

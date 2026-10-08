@@ -1,16 +1,26 @@
 "Parallel Quarto website rendering in isolated project copies."
 
 import json, shutil, subprocess, tempfile
-from pathlib import Path
 from xml.etree import ElementTree as ET
 from fastcore.parallel import parallel
-from fastcore.utils import defaults
+from fastcore.utils import *
 
 
 def _quarto(path, *args):
     res = subprocess.run(['quarto', *map(str, args)], cwd=path, capture_output=True, text=True)
     if res.returncode: raise RuntimeError(res.stderr or res.stdout or f'Quarto exited with status {res.returncode}')
     return res.stdout
+
+
+def quarto_stale(path, output_dir):
+    "Whether a page's HTML output is missing or older than its processed source."
+    path, output_dir = Path(path).resolve(), Path(output_dir).resolve()
+    info = loads(_quarto(path, 'inspect'))
+    for name,entry in info['fileInformation'].items():
+        p = Path(name)
+        output = output_dir/p.parent/(entry['metadata'].get('output-file') or p.with_suffix('.html').name)
+        if not output.exists() or (path/p).stat().st_mtime>output.stat().st_mtime: return True
+    return False
 
 
 def _render_batch(job):
