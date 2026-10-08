@@ -1,5 +1,43 @@
 """Build nbdev documentation with Octavo
 
+Octavo is an alternative to Quarto for building a documentation website from nbdev notebooks. Install `nbdev[octavo]` to use it. A project selects Octavo by placing `octavo.yml` in its configured notebooks directory. Projects without that file continue to use Quarto and do not import Octavo.
+
+The usual `nbdev-docs` command builds the site. Octavo currently builds all pages together. File-selection options are rejected unless left at their defaults; `n_workers` affects only Quarto builds.
+
+Run `nbdev-export` before building to update the generated Python modules and symbol indexes. `nbdev-readme` and `nbdev-contributing` also use Octavo for these projects. `nbdev-prepare` still exports, tests, and cleans notebooks, but skips Quarto configuration generation.
+
+For an existing Quarto project, `nbdev-migrate-octavo` converts documentation sources in place. The converted sources are not intended to work unchanged with both builders. Use `nbdev-preview` to serve the site and rebuild after edits. Refresh the browser manually.
+
+## Migration instructions (share this with your AI)
+
+Before migrating, save a built reference site. Octavo builds replace the output directory. Retaining `_quarto.yml` does not retain the rendered Quarto site or keep converted sources compatible with Quarto.
+
+1. Ensure you have committed your latest changes or backed up your project 
+2. From the project root, run `nbdev-docs` while the project still uses Quarto. Confirm the build succeeds and inspect the site. Record existing failures rather than treating them as migration regressions.
+3. Copy the complete generated site, including assets and search files, to a separate baseline directory outside the source and build directories.
+4. Run `nbdev-migrate-octavo` from the project root. Review its changes and any executable scripts or hooks before attempting another build.
+5. Run `nbdev-docs` again to build with Octavo. Keep the baseline untouched. If the build fails, retain its output for diagnosis. Use the manual migration tips below with the baseline path, new output path, and any errors.
+
+Read the retained _quarto.yml, nbdev.yml, pyproject.toml, and generated octavo.yml. Inspect page metadata, stylesheets, render scripts, custom HTML, build hooks, and deployment workflows. Automatic migration renames sources and updates selected document references, directives, metadata, and site settings. It does not port the site's design. It does not copy format.html.css into octavo.yml. It leaves stylesheet files and page-layout metadata unchanged. Existing page-level CSS references can still load; inspect those too. An existing octavo.yml is preserved rather than regenerated.
+
+Identify which checks apply and propose a small migration plan. Inspect optional features only where the project uses them, such as custom homepages, blog listings, embeds, and tabs:
+
+- Styles and custom pages: inspect the rendered Octavo HTML before adapting selectors. Check responsive behavior and dependencies on Bootstrap or Quarto classes. Reuse compatible CSS selectively. Do not enable an old stylesheet wholesale or copy a compatibility layer without checking the current DOM.
+- Layouts and themes: review page-layout, sidebars, titles, TOCs, and theme settings. Choose Octavo settings explicitly. Do not assume that renaming a layout preserves its meaning. Octavo's layout: custom is an explicit choice for a custom page, not a general Quarto layout adapter. Check ordinary documentation pages as well as any custom layouts. Compare toc and toc_depth settings with the original metadata, including explicit depth combined with toc: false.
+- Embedded and conditional content: review the project's custom markup and format-conditional blocks. Compare when-format and unless-format behavior with the original sources in both HTML and Markdown output. Do not assume automatic conversion preserves exclusion conditions or renders markdown inside an HTML-targeted block. Where needed, adapt HTML-only content to raw {=html} blocks. Verify the result rather than rewriting every block by pattern.
+- Render scripts and processors: if the project uses these, check their generated content and assets after migration.
+- Navigation and identity: check navbar destinations, dropdowns, icons, favicon, footer, and existing public URLs. Restore omitted icons and preserve the existing footer.
+- Additional build outputs: if the project uses custom build hooks, preserve their required outputs using docs_post_build. Check links in any generated indexes.
+- Omitted settings: compare the original configuration with Octavo's configuration. List settings that were not carried over, including social metadata, repository actions, theme options, and preview preferences where present. For each, propose a replacement or identify it as intentionally dropped or unsupported. Ask me to approve losses of behavior.
+- Installation and deployment: workflows are not migrated. Verify an Octavo-capable nbdev version and the aai-octavo distribution; Python imports remain octavo. Check dependencies required by custom hooks. Verify the documented installation and docs build in a clean environment. Replace direct Quarto build commands where needed with nbdev-docs, including in contributor instructions.
+- Output paths: an explicit relative output in octavo.yml is relative to the notebooks directory. Without that setting, nbdev uses its project-relative doc_path. Verify the resolved output directory and the directory published by the deployment workflow.
+
+After approval, make the agreed changes in small steps. Export notebook-authored modules before building. Run nbdev-docs and the relevant repository Markdown commands. Compare the resulting HTML, Markdown, assets, and additional build artifacts with the saved baseline. Check representative API signatures, symbol links, and GitHub source links. Separate pre-existing failures and expected generated differences from migration regressions.
+
+Serve the saved baseline and new output separately. Confirm that each server points to the intended directory. Inspect representative pages at desktop and narrow widths. Test navigation, mobile navigation, anchors, images, and the optional features identified above. Test search and follow result links from both the homepage and a nested page. Exercise the intended hosting subpath, such as /project/, rather than testing only at /. A successful build or static link check does not establish that browser interactions work.
+
+Report the changes, checks actually run, unresolved differences, omitted settings, and decisions requiring my review. Keep the original configuration and baseline until the migration has been reviewed.
+
 Docs: https://nbdev.fast.ai/api/octavo.html.md"""
 
 # AUTOGENERATED! DO NOT EDIT! File to edit: ../nbs/api/21_octavo.ipynb.
