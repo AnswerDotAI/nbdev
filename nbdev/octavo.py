@@ -305,8 +305,10 @@ def migrate_md_file(path, procs):
 
 # %% ../nbs/api/21_octavo.ipynb #01ed763e
 def _nav_href(h):
+    "Quarto link `h`, with a documentation source path changed to its published HTML page"
     if not h or '://' in h or h.startswith(('#','mailto:')): return h
-    return re.sub(r'\.(?:ipynb|qmd|md)(?=[?#]|$)', '.html', h)
+    m = re.fullmatch(r'(.*?)([^/?#]+)\.(?:ipynb|qmd|md)([?#].*)?', h)
+    return f'{m[1]}{page_nm(m[2])}.html{m[3] or ""}' if m else h
 
 def _nav_item(item):
     res = {'text': item['text']}
@@ -357,6 +359,31 @@ def _octavo_nav(nbs_path, qy, ny):
     if (tools := tools.filter()): cfg['tools'] = list(tools)
     return cfg
 
+# %% ../nbs/api/21_octavo.ipynb #e0912069
+def _sidebar_item(o, drop):
+    "An Octavo `sidebar_links` item from Quarto sidebar entry `o`; `drop` reports entries without an equivalent"
+    if isinstance(o, str): o = dict(href=o)
+    res = {}
+    if (text := o.get('section') or o.get('text')) == '---': return None
+    if text: res['text'] = text
+    if href := o.get('href'):
+        if href=='auto' or '*' in href: return drop(href)
+        res['href'] = _nav_href(href)
+    if 'contents' in o: res['children'] = [i for c in listify(o['contents']) if (i := _sidebar_item(c, drop))]
+    return res or None
+
+def _octavo_sidebar(nbs_path):
+    "Convert a hand-written `sidebar.yml` into Octavo `sidebar_links`"
+    p = Path(nbs_path)/'sidebar.yml'
+    if not get_config(nbs_path).custom_sidebar or not p.exists(): return {}
+    sb = nested_idx(yaml.safe_load(p.read_text()) or {}, 'website', 'sidebar') or {}
+    if not isinstance(sb, dict):
+        print(f'{p}: not converted: Octavo supports one sidebar. Set sidebar_links in octavo.yml by hand.')
+        return {}
+    def drop(h): print(f'{p}: dropped sidebar entry {h!r}: Octavo has no equivalent. List those pages explicitly.')
+    links = [i for o in listify(sb.get('contents')) if (i := _sidebar_item(o, drop))]
+    return {'sidebar_links': links} if links else {}
+
 # %% ../nbs/api/21_octavo.ipynb #2f2d4b3b
 def _create_octavo_cfg(nbs_path):
     "Return Octavo settings derived from `_quarto.yml` and `nbdev.yml`"
@@ -377,6 +404,7 @@ def _create_octavo_cfg(nbs_path):
     favicon = ws_n.get('favicon') or ws_q.get('favicon')
     if favicon: cfg['favicon'] = favicon
     cfg.update(_octavo_nav(nbs_path, qy, ny))
+    cfg.update(_octavo_sidebar(nbs_path))
     return cfg
 
 # %% ../nbs/api/21_octavo.ipynb #c4b4478c
