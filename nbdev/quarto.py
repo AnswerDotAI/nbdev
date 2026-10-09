@@ -75,7 +75,7 @@ def _sort(a):
 
 _def_file_re = r'\.(?:ipynb|qmd|html)$'
 
-@delegates
+@delegates(nbglob_cli)
 def _nbglob_docs(
     path:str=None, # Path to notebooks
     file_glob:str=None, # Only include files matching glob    
