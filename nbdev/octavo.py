@@ -44,7 +44,7 @@ Docs: https://nbdev.fast.ai/api/octavo.html.md"""
 
 # %% auto #0
 __all__ = ['OctavoProc', 'local_libraries', 'render_script', 'script_pages', 'octavo_config', 'octavo_docs', 'octavo_preview',
-           'octavo_readme', 'repl_qmd_links', 'repl_content_visible', 'repl_frontmatter_keys',
+           'octavo_readme', 'repl_qmd_links', 'repl_html_md_links', 'repl_content_visible', 'repl_frontmatter_keys',
            'repl_script_frontmatter_keys', 'migrate_nb_cells', 'migrate_md_file', 'nbdev_migrate_octavo']
 
 # %% ../nbs/api/21_octavo.ipynb #7b098bb5
@@ -227,6 +227,10 @@ def repl_qmd_links(txt, moves, src, root):
     for old,new in _qmd_repls(src, root, moves): txt = txt.replace(old, new)
     return txt
 
+def repl_html_md_links(txt):
+    "Rewrite Quarto `.html.md` Markdown-copy targets to Octavo's `.md`"
+    return re.sub(r'\.html\.md\b', '.md', txt)
+
 # %% ../nbs/api/21_octavo.ipynb #237aea2c
 _re_cv = re.compile(r'^:{3,}[^\S\r\n]*\{([^}]*\.content-visible[^}]*)\}[^\S\r\n]*\n(.*?)\n:{3,}[^\S\r\n]*$', re.MULTILINE | re.DOTALL)
 
@@ -290,7 +294,7 @@ def migrate_nb_cells(path, procs):
     if changed: write_nb(nb, path)
 
 def migrate_md_file(path, procs):
-    "Apply `procs` to a Markdown/QMD file in-place"
+    "Apply `procs` to a Markdown, QMD or text file in-place"
     txt = path.read_text()
     new_txt = _apply_procs(txt, procs)
     if new_txt!=txt: path.write_text(new_txt)
@@ -384,12 +388,13 @@ def _migrate_octavo(path):
     elif not qy.is_file(): raise FileNotFoundError(qy)
     cfg = _create_octavo_cfg(path) if qy.exists() and not (path/'octavo.yml').exists() else None
 
-    srcs = [p for p in sorted(path.rglob('*')) if p.suffix in ('.ipynb','.qmd','.md')
+    srcs = [p for p in sorted(path.rglob('*')) if p.suffix in ('.ipynb','.qmd','.md','.txt')
             and not any(o[0] in '._' for o in p.relative_to(path).parts)]
     scripts = [p for p in sorted(path.rglob('*.qmd.py'))
                if not any(o[0] in '._' for o in p.relative_to(path).parts)]
     for src in srcs:
-        procs = [partial(repl_qmd_links, moves=moves, src=src, root=path), repl_content_visible, repl_frontmatter_keys]
+        procs = [partial(repl_qmd_links, moves=moves, src=src, root=path), repl_html_md_links]
+        if src.suffix!='.txt': procs += [repl_content_visible, repl_frontmatter_keys]
         if src.suffix=='.ipynb': migrate_nb_cells(src, procs)
         else:                    migrate_md_file(src, procs)
     for src in scripts: migrate_md_file(src, [repl_script_frontmatter_keys])
