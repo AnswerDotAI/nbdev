@@ -26,8 +26,9 @@ Identify which checks apply and propose a small migration plan. Inspect optional
 - Layouts and themes: review page-layout, sidebars, titles, TOCs, and theme settings. Choose Octavo settings explicitly. Do not assume that renaming a layout preserves its meaning. Octavo's layout: custom is an explicit choice for a custom page, not a general Quarto layout adapter. Check ordinary documentation pages as well as any custom layouts. Compare toc and toc_depth settings with the original metadata, including explicit depth combined with toc: false.
 - Embedded and conditional content: review the project's custom markup and format-conditional blocks. Compare when-format and unless-format behavior with the original sources in both HTML and Markdown output. Do not assume automatic conversion preserves exclusion conditions or renders markdown inside an HTML-targeted block. Where needed, adapt HTML-only content to raw {=html} blocks. Verify the result rather than rewriting every block by pattern.
 - Render scripts and processors: if the project uses these, check their generated content and assets after migration.
-- Navigation and identity: check navbar destinations, dropdowns, icons, favicon, footer, and existing public URLs. Restore omitted icons and preserve the existing footer.
+- Navigation and identity: check navbar destinations, dropdowns, icons, favicon, footer, and existing public URLs. Restore omitted icons and preserve the existing footer. Markdown copies of notebook pages move from page.html.md to page.md, so external links to the old addresses break; Octavo does not redirect them. Report this change rather than working around it.
 - Additional build outputs: if the project uses custom build hooks, preserve their required outputs using docs_post_build. Check links in any generated indexes.
+- Published files: Octavo publishes every visible file in the notebooks directory (no path part starting with . or _), either as a page or as a copied file. Quarto published only referenced files and declared resources. Compare the output file list with the baseline. Add paths that should not be published, such as stray READMEs or notes, to exclude in octavo.yml: glob patterns relative to the notebooks directory, where a pattern also excludes everything below a matching directory. Do not exclude Quarto-only files; they are deleted after the review.
 - Omitted settings: compare the original configuration with Octavo's configuration. List settings that were not carried over, including social metadata, repository actions, theme options, and preview preferences where present. For each, propose a replacement or identify it as intentionally dropped or unsupported. Ask me to approve losses of behavior.
 - Installation and deployment: workflows are not migrated. Verify an Octavo-capable nbdev version and the aai-octavo distribution; Python imports remain octavo. Check dependencies required by custom hooks. Verify the documented installation and docs build in a clean environment. Replace direct Quarto build commands where needed with nbdev-docs, including in contributor instructions.
 - Output paths: an explicit relative output in octavo.yml is relative to the notebooks directory. Without that setting, nbdev uses its project-relative doc_path. Verify the resolved output directory and the directory published by the deployment workflow.
@@ -37,6 +38,8 @@ After approval, make the agreed changes in small steps. Export notebook-authored
 Serve the saved baseline and new output separately. Confirm that each server points to the intended directory. Inspect representative pages at desktop and narrow widths. Test navigation, mobile navigation, anchors, images, and the optional features identified above. Test search and follow result links from both the homepage and a nested page. Exercise the intended hosting subpath, such as /project/, rather than testing only at /. A successful build or static link check does not establish that browser interactions work.
 
 Report the changes, checks actually run, unresolved differences, omitted settings, and decisions requiring my review. Keep the original configuration and baseline until the migration has been reviewed.
+
+After the review, delete _quarto.yml and the files it lists under metadata-files and syntax-definitions that Octavo does not use, such as nbdev.yml and sidebar.yml.
 
 Docs: https://nbdev.fast.ai/api/octavo.html.md"""
 
@@ -93,12 +96,13 @@ def render_script(path):
     return (f'---\n{fm}\n---\n\n' if fm else '') + f.getvalue()
 
 # %% ../nbs/api/21_octavo.ipynb #e85c51f3
-def script_pages(root):
+def script_pages(root,         # Documentation directory
+                 exclude=None): # Glob patterns of paths to skip, as in Octavo's `exclude` setting
     "Render scripts under `root`: `*.md.py` as `Page`s, anything else as `GeneratedFile`s"
     root,pages,files = Path(root),L(),L()
     for o in sorted(root.rglob('*.py')):
         rel = o.relative_to(root)
-        if hidden(rel) or (txt:=render_script(o)) is None: continue
+        if hidden(rel, exclude) or (txt:=render_script(o)) is None: continue
         dest = rel.with_suffix('')
         if dest.suffix=='.md': pages.append(Page(str(rel), txt, nm=page_nm(dest)))
         else: files.append(GeneratedFile(str(rel), str(dest), txt))
@@ -122,8 +126,8 @@ def octavo_docs(
     cfg = get_config(path)
     settings = {'output': cfg.doc_path, **octavo_config(cfg.nbs_path)}
     with working_directory(cfg.config_path):
-        pages,files = script_pages(cfg.nbs_path)
-        docs = scan(cfg.nbs_path, nbproc=OctavoProc(local_lib=local_libraries(cfg))) + pages
+        pages,files = script_pages(cfg.nbs_path, settings.get('exclude'))
+        docs = scan(cfg.nbs_path, nbproc=OctavoProc(local_lib=local_libraries(cfg)), exclude=settings.get('exclude')) + pages
         site = Site(docs, root=cfg.nbs_path, files=files, **settings)
         if (miss := site.build()): print(miss)
         if (post := cfg.get('docs_post_build')):
