@@ -214,9 +214,8 @@ def _pre_docs(path=None, n_workers:int=defaults.cpus, **kwargs):
     path = Path(path).absolute() if path else cfg.nbs_path
     if not (path/'nbdev.yml').exists(): path = cfg.nbs_path  # given a project root, fall back to its configured nbs
     os.chdir(cfg.config_path)  # bare `get_config()` runs downstream (including in render workers), so anchor the cwd
-    _chk_nbdev_yml(path)
-    _ensure_quarto()
     refresh_quarto_yml()
+    _ensure_quarto()
     import nbdev.doclinks
     nbdev.doclinks._build_modidx()
     nbdev_sidebar.__wrapped__(path=path, **kwargs)
