@@ -30,7 +30,7 @@ Identify which checks apply and propose a small migration plan. Inspect optional
 - Additional build outputs: if the project uses custom build hooks, preserve their required outputs using docs_post_build. Check links in any generated indexes.
 - Code that reads documentation sources: migration renames .qmd sources to .md but does not update code that finds them by name. Search the whole project, including build scripts, tests, generators and contributor instructions, for .qmd, and update paths, globs and extension checks. A glob that no longer matches anything fails silently, so run the project's full test suite, not only nbdev-docs, and check that tests that read documentation pages still find them. Saved notebook outputs that contain .qmd links need to be regenerated after the fix.
 - Published files: Octavo publishes every visible file in the notebooks directory (no path part starting with . or _), either as a page or as a copied file. Quarto published only referenced files and declared resources. Compare the output file list with the baseline. Add paths that should not be published, such as stray READMEs or notes, to exclude in octavo.yml: glob patterns relative to the notebooks directory, where a pattern also excludes everything below a matching directory. Do not exclude Quarto-only files; they are deleted after the review.
-- Omitted settings: compare the original configuration with Octavo's configuration. List settings that were not carried over, including social metadata, repository actions, theme options, and preview preferences where present. For each, propose a replacement or identify it as intentionally dropped or unsupported. Ask me to approve losses of behavior.
+- Omitted settings: compare the original configuration with Octavo's configuration. List settings that were not carried over, including Open Graph and Twitter card options the migration reported as dropped, repository actions, theme options, and preview preferences where present. For each, propose a replacement or identify it as intentionally dropped or unsupported. Ask me to approve losses of behavior.
 - Installation and deployment: workflows are not migrated. Verify an Octavo-capable nbdev version and the aai-octavo distribution; Python imports remain octavo. Check dependencies required by custom hooks. Verify the documented installation and docs build in a clean environment. Replace direct Quarto build commands where needed with nbdev-docs, including in contributor instructions.
 - Output paths: an explicit relative output in octavo.yml is relative to the notebooks directory. Without that setting, nbdev uses its project-relative doc_path. Verify the resolved output directory and the directory published by the deployment workflow.
 
@@ -386,6 +386,20 @@ def _octavo_sidebar(nbs_path):
     return {'sidebar_links': links} if links else {}
 
 # %% ../nbs/api/21_octavo.ipynb #2f2d4b3b
+_IMAGE_KEYS = {'title', 'description', 'image', 'image-alt', 'image-width', 'image-height'}
+_SOCIAL_KEYS = {'open-graph': _IMAGE_KEYS | {'site-name', 'locale'}, 'twitter-card': _IMAGE_KEYS | {'card-style', 'creator', 'site'}}
+
+def _octavo_social(ws):
+    "Octavo `open_graph` and `twitter_card` settings from Quarto `website` settings `ws`, reporting options Octavo lacks"
+    res = {}
+    for key,keys in _SOCIAL_KEYS.items():
+        if not (v := ws.get(key)): continue
+        if isinstance(v, dict):
+            if drop := sorted(set(v)-keys): print(f'{key}: dropped {", ".join(drop)}: Octavo has no equivalent.')
+            v = {k.replace('-','_'):o for k,o in v.items() if k in keys} or True
+        res[key.replace('-','_')] = v
+    return res
+
 def _create_octavo_cfg(nbs_path):
     "Return Octavo settings derived from `_quarto.yml` and `nbdev.yml`"
     nbs_path = Path(nbs_path).resolve()
@@ -405,8 +419,11 @@ def _create_octavo_cfg(nbs_path):
     else: cfg['toc_depth'] = 0 if fmt_html.get('toc') is False else 3
     favicon = ws_n.get('favicon') or ws_q.get('favicon')
     if favicon: cfg['favicon'] = favicon
+    desc = ws_n.get('description') or ws_q.get('description')
+    if desc: cfg['description'] = desc
     cfg.update(_octavo_nav(nbs_path, qy, ny))
     cfg.update(_octavo_sidebar(nbs_path))
+    cfg.update(_octavo_social({**ws_q, **ws_n}))
     return cfg
 
 # %% ../nbs/api/21_octavo.ipynb #c4b4478c
