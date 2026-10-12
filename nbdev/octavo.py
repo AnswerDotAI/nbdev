@@ -28,6 +28,7 @@ Identify which checks apply and propose a small migration plan. Inspect optional
 - Render scripts and processors: if the project uses these, check their generated content and assets after migration.
 - Navigation and identity: check navbar destinations, dropdowns, icons, favicon, footer, and existing public URLs. Restore omitted icons and preserve the existing footer. Markdown copies of notebook pages move from page.html.md to page.md, so external links to the old addresses break; Octavo does not redirect them. Report this change rather than working around it.
 - Additional build outputs: if the project uses custom build hooks, preserve their required outputs using docs_post_build. Check links in any generated indexes.
+- Code that reads documentation sources: migration renames .qmd sources to .md but does not update code that finds them by name. Search the whole project, including build scripts, tests, generators and contributor instructions, for .qmd, and update paths, globs and extension checks. A glob that no longer matches anything fails silently, so run the project's full test suite, not only nbdev-docs, and check that tests that read documentation pages still find them. Saved notebook outputs that contain .qmd links need to be regenerated after the fix.
 - Published files: Octavo publishes every visible file in the notebooks directory (no path part starting with . or _), either as a page or as a copied file. Quarto published only referenced files and declared resources. Compare the output file list with the baseline. Add paths that should not be published, such as stray READMEs or notes, to exclude in octavo.yml: glob patterns relative to the notebooks directory, where a pattern also excludes everything below a matching directory. Do not exclude Quarto-only files; they are deleted after the review.
 - Omitted settings: compare the original configuration with Octavo's configuration. List settings that were not carried over, including social metadata, repository actions, theme options, and preview preferences where present. For each, propose a replacement or identify it as intentionally dropped or unsupported. Ask me to approve losses of behavior.
 - Installation and deployment: workflows are not migrated. Verify an Octavo-capable nbdev version and the aai-octavo distribution; Python imports remain octavo. Check dependencies required by custom hooks. Verify the documented installation and docs build in a clean environment. Replace direct Quarto build commands where needed with nbdev-docs, including in contributor instructions.
@@ -391,7 +392,8 @@ def _create_octavo_cfg(nbs_path):
     qy,ny = _quarto_config(nbs_path)
     ws_q,ws_n = qy.get('website', {}) or {},ny.get('website', {}) or {}
     fmt_html = (qy.get('format', {}) or {}).get('html', {}) or {}
-    cfg = {}
+    # Quarto reads `$…$` as inline maths, and Octavo does only with this setting.
+    cfg = {'math': 'dollars'}
     if (output := _octavo_output(nbs_path, qy, ny)) is not None: cfg['output'] = output
     title = ws_n.get('title') or ws_q.get('title')
     if title: cfg['title'] = title
