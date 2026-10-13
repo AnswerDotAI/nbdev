@@ -101,9 +101,8 @@ def script_pages(root,         # Documentation directory
                  exclude=None): # Glob patterns of paths to skip, as in Octavo's `exclude` setting
     "Render scripts under `root`: `*.md.py` as `Page`s, anything else as `GeneratedFile`s"
     root,pages,files = Path(root),L(),L()
-    for o in sorted(root.rglob('*.py')):
-        rel = o.relative_to(root)
-        if hidden(rel, exclude) or (txt:=render_script(o)) is None: continue
+    for rel in source_files(root, exclude).map(Path).filter(lambda o: o.suffix=='.py'):
+        if (txt:=render_script(root/rel)) is None: continue
         dest = rel.with_suffix('')
         if dest.suffix=='.md': pages.append(Page(str(rel), txt, nm=page_nm(dest)))
         else: files.append(GeneratedFile(str(rel), str(dest), txt))
