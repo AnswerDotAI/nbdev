@@ -294,7 +294,7 @@ NBDEV_KEYS = {'skip_exec', 'skip_showdoc'}
 
 def _src_fm(p):
     "Frontmatter of the document, notebook or render script at `p`"
-    if p.suffix=='.ipynb': txt = first((c.source for c in read_nb(p).cells if c.cell_type in ('markdown','raw') and c.source.startswith('---')), '')
+    if p.suffix=='.ipynb': txt = first((c.source for c in read_nb(p).cells if c.cell_type in ('markdown','raw') and c.source.startswith('---'))) or ''
     elif p.suffix=='.py': txt = _script_md(m) if (m := _script_fm.match(p.read_text())) else ''
     else: txt = p.read_text()
     return frontmatter(txt)[0]
