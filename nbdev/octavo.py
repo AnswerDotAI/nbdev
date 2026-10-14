@@ -1,4 +1,4 @@
-"""Build nbdev documentation with Octavo
+r"""Build nbdev documentation with Octavo
 
 Octavo is an alternative to Quarto for building a documentation website from nbdev notebooks. Install `nbdev[octavo]` to use it. A project selects Octavo by placing `octavo.yml` in its configured notebooks directory. Projects without that file continue to use Quarto and do not import Octavo.
 
@@ -10,46 +10,61 @@ For an existing Quarto project, `nbdev-migrate-octavo` converts documentation so
 
 ## Migration instructions (share this with your AI)
 
-Before migrating, save a built reference site. Octavo builds replace the output directory. Retaining `_quarto.yml` does not retain the rendered Quarto site or keep converted sources compatible with Quarto.
+Octavo builds into the same output directory as Quarto and replaces what's there. The migration also converts the sources in place, and they won't build with Quarto afterwards, even if you keep `_quarto.yml`. So save the Quarto site first:
 
-1. Ensure you have committed your latest changes or backed up your project 
-2. From the project root, run `nbdev-docs` while the project still uses Quarto. Confirm the build succeeds and inspect the site. Record existing failures rather than treating them as migration regressions.
-3. Copy the complete generated site, including assets and search files, to a separate baseline directory outside the source and build directories.
-4. Run `nbdev-migrate-octavo` from the project root. Review its changes and any executable scripts or hooks before attempting another build.
-5. Run `nbdev-docs` again to build with Octavo. Keep the baseline untouched. If the build fails, retain its output for diagnosis. Use the manual migration tips below with the baseline path, new output path, and any errors.
+1. Commit or back up the project.
+2. From the project root, run `nbdev-docs` while the project still uses Quarto. Check that the build works, and note any failures it already has, so you don't mistake them for migration problems later.
+3. Copy the whole built site, including assets and search files, to a directory outside the project's source and output directories. This copy is the baseline you compare against.
+4. Run `nbdev-migrate-octavo` from the project root. Read its changes and everything it prints: it reports the settings it couldn't carry over.
+5. Run `nbdev-docs` again to build with Octavo. If the build fails, keep its output for diagnosis.
 
-Read the retained _quarto.yml, nbdev.yml, pyproject.toml, and generated octavo.yml. Inspect page metadata, stylesheets, render scripts, custom HTML, build hooks, and deployment workflows. Automatic migration renames sources and updates selected document references, directives, metadata, and site settings. It does not port the site's design. It does not copy format.html.css into octavo.yml. It leaves stylesheet files and page-layout metadata unchanged. Existing page-level CSS references can still load; inspect those too. An existing octavo.yml is preserved rather than regenerated.
+`nbdev-migrate-octavo` renames `.qmd` sources to `.md`, updates references to them, converts directives, and moves a page's `subtitle` to `description`. Octavo reads Quarto's other front matter and settings names as they are. The migration writes `octavo.yml` from `_quarto.yml` and `nbdev.yml`, and leaves an existing `octavo.yml` alone. It doesn't port the site's design. It leaves stylesheet files unchanged, and it doesn't add the stylesheets listed under `format.html.css` in `_quarto.yml` to `octavo.yml`. Stylesheets that a page lists in its own front matter still load.
 
-Identify which checks apply and propose a small migration plan. Inspect optional features only where the project uses them, such as custom homepages, blog listings, embeds, and tabs:
+Read the original `_quarto.yml`, `nbdev.yml` and `pyproject.toml`, and the new `octavo.yml`. Go through the checks below that apply to the project, skipping features it doesn't use, and propose a short migration plan. Ask me before accepting anything that loses behavior.
 
-- Styles and custom pages: inspect the rendered Octavo HTML before adapting selectors. Check responsive behavior and dependencies on Bootstrap or Quarto classes. Reuse compatible CSS selectively. Do not enable an old stylesheet wholesale or copy a compatibility layer without checking the current DOM.
-- Layouts and themes: review page-layout, sidebars, titles, TOCs, and theme settings. Choose Octavo settings explicitly. Do not assume that renaming a layout preserves its meaning. Octavo's layout: custom is an explicit choice for a custom page, not a general Quarto layout adapter. Check ordinary documentation pages as well as any custom layouts. Compare toc and toc_depth settings with the original metadata, including explicit depth combined with toc: false.
-- Embedded and conditional content: review the project's custom markup and format-conditional blocks. Compare when-format and unless-format behavior with the original sources in both HTML and Markdown output. Do not assume automatic conversion preserves exclusion conditions or renders markdown inside an HTML-targeted block. Where needed, adapt HTML-only content to raw {=html} blocks. Verify the result rather than rewriting every block by pattern.
-- Render scripts and processors: if the project uses these, check their generated content and assets after migration.
-- Navigation and identity: check navbar destinations, dropdowns, icons, favicon, footer, and existing public URLs. Restore omitted icons and preserve the existing footer. Markdown copies of notebook pages move from page.html.md to page.md, so external links to the old addresses break; Octavo does not redirect them. Report this change rather than working around it.
-- Additional build outputs: if the project uses custom build hooks, preserve their required outputs using docs_post_build. Check links in any generated indexes.
-- Code that reads documentation sources: migration renames .qmd sources to .md but does not update code that finds them by name. Search the whole project, including build scripts, tests, generators and contributor instructions, for .qmd, and update paths, globs and extension checks. A glob that no longer matches anything fails silently, so run the project's full test suite, not only nbdev-docs, and check that tests that read documentation pages still find them. Saved notebook outputs that contain .qmd links need to be regenerated after the fix.
-- Published files: Octavo publishes every visible file in the notebooks directory (no path part starting with . or _), either as a page or as a copied file. Quarto published only referenced files and declared resources. Compare the output file list with the baseline. Add paths that should not be published, such as stray READMEs or notes, to exclude in octavo.yml: glob patterns relative to the notebooks directory, where a pattern also excludes everything below a matching directory. Do not exclude Quarto-only files; they are deleted after the review.
-- Omitted settings: compare the original configuration with Octavo's configuration. List settings that were not carried over, including Open Graph and Twitter card options the migration reported as dropped, repository actions, theme options, and preview preferences where present. For each, propose a replacement or identify it as intentionally dropped or unsupported. Ask me to approve losses of behavior.
-- Installation and deployment: workflows are not migrated. Verify an Octavo-capable nbdev version and the aai-octavo distribution; Python imports remain octavo. Check dependencies required by custom hooks. Verify the documented installation and docs build in a clean environment. Replace direct Quarto build commands where needed with nbdev-docs, including in contributor instructions.
-- Output paths: an explicit relative output in octavo.yml is relative to the notebooks directory. Without that setting, nbdev uses its project-relative doc_path. Verify the resolved output directory and the directory published by the deployment workflow.
+- **Styles and custom pages.** Octavo's HTML has no Bootstrap or Quarto classes. Look at the rendered Octavo HTML before reusing old CSS, and copy over only the rules that still apply. Don't enable an old stylesheet wholesale or add a compatibility layer. Check narrow screens too.
+- **Wide content.** Octavo has no equivalent of Quarto's `page-layout: full` or column classes such as `.column-page` and `.column-screen-inset-right`. Widen those pages with your own CSS, in a stylesheet listed in the page's `css` front matter.
+- **Layouts and tables of contents.** Octavo reads Quarto's `page-layout`, `toc` and `toc-depth` with the same meanings, but of the `page-layout` values it supports only `custom`, for a hand-built page. Check pages that used `article` or `full`, and compare tables of contents with the baseline on ordinary pages as well as custom ones.
+- **Sidebar.** If the project has a hand-written `sidebar.yml` (`custom_sidebar` in `pyproject.toml`), the migration turns it into `sidebar-links` in `octavo.yml`. Compare its sections and order with the baseline. Add the pages behind any entries it reported as dropped, such as `auto` or globs, as explicit links.
+- **Scripts.** The migration doesn't carry over scripts that Quarto added through `include-in-header`, `include-after-body` or raw HTML. Load them with Octavo's `js` setting, in `octavo.yml` for the whole site or in a page's front matter. Octavo loads them as module scripts (`<script type="module">`).
+- **Maths.** The migration sets `math: dollars`, Quarto's `$...$` syntax. Check the pages with maths. A literal dollar sign in a paragraph that also has maths needs escaping as `\$`.
+- **Conditional and embedded content.** Compare `when-format` and `unless-format` blocks with the originals, in both the HTML and the Markdown output. The conversion doesn't always keep exclusion conditions, and Markdown inside an HTML-only block isn't rendered. Where needed, turn HTML-only content into a raw `{=html}` block. Check each result rather than rewriting every block by pattern.
+- **`{python}` blocks.** Octavo runs the `{python}` blocks in `.md` files on every build, and the page shows only their output, not the code. Quarto also showed the code. Compare pages that have these blocks with the baseline. If the project set `execute: enabled: false` in `_quarto.yml`, the blocks didn't run under Quarto at all.
+- **Shortcodes.** Octavo doesn't support Quarto shortcodes such as `{{< include file.md >}}` or `{{< video url >}}`. They appear as literal text. Search the sources for `{{<` and report each use.
+- **Render scripts and processors.** If the project has render scripts (such as `page.md.py` or `drawing.svg.py`) or custom nbdev processors, check the content and assets they produce.
+- **Code that finds docs by name.** Search the whole project for `.qmd`, including build scripts, tests, generators and contributor docs, and update paths, globs and extension checks. A glob that matches nothing fails silently. Run the full test suite, not only `nbdev-docs`, and check that tests that read doc pages still find them. Regenerate saved notebook outputs that contain `.qmd` links.
+- **Published files.** Quarto published only linked files and declared resources. Octavo publishes every visible file in the notebooks directory (no part of its path starts with `.` or `_`), as a page or as a copied file. Compare the output file list with the baseline. To keep stray files such as READMEs or notes out, add glob patterns to `exclude` in `octavo.yml`. Patterns are relative to the notebooks directory, and a pattern that matches a directory excludes everything in it. Don't exclude Quarto-only files: they're deleted at the end.
+- **Navigation and URLs.** Check navbar links, dropdowns, icons, favicon, footer and existing public URLs. Restore icons the migration dropped, and keep the existing footer. Markdown copies of notebook pages move from `page.html.md` to `page.md`, and Octavo doesn't redirect the old addresses. Report this rather than working around it.
+- **Settings that weren't carried over.** List the site and page settings the migration reported as having no Octavo equivalent, and any theme options and preview preferences. Octavo uses a page's `image` front matter as its link preview image when `site-url` is set, and a page can set its own `open-graph` or `twitter-card` options. It doesn't pick a preview image from the page content, so list the pages that relied on that. For each setting, propose a replacement or say it's dropped. Quarto's repo-actions links, such as "Report an issue", are dropped on purpose: don't list them.
+- **Build hooks.** If the project has custom build hooks, keep the outputs they produce with nbdev's `docs_post_build` setting, and check the links in any indexes they generate.
+- **Output directory.** A relative `output` in `octavo.yml` is relative to the notebooks directory. Without it, nbdev uses `doc_path`, which is relative to the project. Check that this is the directory the deployment workflow publishes.
 
-After approval, make the agreed changes in small steps. Export notebook-authored modules before building. Run nbdev-docs and the relevant repository Markdown commands. Compare the resulting HTML, Markdown, assets, and additional build artifacts with the saved baseline. Check representative API signatures, symbol links, and GitHub source links. Separate pre-existing failures and expected generated differences from migration regressions.
+Once I've approved the plan, make the changes in small steps, running `nbdev-export` before each build. Then:
 
-Serve the saved baseline and new output separately. Confirm that each server points to the intended directory. Inspect representative pages at desktop and narrow widths. Test navigation, mobile navigation, anchors, images, and the optional features identified above. Test search and follow result links from both the homepage and a nested page. Exercise the intended hosting subpath, such as /project/, rather than testing only at /. A successful build or static link check does not establish that browser interactions work.
+- run `nbdev-docs` and the project's other Markdown commands, such as `nbdev-readme`;
+- compare the HTML, Markdown, assets and other build outputs with the baseline, and check a few API signatures, symbol links and GitHub source links;
+- sort the differences into failures the baseline already had, expected changes, and regressions.
 
-Report the changes, checks actually run, unresolved differences, omitted settings, and decisions requiring my review. Keep the original configuration and baseline until the migration has been reviewed.
+A clean build doesn't show that the site works in a browser. Serve the baseline and the new site separately, and check that each server points at the directory you meant. Serve the new site under its real subpath, such as `/project/`, not only at `/`. Then, on a few representative pages at desktop and phone widths, test:
 
-After the review, delete _quarto.yml and the files it lists under metadata-files and syntax-definitions that Octavo does not use, such as nbdev.yml and sidebar.yml.
+- navigation in the menu's
+- anchors and images;
+- search, following results from the homepage and from a nested page;
+- the optional features you found in the checks above.
+
+Report what you changed, which checks you actually ran, the differences you couldn't resolve, the settings that weren't carried over, and the decisions I need to make. Keep the original configuration and the baseline until I've reviewed the migration.
+
+After the review, delete `_quarto.yml`, plus the files it lists under `metadata-files` and `syntax-definitions` that nothing else in the project uses, such as `nbdev.yml` and `sidebar.yml`.
 
 Docs: https://nbdev.fast.ai/api/octavo.html.md"""
 
 # AUTOGENERATED! DO NOT EDIT! File to edit: ../nbs/api/20_octavo.ipynb.
 
 # %% auto #0
-__all__ = ['OctavoProc', 'local_libraries', 'render_script', 'script_pages', 'octavo_config', 'octavo_docs', 'octavo_preview',
-           'octavo_readme', 'repl_qmd_links', 'repl_html_md_links', 'repl_content_visible', 'repl_frontmatter_keys',
-           'repl_script_frontmatter_keys', 'migrate_nb_cells', 'migrate_md_file', 'nbdev_migrate_octavo']
+__all__ = ['NBDEV_KEYS', 'OctavoProc', 'local_libraries', 'render_script', 'script_pages', 'octavo_config', 'octavo_docs',
+           'octavo_preview', 'octavo_readme', 'repl_qmd_links', 'repl_html_md_links', 'repl_content_visible',
+           'repl_frontmatter_keys', 'repl_script_frontmatter_keys', 'report_page_keys', 'migrate_nb_cells',
+           'migrate_md_file', 'nbdev_migrate_octavo']
 
 # %% ../nbs/api/20_octavo.ipynb #7b098bb5
 from contextlib import redirect_stdout
@@ -110,13 +125,9 @@ def script_pages(root,         # Documentation directory
 
 # %% ../nbs/api/20_octavo.ipynb #d6904375
 def octavo_config(root):
-    "Read `octavo.yml` as a settings dictionary; return an empty dictionary for an empty file"
-    root = Path(root)
-    if not (root/'octavo.yml').is_file(): raise FileNotFoundError(root/'octavo.yml')
-    settings = yaml.safe_load((root/'octavo.yml').read_text())
-    if settings is None: return {}
-    if not isinstance(settings, dict): raise ValueError(f'{root / "octavo.yml"} must contain a YAML mapping')
-    return settings
+    "Settings from `octavo.yml`, as Octavo's `read_cfg` reads them; the file must exist"
+    if not (p := Path(root)/CFG_FILE).is_file(): raise FileNotFoundError(p)
+    return read_cfg(root)
 
 # %% ../nbs/api/20_octavo.ipynb #f6830357
 def octavo_docs(
@@ -256,32 +267,42 @@ def repl_content_visible(s):
 def _dump_fm(fm): return yaml.dump(fm, sort_keys=False, allow_unicode=True, width=10**9)
 
 def repl_frontmatter_keys(s):
-    "Normalize legacy and Quarto frontmatter keys for Octavo"
+    "Move Quarto's `subtitle`, or a legacy `summary`, to the `description` Octavo shows, unless the page has one"
     fm,body = frontmatter(s)
-    if not fm: return s
-    changed = False
-    aliases = [('categories','tags'), ('subtitle','description'), ('summary','description')]
-    for old,new in aliases + [(k,k.replace('-','_')) for k in fm if '-' in k and k!='page-layout']:
-        if old not in fm: continue
-        fm.setdefault(new, fm.pop(old))
-        changed = True
-    if fm.pop('toc', None) is False:
-        fm['toc_depth'] = 0
-        changed = True
-    if changed: return f'---\n{_dump_fm(fm)}---\n\n{body.lstrip(chr(10))}'
-    return s
+    if not fm or 'description' in fm or not (old := first(k for k in ('subtitle','summary') if k in fm)): return s
+    fm['description'] = fm.pop(old)
+    return f'---\n{_dump_fm(fm)}---\n\n{body.lstrip(chr(10))}'
 
 # %% ../nbs/api/20_octavo.ipynb #0ceec29d
 _script_fm = re.compile(r'\A(?P<q>"{3}|\'{3})---\n(?P<fm>.*?)\n---(?P=q)', re.DOTALL)
 
+def _script_md(m):
+    "Frontmatter block from a `_script_fm` match on a render script"
+    return f"---\n{m.group('fm')}\n---\n"
+
 def repl_script_frontmatter_keys(s):
     "Normalize a render script's leading YAML docstring for Octavo"
     if not (m := _script_fm.match(s)): return s
-    old = f"---\n{m.group('fm')}\n---\n"
+    old = _script_md(m)
     new = repl_frontmatter_keys(old)
     if new == old: return s
     fm,_ = frontmatter(new)
     return f"{m.group('q')}---\n{_dump_fm(fm)}---{m.group('q')}" + s[m.end():]
+
+# %% ../nbs/api/20_octavo.ipynb #5e633cec
+NBDEV_KEYS = {'skip_exec', 'skip_showdoc'}
+
+def _src_fm(p):
+    "Frontmatter of the document, notebook or render script at `p`"
+    if p.suffix=='.ipynb': txt = first((c.source for c in read_nb(p).cells if c.cell_type in ('markdown','raw') and c.source.startswith('---')), '')
+    elif p.suffix=='.py': txt = _script_md(m) if (m := _script_fm.match(p.read_text())) else ''
+    else: txt = p.read_text()
+    return frontmatter(txt)[0]
+
+def report_page_keys(p):
+    "Print the frontmatter keys of `p` that neither Octavo nor nbdev reads"
+    unk = unknown_keys(snake_keys(_src_fm(p)), PAGE_KEYS|NBDEV_KEYS)
+    if unk: print(f"{p}: Octavo ignores {', '.join(k.replace('_','-') for k in unk)}")
 
 # %% ../nbs/api/20_octavo.ipynb #0c93c529
 def _apply_procs(txt, procs):
@@ -351,7 +372,7 @@ def _octavo_nav(nbs_path, qy, ny):
     "Convert Quarto navbar settings into Octavo navigation links and icon tools"
     cfg = {}
     def _nav(k): return nested_idx(qy,'website','navbar',k) or nested_idx(ny,'website','navbar',k) or []
-    if nav_left := _nav('left'): cfg['nav_links'] = [_nav_item(o) for o in nav_left if 'text' in o and ('href' in o or 'menu' in o)]
+    if nav_left := _nav('left'): cfg['nav-links'] = [_nav_item(o) for o in nav_left if 'text' in o and ('href' in o or 'menu' in o)]
     links = L(_nav('right')+_nav('tools')).filter(lambda o: 'icon' in o and 'href' in o)
     tools = links.map(_tool_item)
     for o,t in zip(links,tools):
@@ -361,7 +382,7 @@ def _octavo_nav(nbs_path, qy, ny):
 
 # %% ../nbs/api/20_octavo.ipynb #e0912069
 def _sidebar_item(o, drop):
-    "An Octavo `sidebar_links` item from Quarto sidebar entry `o`; `drop` reports entries without an equivalent"
+    "An Octavo `sidebar-links` item from Quarto sidebar entry `o`; `drop` reports entries without an equivalent"
     if isinstance(o, str): o = dict(href=o)
     res = {}
     if (text := o.get('section') or o.get('text')) == '---': return None
@@ -373,56 +394,36 @@ def _sidebar_item(o, drop):
     return res or None
 
 def _octavo_sidebar(nbs_path):
-    "Convert a hand-written `sidebar.yml` into Octavo `sidebar_links`"
+    "Convert a hand-written `sidebar.yml` into Octavo `sidebar-links`"
     p = Path(nbs_path)/'sidebar.yml'
     if not get_config(nbs_path).custom_sidebar or not p.exists(): return {}
     sb = nested_idx(yaml.safe_load(p.read_text()) or {}, 'website', 'sidebar') or {}
     if not isinstance(sb, dict):
-        print(f'{p}: not converted: Octavo supports one sidebar. Set sidebar_links in octavo.yml by hand.')
+        print(f'{p}: not converted: Octavo supports one sidebar. Set `sidebar-links` in octavo.yml by hand.')
         return {}
     def drop(h): print(f'{p}: dropped sidebar entry {h!r}: Octavo has no equivalent. List those pages explicitly.')
     links = [i for o in listify(sb.get('contents')) if (i := _sidebar_item(o, drop))]
-    return {'sidebar_links': links} if links else {}
+    return {'sidebar-links': links} if links else {}
 
 # %% ../nbs/api/20_octavo.ipynb #2f2d4b3b
-_IMAGE_KEYS = {'title', 'description', 'image', 'image-alt', 'image-width', 'image-height'}
-_SOCIAL_KEYS = {'open-graph': _IMAGE_KEYS | {'site-name', 'locale'}, 'twitter-card': _IMAGE_KEYS | {'card-style', 'creator', 'site'}}
-
-def _octavo_social(ws):
-    "Octavo `open_graph` and `twitter_card` settings from Quarto `website` settings `ws`, reporting options Octavo lacks"
-    res = {}
-    for key,keys in _SOCIAL_KEYS.items():
-        if not (v := ws.get(key)): continue
-        if isinstance(v, dict):
-            if drop := sorted(set(v)-keys): print(f'{key}: dropped {", ".join(drop)}: Octavo has no equivalent.')
-            v = {k.replace('-','_'):o for k,o in v.items() if k in keys} or True
-        res[key.replace('-','_')] = v
-    return res
+_WEBSITE_KEYS = ('title', 'site-url', 'favicon', 'description', 'open-graph', 'twitter-card')
+_HTML_KEYS = ('toc', 'toc-depth')
 
 def _create_octavo_cfg(nbs_path):
-    "Return Octavo settings derived from `_quarto.yml` and `nbdev.yml`"
+    "Octavo settings from `_quarto.yml` and `nbdev.yml`, reporting the Quarto settings Octavo has no equivalent for"
     nbs_path = Path(nbs_path).resolve()
     qy,ny = _quarto_config(nbs_path)
-    ws_q,ws_n = qy.get('website', {}) or {},ny.get('website', {}) or {}
-    fmt_html = (qy.get('format', {}) or {}).get('html', {}) or {}
+    ws = {**(qy.get('website') or {}), **(ny.get('website') or {})}
+    html = nested_idx(qy, 'format', 'html') or {}
     # Quarto reads `$…$` as inline maths, and Octavo does only with this setting.
     cfg = {'math': 'dollars'}
     if (output := _octavo_output(nbs_path, qy, ny)) is not None: cfg['output'] = output
-    title = ws_n.get('title') or ws_q.get('title')
-    if title: cfg['title'] = title
-    site_url = ws_n.get('site-url') or ws_q.get('site-url')
-    if site_url: cfg['site_url'] = site_url.rstrip('/')
-    if 'toc-depth' in fmt_html:
-        try: cfg['toc_depth'] = max(1, int(fmt_html['toc-depth']) - 1)
-        except (ValueError, TypeError): pass
-    else: cfg['toc_depth'] = 0 if fmt_html.get('toc') is False else 3
-    favicon = ws_n.get('favicon') or ws_q.get('favicon')
-    if favicon: cfg['favicon'] = favicon
-    desc = ws_n.get('description') or ws_q.get('description')
-    if desc: cfg['description'] = desc
-    cfg.update(_octavo_nav(nbs_path, qy, ny))
-    cfg.update(_octavo_sidebar(nbs_path))
-    cfg.update(_octavo_social({**ws_q, **ws_n}))
+    cfg |= {k:ws[k] for k in _WEBSITE_KEYS if ws.get(k)} | {k:html[k] for k in _HTML_KEYS if k in html}
+    if 'site-url' in cfg: cfg['site-url'] = cfg['site-url'].rstrip('/')
+    cfg |= _octavo_nav(nbs_path, qy, ny) | _octavo_sidebar(nbs_path)
+    drop = [f'website.{k}' for k in ws if k not in (*_WEBSITE_KEYS, 'navbar', 'sidebar')] + [f'format.html.{k}' for k in html if k not in _HTML_KEYS]
+    drop += [k.replace('_','-') for k in unknown_keys(snake_keys(cfg), SITE_KEYS)]
+    if drop: print(f"{nbs_path}: Octavo has no equivalent for {', '.join(drop)}")
     return cfg
 
 # %% ../nbs/api/20_octavo.ipynb #c4b4478c
@@ -438,10 +439,9 @@ def _migrate_octavo(path):
     elif not qy.is_file(): raise FileNotFoundError(qy)
     cfg = _create_octavo_cfg(path) if qy.exists() and not (path/'octavo.yml').exists() else None
 
-    srcs = [p for p in sorted(path.rglob('*')) if p.suffix in ('.ipynb','.qmd','.md','.txt')
-            and not any(o[0] in '._' for o in p.relative_to(path).parts)]
-    scripts = [p for p in sorted(path.rglob('*.qmd.py'))
-               if not any(o[0] in '._' for o in p.relative_to(path).parts)]
+    files = source_files(path).map(lambda o: path/o)
+    srcs = files.filter(lambda p: p.suffix in ('.ipynb','.qmd','.md','.txt'))
+    scripts = files.filter(lambda p: p.name.endswith('.qmd.py'))
     for src in srcs:
         procs = [partial(repl_qmd_links, moves=moves, src=src, root=path), repl_html_md_links]
         if src.suffix!='.txt': procs += [repl_content_visible, repl_frontmatter_keys]
@@ -450,6 +450,8 @@ def _migrate_octavo(path):
     for src in scripts: migrate_md_file(src, [repl_script_frontmatter_keys])
 
     for old,new in moves.items(): old.rename(new)
+    for src in srcs+scripts:
+        if src.suffix!='.txt': report_page_keys(moves.get(src, src))
 
     if cfg: (path/'octavo.yml').write_text(yaml.dump(cfg, sort_keys=False))
     return moves
