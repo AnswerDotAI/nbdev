@@ -121,9 +121,9 @@ def _default_exp(nb):
     return default_exp.group(1) if default_exp else None
 
 # %% ../nbs/api/10_processors.ipynb #03e8fece-bf92-4a1d-9f8b-ef209107ff95
-def add_links(cell):
+def add_links(cell, nl=None):
     "Add links to markdown cells"
-    nl = NbdevLookup()
+    if nl is None: nl = NbdevLookup()
     if cell.cell_type == 'markdown': cell.source = nl.linkify(cell.source)
     for o in cell.get('outputs', []):
         if hasattr(o, 'data') and hasattr(o['data'], 'text/markdown'):
