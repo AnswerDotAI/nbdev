@@ -62,9 +62,7 @@ Docs: https://nbdev.fast.ai/api/octavo.html.md"""
 
 # %% auto #0
 __all__ = ['NBDEV_KEYS', 'OctavoProc', 'local_libraries', 'render_script', 'script_pages', 'octavo_config', 'octavo_docs',
-           'octavo_preview', 'octavo_readme', 'repl_qmd_links', 'repl_html_md_links', 'repl_content_visible',
-           'repl_frontmatter_keys', 'repl_script_frontmatter_keys', 'report_page_keys', 'migrate_nb_cells',
-           'migrate_md_file', 'nbdev_migrate_octavo']
+           'octavo_preview', 'octavo_readme', 'repl_script_frontmatter_keys', 'nbdev_migrate_octavo']
 
 # %% ../nbs/api/20_octavo.ipynb #7b098bb5
 from contextlib import redirect_stdout
@@ -74,13 +72,13 @@ from fastcore.script import call_parse
 import yaml, shutil, subprocess, threading, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from octavo import *
+from octavo.migrate import *
 from mdhtml import md2gfm
-from .config import get_config, import_obj, _load_toml, read_nb
+from .config import get_config, import_obj, _load_toml
 from .doclinks import NbdevLookup
 from .process import NBProcessor
 from .processors import FilterDefaults, add_links
 from .serve import _is_qpy
-from .sync import write_nb
 from .quarto import _doc_mtime_not_older, fs_watchdog
 
 # %% ../nbs/api/20_octavo.ipynb #1cc66460
@@ -219,61 +217,38 @@ def octavo_readme(
         if desc:=doc.meta.get('description'): head += f'{desc}\n\n'
         md2gfm(head + doc.body, dest=dest, imgdir=cfg.config_path/f'{src.stem}_files', raw=('md', 'html'))
 
-# %% ../nbs/api/20_octavo.ipynb #267d0150
-def _qmd_moves(path):
-    "`.qmd` documents and `.qmd.py` render scripts under `path`, mapped to Octavo names"
-    path = Path(path)
-    ps = L(path.rglob('*.qmd')) + L(path.rglob('*.qmd.py'))
-    return {p:p.with_name(re.sub(r'\.qmd(?=\.py$|$)', '.md', p.name)) for p in sorted(ps)
-            if not any(o[0] in '._' for o in p.relative_to(path).parts)}
+# %% ../nbs/api/20_octavo.ipynb #deb7ee06
+def _quarto_config(nbs_path): return read_quarto_config(nbs_path/'_quarto.yml'),read_quarto_config(nbs_path/'nbdev.yml')
 
-# %% ../nbs/api/20_octavo.ipynb #a6688f7e
-def _qmd_repls(src, path, moves):
-    "Old and new spellings of each moved document, as seen from `src`"
-    def _rel(p, start): return os.path.relpath(p, start).replace(os.sep, '/')
-    res = {}
-    for old,new in moves.items():
-        res[_rel(old, path)] = _rel(new, path)
-        res[_rel(old, src.parent)] = _rel(new, src.parent)
-    return sorted(res.items(), key=lambda o: len(o[0]), reverse=True)
+# %% ../nbs/api/20_octavo.ipynb #127739bd
+def _octavo_output(nbs_path, qy, ny):
+    "Return a Quarto output override relative to notebooks, or None when doc_path suffices"
+    out_dir = (ny.get('project', {}) or {}).get('output-dir') or (qy.get('project', {}) or {}).get('output-dir')
+    if not out_dir: return
+    cfg = get_config(nbs_path)
+    out_dir = (cfg.config_path/Path(out_dir).expanduser()).resolve()
+    if out_dir == cfg.doc_path.resolve(): return
+    return os.path.relpath(out_dir, Path(nbs_path).resolve()).replace(os.sep, '/')
 
-def repl_qmd_links(txt, moves, src, root):
-    "Rewrite relative and root-relative `.qmd` link targets to `.md`"
-    for old,new in _qmd_repls(src, root, moves): txt = txt.replace(old, new)
-    return txt
+# %% ../nbs/api/20_octavo.ipynb #e0912069
+def _octavo_sidebar(nbs_path):
+    "Convert the project's custom sidebar when enabled"
+    p = Path(nbs_path)/'sidebar.yml'
+    if not get_config(nbs_path).custom_sidebar or not p.exists(): return {}
+    sb = nested_idx(yaml.safe_load(p.read_text()) or {}, 'website', 'sidebar') or {}
+    return quarto_sidebar(sb, p)
 
-def repl_html_md_links(txt):
-    "Rewrite Quarto `.html.md` Markdown-copy targets to Octavo's `.md`"
-    return re.sub(r'\.html\.md\b', '.md', txt)
+# %% ../nbs/api/20_octavo.ipynb #2f2d4b3b
+def _create_octavo_cfg(nbs_path):
+    "Convert Quarto settings with nbdev's overlay, output path and custom sidebar"
+    nbs_path = Path(nbs_path).resolve()
+    qy,ny = _quarto_config(nbs_path)
+    output = _octavo_output(nbs_path, qy, ny)
+    cfg = quarto_config(qy, nbs_path, overrides=ny) | _octavo_sidebar(nbs_path)
+    if output is not None: cfg['output'] = output
+    return cfg
 
-# %% ../nbs/api/20_octavo.ipynb #237aea2c
-_re_cv = re.compile(r'^:{3,}[^\S\r\n]*\{([^}]*\.content-visible[^}]*)\}[^\S\r\n]*\n(.*?)\n:{3,}[^\S\r\n]*$', re.MULTILINE | re.DOTALL)
-
-def _repl_cv_match(m):
-    attrs,body = m.group(1),m.group(2).strip()
-    m_fmt = re.search(r'when-format=["\']?(\w+)["\']?', attrs)
-    fmt = m_fmt.group(1).lower() if m_fmt else 'html'
-    target = 'md' if fmt in ('markdown', 'commonmark', 'md') else fmt
-    if target=='html':
-        if (m_style := re.search(r'style=["\']([^"\']+)["\']', attrs)):
-            body = f'<div style="{m_style.group(1)}">\n{body}\n</div>'
-    return f'```{{={target}}}\n{body}\n```'
-
-def repl_content_visible(s):
-    "Convert Quarto `::: {.content-visible when-format=...}` to ````{=md}```` / ````{=html}````"
-    return _re_cv.sub(_repl_cv_match, s)
-
-# %% ../nbs/api/20_octavo.ipynb #04d5a738
-def _dump_fm(fm): return yaml.dump(fm, sort_keys=False, allow_unicode=True, width=10**9)
-
-def repl_frontmatter_keys(s):
-    "Move Quarto's `subtitle`, or a legacy `summary`, to the `description` Octavo shows, unless the page has one"
-    fm,body = frontmatter(s)
-    if not fm or 'description' in fm or not (old := first(k for k in ('subtitle','summary') if k in fm)): return s
-    fm['description'] = fm.pop(old)
-    return f'---\n{_dump_fm(fm)}---\n\n{body.lstrip(chr(10))}'
-
-# %% ../nbs/api/20_octavo.ipynb #0ceec29d
+# %% ../nbs/api/20_octavo.ipynb #5927e211
 _script_fm = re.compile(r'\A(?P<q>"{3}|\'{3})---\n(?P<fm>.*?)\n---(?P=q)', re.DOTALL)
 
 def _script_md(m):
@@ -286,174 +261,21 @@ def repl_script_frontmatter_keys(s):
     old = _script_md(m)
     new = repl_frontmatter_keys(old)
     if new == old: return s
-    fm,_ = frontmatter(new)
-    return f"{m.group('q')}---\n{_dump_fm(fm)}---{m.group('q')}" + s[m.end():]
-
-# %% ../nbs/api/20_octavo.ipynb #5e633cec
-NBDEV_KEYS = {'skip_exec', 'skip_showdoc'}
-
-def _src_fm(p):
-    "Frontmatter of the document, notebook or render script at `p`"
-    if p.suffix=='.ipynb': txt = first((c.source for c in read_nb(p).cells if c.cell_type in ('markdown','raw') and c.source.startswith('---'))) or ''
-    elif p.suffix=='.py': txt = _script_md(m) if (m := _script_fm.match(p.read_text())) else ''
-    else: txt = p.read_text()
-    return frontmatter(txt)[0]
-
-def report_page_keys(p):
-    "Print the frontmatter keys of `p` that neither Octavo nor nbdev reads"
-    unk = unknown_keys(snake_keys(_src_fm(p)), PAGE_KEYS|NBDEV_KEYS)
-    if unk: print(f"{p}: Octavo ignores {', '.join(k.replace('_','-') for k in unk)}")
-
-# %% ../nbs/api/20_octavo.ipynb #0c93c529
-def _apply_procs(txt, procs):
-    for p in procs: txt = p(txt)
-    return txt
-
-def migrate_nb_cells(path, procs):
-    "Apply `procs` to all markdown cells in a notebook in-place"
-    nb,changed = read_nb(path),False
-    for c in nb.cells:
-        if c.cell_type != 'markdown' or not c.get('source'): continue
-        new_src = _apply_procs(c.source, procs)
-        if new_src != c.source: c.source,changed = new_src,True
-    if changed: write_nb(nb, path)
-
-def migrate_md_file(path, procs):
-    "Apply `procs` to a Markdown, QMD or text file in-place"
-    txt = path.read_text()
-    new_txt = _apply_procs(txt, procs)
-    if new_txt!=txt: path.write_text(new_txt)
-
-# %% ../nbs/api/20_octavo.ipynb #01ed763e
-def _nav_href(h):
-    "Quarto link `h`, with a documentation source path changed to its published HTML page"
-    if not h or '://' in h or h.startswith(('#','mailto:')): return h
-    m = re.fullmatch(r'(.*?)([^/?#]+)\.(?:ipynb|qmd|md)([?#].*)?', h)
-    return f'{m[1]}{page_nm(m[2])}.html{m[3] or ""}' if m else h
-
-def _nav_item(item):
-    res = {'text': item['text']}
-    if 'menu' in item: res['children'] = [{'text': m['text'], 'href': _nav_href(m['href'])} for m in item['menu'] if 'href' in m]
-    elif 'href' in item: res['href'] = _nav_href(item['href'])
-    return res
-
-# %% ../nbs/api/20_octavo.ipynb #acd395a1
-_ICON_MAP = {'twitter':'x', 'twitter-x':'x'}
-_ICON_LABELS = {'github':'GitHub', 'rss':'RSS'}
-
-def _tool_item(item):
-    "An octavo `tools` entry from a Quarto icon link, or None where octavo has no such icon"
-    from octavo.theme import ICONS
-    ico = _ICON_MAP.get(item['icon'], item['icon'])
-    if ico not in ICONS: return None
-    return {'icon': ico, 'href': _nav_href(item['href']), 'label': item.get('aria-label') or item.get('text') or _ICON_LABELS.get(ico, ico.title())}
-
-# %% ../nbs/api/20_octavo.ipynb #deb7ee06
-def _quarto_config(nbs_path):
-    qy_p,ny_p = nbs_path/'_quarto.yml',nbs_path/'nbdev.yml'
-    qy = yaml.safe_load(qy_p.read_text()) if qy_p.exists() else {}
-    ny = yaml.safe_load(ny_p.read_text()) if ny_p.exists() else {}
-    for fname,settings in ((qy_p,qy), (ny_p,ny)):
-        if settings is not None and not isinstance(settings, dict): raise ValueError(f'{fname} must contain a YAML mapping')
-    return qy or {},ny or {}
-
-# %% ../nbs/api/20_octavo.ipynb #127739bd
-def _octavo_output(nbs_path, qy, ny):
-    "Return a Quarto output override relative to notebooks, or None when doc_path suffices"
-    out_dir = (ny.get('project', {}) or {}).get('output-dir') or (qy.get('project', {}) or {}).get('output-dir')
-    if not out_dir: return
-    cfg = get_config(nbs_path)
-    out_dir = (cfg.config_path/Path(out_dir).expanduser()).resolve()
-    if out_dir == cfg.doc_path.resolve(): return
-    return os.path.relpath(out_dir, Path(nbs_path).resolve()).replace(os.sep, '/')
-
-# %% ../nbs/api/20_octavo.ipynb #201d0976
-def _octavo_nav(nbs_path, qy, ny):
-    "Convert Quarto navbar settings into Octavo navigation links and icon tools"
-    cfg = {}
-    def _nav(k): return nested_idx(qy,'website','navbar',k) or nested_idx(ny,'website','navbar',k) or []
-    if nav_left := _nav('left'): cfg['nav-links'] = [_nav_item(o) for o in nav_left if 'text' in o and ('href' in o or 'menu' in o)]
-    links = L(_nav('right')+_nav('tools')).filter(lambda o: 'icon' in o and 'href' in o)
-    tools = links.map(_tool_item)
-    for o,t in zip(links,tools):
-        if t is None: print(f"{nbs_path/'octavo.yml'}: dropped tool icon {o['icon']!r} ({o['href']}): not bundled by octavo. Add it back with `icon: <path-or-url>` to your own SVG.")
-    if (tools := tools.filter()): cfg['tools'] = list(tools)
-    return cfg
-
-# %% ../nbs/api/20_octavo.ipynb #e0912069
-def _sidebar_item(o, drop):
-    "An Octavo `sidebar-links` item from Quarto sidebar entry `o`; `drop` reports entries without an equivalent"
-    if isinstance(o, str): o = dict(href=o)
-    res = {}
-    if (text := o.get('section') or o.get('text')) == '---': return None
-    if text: res['text'] = text
-    if href := o.get('href'):
-        if href=='auto' or '*' in href: return drop(href)
-        res['href'] = _nav_href(href)
-    if 'contents' in o: res['children'] = [i for c in listify(o['contents']) if (i := _sidebar_item(c, drop))]
-    return res or None
-
-def _octavo_sidebar(nbs_path):
-    "Convert a hand-written `sidebar.yml` into Octavo `sidebar-links`"
-    p = Path(nbs_path)/'sidebar.yml'
-    if not get_config(nbs_path).custom_sidebar or not p.exists(): return {}
-    sb = nested_idx(yaml.safe_load(p.read_text()) or {}, 'website', 'sidebar') or {}
-    if not isinstance(sb, dict):
-        print(f'{p}: not converted: Octavo supports one sidebar. Set `sidebar-links` in octavo.yml by hand.')
-        return {}
-    def drop(h): print(f'{p}: dropped sidebar entry {h!r}: Octavo has no equivalent. List those pages explicitly.')
-    links = [i for o in listify(sb.get('contents')) if (i := _sidebar_item(o, drop))]
-    return {'sidebar-links': links} if links else {}
-
-# %% ../nbs/api/20_octavo.ipynb #2f2d4b3b
-_WEBSITE_KEYS = ('title', 'site-url', 'favicon', 'description', 'open-graph', 'twitter-card')
-_HTML_KEYS = ('toc', 'toc-depth')
-
-def _create_octavo_cfg(nbs_path):
-    "Octavo settings from `_quarto.yml` and `nbdev.yml`, reporting the Quarto settings Octavo has no equivalent for"
-    nbs_path = Path(nbs_path).resolve()
-    qy,ny = _quarto_config(nbs_path)
-    ws = {**(qy.get('website') or {}), **(ny.get('website') or {})}
-    html = nested_idx(qy, 'format', 'html') or {}
-    # Quarto reads `$…$` as inline maths, and Octavo does only with this setting.
-    cfg = {'math': 'dollars'}
-    if (output := _octavo_output(nbs_path, qy, ny)) is not None: cfg['output'] = output
-    cfg |= {k:ws[k] for k in _WEBSITE_KEYS if ws.get(k)} | {k:html[k] for k in _HTML_KEYS if k in html}
-    if 'site-url' in cfg: cfg['site-url'] = cfg['site-url'].rstrip('/')
-    cfg |= _octavo_nav(nbs_path, qy, ny) | _octavo_sidebar(nbs_path)
-    drop = [f'website.{k}' for k in ws if k not in (*_WEBSITE_KEYS, 'navbar', 'sidebar')] + [f'format.html.{k}' for k in html if k not in _HTML_KEYS]
-    drop += [k.replace('_','-') for k in unknown_keys(snake_keys(cfg), SITE_KEYS)]
-    if drop: print(f"{nbs_path}: Octavo has no equivalent for {', '.join(drop)}")
-    return cfg
+    return m.group('q') + new.rstrip('\n') + m.group('q') + s[m.end():]
 
 # %% ../nbs/api/20_octavo.ipynb #c4b4478c
+NBDEV_KEYS = {'skip_exec', 'skip_showdoc'}
+
 def _migrate_octavo(path):
-    "Migrate documentation sources in place, create missing Octavo configuration, and return the rename mapping"
+    "Migrate documents and nbdev render scripts using the project's configuration"
     path = Path(path).expanduser()
-    if not path.is_dir(): raise NotADirectoryError(path)
-    moves = _qmd_moves(path)
-    for new in moves.values():
-        if new.exists(): raise FileExistsError(f'Cannot rename to existing file: {new}')
-    qy = path/'_quarto.yml'
-    if (path/'octavo.yml').exists(): octavo_config(path)
-    elif not qy.is_file(): raise FileNotFoundError(qy)
-    cfg = _create_octavo_cfg(path) if qy.exists() and not (path/'octavo.yml').exists() else None
-
-    files = source_files(path).map(lambda o: path/o)
-    srcs = files.filter(lambda p: p.suffix in ('.ipynb','.qmd','.md','.txt'))
-    scripts = files.filter(lambda p: p.name.endswith('.qmd.py'))
-    for src in srcs:
-        procs = [partial(repl_qmd_links, moves=moves, src=src, root=path), repl_html_md_links]
-        if src.suffix!='.txt': procs += [repl_content_visible, repl_frontmatter_keys]
-        if src.suffix=='.ipynb': migrate_nb_cells(src, procs)
-        else:                    migrate_md_file(src, procs)
-    for src in scripts: migrate_md_file(src, [repl_script_frontmatter_keys])
-
-    for old,new in moves.items(): old.rename(new)
-    for src in srcs+scripts:
-        if src.suffix!='.txt': report_page_keys(moves.get(src, src))
-
-    if cfg: (path/'octavo.yml').write_text(yaml.dump(cfg, sort_keys=False))
+    scripts = source_files(path).map(lambda o: path/o).filter(lambda p: p.name.endswith('.qmd.py'))
+    script_moves = {p:p.with_name(p.name.removesuffix('.qmd.py')+'.md.py') for p in scripts}
+    moves = migrate_quarto(path, config=_create_octavo_cfg, extra_keys=NBDEV_KEYS, extra_moves=script_moves)
+    for p in script_moves.values():
+        migrate_md_file(p, [repl_script_frontmatter_keys])
+        if m := _script_fm.match(p.read_text()):
+            report_page_keys(p, extra_keys=NBDEV_KEYS, metadata=frontmatter(_script_md(m))[0])
     return moves
 
 # %% ../nbs/api/20_octavo.ipynb #e332ece4
