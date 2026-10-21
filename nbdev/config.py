@@ -51,7 +51,13 @@ https://nbdev.fast.ai/api/release.html#setup"""]
     return r.default_branch, default_kw if not getattr(r, 'topics', []) else ' '.join(r.topics), r.description
 
 # %% ../nbs/api/01_config.ipynb #35d5c037
-def _fetch_from_git(raise_err=False):
+def _git_root(raise_err=False):
+    "Root of the current git repository, or `None` if there isn't one."
+    try: return Path(run('git rev-parse --show-toplevel').strip()).resolve()
+    except OSError:
+        if raise_err: raise
+
+def _fetch_from_git(raise_err=False, path=None):
     "Get information for pyproject.toml from git."
     res={}
     try:
@@ -59,6 +65,7 @@ def _fetch_from_git(raise_err=False):
         res['author_email'] = run('git config --get user.email').strip()
     except OSError as e:
         if raise_err: raise e
+    if path is not None and _git_root(raise_err)!=Path(path).resolve(): return res
     try:
         url = run('git config --get remote.origin.url')
         res['user'],res['repo'] = repo_details(url)
@@ -123,7 +130,7 @@ def nbdev_create_config(
     path.mkdir(exist_ok=True, parents=True)
     
     # Infer from git if not provided
-    inf,ucfg = _fetch_from_git(),_user_config()
+    inf,ucfg = _fetch_from_git(path=path),_user_config()
     repo = repo or inf.get('repo') or path.resolve().name
     user = user or inf.get('user') or ucfg.get('user', '')
     if not user: raise ValueError("Could not infer `user` from git. Please pass --user explicitly.")
