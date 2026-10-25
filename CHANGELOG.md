@@ -2,6 +2,19 @@
 
 <!-- do not remove -->
 
+## 3.3.26
+
+### New Features
+
+- Add `CHANGELOG_MARKER`/`CHANGELOG_TMPL`, error on missing changelog marker, use utf-8 IO, drop .bak backup, fix `latest_notes` with no entries ([#1660](https://github.com/AnswerDotAI/nbdev/issues/1660))
+- Re-render `nbdev_preview` site on startup when any page output is missing or older than its source, via new `quarto_stale` check ([#1656](https://github.com/AnswerDotAI/nbdev/issues/1656))
+
+### Bugs Squashed
+
+- Refresh quarto config before `_ensure_quarto` in `_pre_docs` and drop the early nbdev.yml existence check ([#1658](https://github.com/AnswerDotAI/nbdev/issues/1658))
+- Fix file-filter delegation ([#1657](https://github.com/AnswerDotAI/nbdev/pull/1657)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 3.3.25
 
 ### New Features
