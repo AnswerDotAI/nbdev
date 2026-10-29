@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.27
+
+### Bugs Squashed
+
+- Isolate Quarto sass cache per project on Linux via `XDG_CACHE_HOME` to avoid conflicts during parallel renders ([#1661](https://github.com/AnswerDotAI/nbdev/issues/1661))
+
+
 ## 3.3.26
 
 ### New Features
