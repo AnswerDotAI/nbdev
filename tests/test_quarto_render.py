@@ -1,4 +1,4 @@
-import json, shutil, subprocess, pytest
+import json, shutil, subprocess, sys, pytest
 from xml.etree import ElementTree as ET
 from fastcore.test import test_eq as teq
 from nbdev.quarto_render import render_quarto, quarto_stale
@@ -40,7 +40,9 @@ Documentation = "https://example.com/project/"
 
 
 @pytest.mark.skipif(not shutil.which('quarto'), reason='requires Quarto')
-def test_website(tmp_path):
+def test_website(tmp_path, monkeypatch):
+    cache = tmp_path/'cache'
+    monkeypatch.setenv('XDG_CACHE_HOME', str(cache))
     root = tmp_path/'source'
     root.mkdir()
     (root/'_quarto.yml').write_text(r'''project:
@@ -68,9 +70,10 @@ Page {name}. [Alpha](alpha.qmd#detail). [Download](data.txt).
     (root/'other.qmd').write_text('---\noutput-file: renamed.html\n---\n# Other')
     serial, parallel = tmp_path/'serial', root/'_site'
     assert quarto_stale(root, parallel)
-    render_quarto(root, serial, n_workers=1)
     render_quarto(root, parallel, n_workers=2)
+    if sys.platform == 'linux': assert not (cache/'quarto/sass').exists()
     assert not quarto_stale(root, parallel)
+    render_quarto(root, serial, n_workers=1)
     search = lambda d: {e['href']: e['text'] for e in json.loads((d/'search.json').read_text())}
     urls = lambda d: {e.text for e in ET.parse(d/'sitemap.xml').findall('.//{*}loc')}
     teq(search(serial), search(parallel))

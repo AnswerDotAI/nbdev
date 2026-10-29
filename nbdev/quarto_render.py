@@ -6,8 +6,8 @@ from fastcore.parallel import parallel
 from fastcore.utils import *
 
 
-def _quarto(path, *args):
-    res = subprocess.run(['quarto', *map(str, args)], cwd=path, capture_output=True, text=True)
+def _quarto(path, *args, env=None):
+    res = subprocess.run(['quarto', *map(str, args)], cwd=path, capture_output=True, text=True, env=env)
     if res.returncode: raise RuntimeError(res.stderr or res.stdout or f'Quarto exited with status {res.returncode}')
     return res.stdout
 
@@ -25,7 +25,8 @@ def quarto_stale(path, output_dir):
 
 def _render_batch(job):
     path, inputs, output = job
-    _quarto(path, 'render', *inputs, '--no-cache', '--no-clean', '--output-dir', output)
+    env = {**os.environ, 'XDG_CACHE_HOME': str(path/'.cache')} if sys.platform == 'linux' else None
+    _quarto(path, 'render', *inputs, '--no-cache', '--no-clean', '--output-dir', output, env=env)
     return output
 
 
