@@ -17,6 +17,8 @@ jobs:
         with:
           version: ${{ matrix.version }}
           pre: 1
+      - name: test Python modules
+        run: pytest -q
       - name: test docs build
         if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.version == '3.10' && matrix.os == 'ubuntu' }}
         run: |
