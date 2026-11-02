@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.28
+
+### New Features
+
+- Extend `nbdev_diff_driver` to plain text files with word-level diffs, add `line_context` option, and move shared rendering into `diff_core` ([#1662](https://github.com/AnswerDotAI/nbdev/issues/1662))
+
+
 ## 3.3.27
 
 ### Bugs Squashed
