@@ -117,6 +117,7 @@ def nbdev_create_config(
     path:str='.', # Path to create config file
     min_python:str='3.10', # Minimum Python version
     license:str='Apache-2.0', # License (SPDX identifier)
+    lib_name:str=None, # package name
 ):
     "Create a pyproject.toml config file."
     path = Path(path)
@@ -134,12 +135,12 @@ def nbdev_create_config(
     branch = branch or inf.get('branch', 'main')
     description = description or inf.get('description', '')
     
-    lib_path = repo.replace('-', '_')
+    lib_path = (lib_name or repo).replace('-', '_')
     git_url = f"https://github.com/{user}/{repo}" if user else ''
     doc_url = f"https://{user}.github.io/{repo}/" if user else ''
     keywords = inf.get('keywords', 'nbdev').split()
     
-    txt = pyproject_tmpl.format(name=repo, lib_path=lib_path, description=description, min_python=min_python, license=license,
+    txt = pyproject_tmpl.format(name=lib_name or repo, lib_path=lib_path, description=description, min_python=min_python, license=license,
         author=author, author_email=author_email, keywords=keywords, git_url=git_url, doc_url=doc_url, branch=branch)
     
     cfg_file = path / pyproject_nm
