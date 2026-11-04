@@ -97,7 +97,6 @@ async def nbdev_new(
     if name:
         Path(name).mkdir(exist_ok=True)
         os.chdir(name)
-        kwargs.setdefault('repo', name)
     nbdev_create_config.__wrapped__(**kwargs)
     cfg = get_config()
     if (Path('.git')).exists(): await _update_repo_meta(cfg)
