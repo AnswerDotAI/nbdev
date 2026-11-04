@@ -48,7 +48,7 @@ def patch_name(o):
     if nm=='patch': 
         a = o.args.args[0].annotation
         if isinstance(a, ast.BinOp): return _binop_leafs(a, o)
-    elif nm=='patch_to': a = d.args[0]
+    elif nm=='patch_to': a = d.args[0] if d.args else next(k.value for k in d.keywords if k.arg=='cls')
     else: return o.name
     return _sym_nm(a,o)
 
