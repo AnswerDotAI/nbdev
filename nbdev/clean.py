@@ -62,12 +62,13 @@ def _clean_cell_output_id(lines):
 
 # %% ../nbs/api/11_clean.ipynb #b4cde615
 def _clean_cell_output(cell, clean_ids, allowed_out_meta_keys):
-    "Remove `cell` output execution count and optionally ids from text reprs"
+    "Remove `cell` output execution count, optionally ids from text reprs, and representations listed under `nbdev.strip`"
     outputs = cell.get('outputs', [])
     for o in outputs:
         if 'execution_count' in o: o['execution_count'] = None
         data = o.get('data', {})
         data.pop("application/vnd.google.colaboratory.intrinsic+json", None)
+        for k in nested_idx(o, 'metadata', 'nbdev', 'strip') or []: data.pop(k, None)
         for k in data:
             if k.startswith('text') and clean_ids: data[k] = _clean_cell_output_id(data[k])
             if k.startswith('image') and "svg" not in k: data[k] = data[k].rstrip()
