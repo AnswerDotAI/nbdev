@@ -171,7 +171,7 @@ def _find_nbdev_pyproject(path=None):
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
     clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, custom_sidebar=False, branch='main',
-    doc_procs=[], export_procs=[], exec_profile=True, cell_timeout=600)
+    doc_procs=[], export_procs=[], exec_profile=True, exec_all=False, cell_timeout=600)
 
 _path_keys = 'lib_path', 'nbs_path', 'doc_path'
 
