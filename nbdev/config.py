@@ -22,8 +22,7 @@ import ast,importlib,re
 from IPython.display import Markdown
 from fastcore.nbio import read_nb,NbCell
 
-try: import tomllib
-except ImportError: import tomli as tomllib
+import tomllib
 
 # %% ../nbs/api/01_config.ipynb #117128e6
 pyproject_nm = 'pyproject.toml'
