@@ -10,7 +10,7 @@ jobs:
       fail-fast: true
       matrix:
         os:  [ubuntu, macos]
-        version: ["3.10", "3.11", "3.12", "3.13"]
+        version: ["3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}-latest
     steps:
       - uses: answerdotai/workflows/nbdev3-ci@master
@@ -20,7 +20,7 @@ jobs:
       - name: test Python modules
         run: pytest -q
       - name: test docs build
-        if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.version == '3.10' && matrix.os == 'ubuntu' }}
+        if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.version == '3.11' && matrix.os == 'ubuntu' }}
         run: |
           set -ux
           wget -q $(curl https://latest.fast.ai/pre/quarto-dev/quarto-cli/linux-amd64.deb)
