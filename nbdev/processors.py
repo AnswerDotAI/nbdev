@@ -228,11 +228,15 @@ def _ast_contains(trees, types):
 
 def _tl_contains(trees, types): return any(isinstance(t, types) for t in trees)
 
-def _do_eval(cell):
+def _do_eval(cell, all_cells=False, dflt=True, flags=frozenset()):
     if cell_lang(cell) != 'python': return
     if not cell.source or 'nbdev_export'+'()' in cell.source: return
     trees = cell.parsed_()
     if cell.cell_type != 'code' or not trees: return
+    if all_cells:
+        v = cell.directives_.get('eval')
+        run = dflt if v is None else v.lower() != 'false'
+        return run and not (cell.directives_.keys() & flags) and 'skip-execution' not in cell.metadata.get('tags', [])
     if cell.directives_.get('eval', '').lower() == 'false': return
 
     _show_dirs = {'export','exports','exporti','exec_doc'}
@@ -245,17 +249,22 @@ def _do_eval(cell):
 
 # %% ../nbs/api/10_processors.ipynb #867cf721
 class exec_show_docs(Processor):
-    "Execute cells needed for `show_docs` output, including exported cells and imports"
+    "Execute cells needed for `show_docs` output, including exported cells and imports, or every cell under `exec_all`"
     def begin(self):
         if nb_lang(self.nb) != 'python': return
-        self.k = CaptureShell(profile=bool(get_config().exec_profile))
+        cfg,fm = get_config(),getattr(self.nb, 'frontmatter_', {})
+        self.all_cells = str2bool(fm.get('exec_all', cfg.exec_all))
+        self.dflt = fm_default_eval(fm)
+        flags = cfg.tst_flags
+        self.flags = set(flags.split() if isinstance(flags, str) else flags)
+        self.k = CaptureShell(profile=bool(cfg.exec_profile))
         self.k.run_cell('from nbdev.showdoc import show_doc')
 
     def __call__(self, cell):
-        if not self.nb.has_docs_ or not hasattr(self, 'k'): return
+        if not hasattr(self, 'k') or not (self.nb.has_docs_ or self.all_cells): return
         fm = getattr(self.nb, 'frontmatter_', {})
         if str2bool(fm.get('skip_showdoc', False)): return
-        if _do_eval(cell): self.k.cell(cell)
+        if _do_eval(cell, self.all_cells, self.dflt, self.flags): self.k.cell(cell)
         title = fm.get('title', '')
         if (e := self.k.exc):
             raise Exception(f"Error{' in notebook: '+title if title else ''} in cell {cell.idx_} :\n{cell.source}\n{type(e).__name__}: {e}") from e
