@@ -156,7 +156,7 @@ def nbdev_test(
     cell_timing_min:float=None, # Print cells slower than this many seconds (default `cell_timing_min` config, else none)
     **kwargs
 ):
-    "Test in parallel notebooks matching `path`, passing along `flags`"
+    "Test in parallel notebooks matching `path`, each in a process of its own, passing along `flags`"
     if path and not Path(path).exists(): kwargs['path_glob'],path = os.path.abspath(path),Path.cwd()
     cfg = get_config(Path(path).resolve() if path else None)
     cell_timeout,cell_timing_min = ifnone(cell_timeout, cfg.cell_timeout),ifnone(cell_timing_min, cfg.get('cell_timing_min'))
@@ -168,8 +168,6 @@ def nbdev_test(
     if len(files)==0: return print('No files were eligible for testing')
 
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
-    if in_notebook(): kw = {'method':'spawn'} if os.name=='nt' or sys.platform=='darwin' else {'method':'forkserver'}
-    else: kw = {'method':'spawn'} if sys.platform=='darwin' else {}
     wd_pth = cfg.nbs_path
     with working_directory(wd_pth if (wd_pth and wd_pth.exists()) else os.getcwd()):
         setup = cfg.get('test_setup')
@@ -177,7 +175,7 @@ def nbdev_test(
         try:
             results = parallel(test_nb, files, skip_flags=skip_flags, force_flags=force_flags, n_workers=n_workers,
                 basepath=cfg.config_path, pause=pause, do_print=do_print, verbose=verbose, save=save,
-                cell_timeout=cell_timeout or None, cell_timing_min=cell_timing_min, **kw)
+                cell_timeout=cell_timeout or None, cell_timing_min=cell_timing_min, max_tasks_per_child=1)
         except KeyboardInterrupt:
             sys.stderr.write('\nnbdev-test interrupted; in-flight notebook stacks shown above\n')
             sys.exit(130)

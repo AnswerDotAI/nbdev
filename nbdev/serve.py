@@ -8,13 +8,12 @@ Docs: https://nbdev.fast.ai/api/serve.html.md"""
 __all__ = ['proc_nbs']
 
 # %% ../nbs/api/17_serve.ipynb #6899a335
-import ast,subprocess,threading,sys
+import ast
 from shutil import rmtree,copy2
 from fnmatch import fnmatch
 
 from fastcore.utils import *
 from fastcore.parallel import parallel
-from fastcore.script import call_parse
 from fastcore.meta import delegates
 
 from .config import get_config
@@ -95,7 +94,6 @@ def proc_nbs(
     _rm_stale(cache, path)
 
     files = files.map(_proc_file, cache=cache, path=path).filter()
-    kw = {} if in_notebook() else {'method':'spawn'}
-    parallel(nbdev.serve_drv.main, files, n_workers=n_workers, pause=0.01, **kw)
+    parallel(nbdev.serve_drv.main, files, n_workers=n_workers, pause=0.01, max_tasks_per_child=1)
     if cache.exists(): cache.touch()
     return cache
