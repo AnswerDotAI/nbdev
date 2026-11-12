@@ -14,6 +14,21 @@ def test_source_changes():
     assert not render_source_diff(old, old)
 
 
+def test_phrase_changes():
+    old = 'selects the fields, shown by the vectors'
+    new = 'reverses the coordinates, arranged in two columns'
+    suffix = '. Dragging either point redraws both points.\n'
+    for color in (False, True):
+        result = render_source_diff('The model '+old+suffix, 'The model '+new+suffix, color=color)
+        phrase = f'\x1b[31;9m{old}\x1b[0m\x1b[32m{new}\x1b[0m' if color else f'[-{old}-]{{+{new}+}}'
+        assert phrase in result and suffix.rstrip() in result
+    shared = ' while both points retain their positions '
+    result = render_source_diff('We select fields'+shared+'using the old formula.\n',
+                                'We reverse coordinates'+shared+'using the new expression.\n')
+    assert '[-select fields-]{+reverse coordinates+}' in result and shared in result
+    assert '[-old formula-]{+new expression+}' in result
+
+
 def test_long_line_changes():
     prefix = ' '.join(f'word{i}' for i in range(80))+' '
     tail = ' '.join(f'tail{i}' for i in range(80))

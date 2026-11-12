@@ -49,8 +49,18 @@ def _word_diff(a, b):
     if a==b: return None
     if SequenceMatcher(None, re.findall(r'\w+', a), re.findall(r'\w+', b), autojunk=False).ratio()<MIN_RATIO: return None
     ta,tb = (re.findall(r'\w+|\s+|[^\w\s]', s) for s in (a,b))
+    ops = SequenceMatcher(lambda t: t.isspace(), ta, tb, autojunk=False).get_opcodes()
+    def width(op): return max(sum(map(len, ta[op[1]:op[2]])), sum(map(len, tb[op[3]:op[4]])))
+    groups = []
+    for i,(tag,i1,i2,j1,j2) in enumerate(ops):
+        # Short coincidences inside a rewrite should not split it into alternating words.
+        if tag=='equal' and 0<i<len(ops)-1 and width(ops[i])<min(width(ops[i-1]),width(ops[i+1])): tag = 'replace'
+        if tag!='equal' and groups and groups[-1][0]!='equal':
+            _,i1,_,j1,_ = groups.pop()
+            tag = 'replace'
+        groups.append((tag,i1,i2,j1,j2))
     res = []
-    for tag,i1,i2,j1,j2 in SequenceMatcher(None, ta, tb, autojunk=False).get_opcodes():
+    for tag,i1,i2,j1,j2 in groups:
         if tag=='equal': res.append((' ', ''.join(ta[i1:i2])))
         else:
             if i2>i1: res.append(('-', ''.join(ta[i1:i2])))
