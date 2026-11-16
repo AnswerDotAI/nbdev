@@ -1,4 +1,4 @@
-"""A parallel ipynb processor (experimental)
+"""A parallel notebook and Quarto processor (experimental)
 
 Docs: https://nbdev.fast.ai/api/serve.html.md"""
 
@@ -45,7 +45,7 @@ def _proc_file(s, cache, path):
     if d.exists() and s.stat().st_mtime<=d.stat().st_mtime: return
 
     d.parent.mkdir(parents=True, exist_ok=True)
-    if s.suffix=='.ipynb': return s,d,FilterDefaults
+    if s.suffix in ('.ipynb','.qmd'): return s,d,FilterDefaults
     md = _is_qpy(s)
     if md is not None: return s,d,md.strip()
     else: copy2(s,d)

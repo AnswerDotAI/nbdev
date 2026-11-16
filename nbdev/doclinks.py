@@ -230,6 +230,7 @@ def _qual_syms(entries):
 
 # %% ../nbs/api/05_doclinks.ipynb #53505fa4
 _re_backticks = re.compile(r'`([^`\s]+?)(?:\(\))?`')
+_re_linkify = re.compile(r'\[(?:`[^`]*`|[^\]`])*\](?:\((?:[^()]|\([^()]*\))*\)|\[[^\]]*\])?|' + _re_backticks.pattern)
 
 # %% ../nbs/api/05_doclinks.ipynb #3a24b883
 @lru_cache(None)
@@ -291,19 +292,22 @@ class NbdevLookup:
     
     def _link_sym(self, m):
         l = m.group(1)
+        if l is None: return m.group(0)
         s = self.doc(l)
         if s is None: return m.group(0)
         l = l.replace('\\', r'\\')
         if m.group(0).endswith('()`'): l += '()'
         return rf"[`{l}`]({s})"
 
-    def link_line(self, l): return _re_backticks.sub(self._link_sym, l)
+    def link_line(self, l): return _re_linkify.sub(self._link_sym, l)
 
     def linkify(self, md):
-        if md:
-            in_fence=False
-            lines = md.splitlines()
-            for i,l in enumerate(lines):
-                if l.startswith("```"): in_fence=not in_fence
-                elif not l.startswith('    ') and not in_fence: lines[i] = self.link_line(l)
-            return '\n'.join(lines)
+        if not md: return md
+        fence = None
+        lines = md.splitlines(keepends=True)
+        for i,l in enumerate(lines):
+            if fence:
+                if re.fullmatch(rf' {{0,3}}{fence[0]}{{{len(fence)},}}\s*', l): fence = None
+            elif m := re.match(r' {0,3}(`{3,}|~{3,})', l): fence = m[1]
+            elif not l.startswith(('    ', '\t')): lines[i] = self.link_line(l)
+        return ''.join(lines)

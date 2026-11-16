@@ -7,3 +7,8 @@ website:
   description: "Create delightful software with Jupyter Notebooks"
   repo-branch: main
   repo-url: "https://github.com/AnswerDotAI/nbdev"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown
