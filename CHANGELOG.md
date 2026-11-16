@@ -2,6 +2,20 @@
 
 <!-- do not remove -->
 
+## 3.3.29
+
+### New Features
+
+- Linkify Quarto .qmd pages in serve, preserve explicit Markdown links, handle tilde and longer code fences ([#1667](https://github.com/AnswerDotAI/nbdev/issues/1667))
+- Merge word diffs into phrase-level replacements so short or whitespace-only matches no longer split rewrites into alternating words ([#1666](https://github.com/AnswerDotAI/nbdev/issues/1666))
+- add `exec_all` option to run all cells during docs rendering ([#1665](https://github.com/AnswerDotAI/nbdev/pull/1665)), thanks to [@jackhogan](https://github.com/jackhogan)
+- Support stripping specified output representations ([#1664](https://github.com/AnswerDotAI/nbdev/pull/1664)), thanks to [@jackhogan](https://github.com/jackhogan)
+
+### Bugs Squashed
+
+- Run each notebook in its own process ([#1663](https://github.com/AnswerDotAI/nbdev/pull/1663)), thanks to [@jackhogan](https://github.com/jackhogan)
+
+
 ## 3.3.28
 
 ### New Features
