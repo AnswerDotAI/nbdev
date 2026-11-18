@@ -1,12 +1,11 @@
 "Word-level terminal diffs of plain text, shared by file and notebook rendering."
 
-from difflib import unified_diff, SequenceMatcher
+from fastcore.diff import MIN_RATIO, source_diff, diff_lines
 from fastcore.utils import *
 
 __all__ = ['MAXLEN', 'MIN_RATIO', 'truncate', 'render_line', 'source_diff', 'render_source_diff']
 
 MAXLEN = 180 # Most visible characters per displayed line; 0 means unlimited
-MIN_RATIO = 0.5 # Minimum shared-word similarity for merging a changed line pair
 _dcolors = {'## …':'\x1b[34m', '# ':'\x1b[1;7m', '#':'\x1b[1m', '-':'\x1b[31m', '+':'\x1b[32m', '@':'\x1b[36m'}
 _wcolors = {'-':'\x1b[31;9m', '+':'\x1b[32m'}
 _wmarks = {'-':('[-','-]'), '+':('{+','+}')}
@@ -27,67 +26,6 @@ def render_line(
     line = truncate(line, maxlen)
     c = next((v for k,v in _dcolors.items() if line.startswith(k)), '') if color else ''
     return f'{c}{line}\x1b[0m' if c else line
-
-
-def _source_lines(old, new, context, final_newline):
-    def lines(s): return s.splitlines(keepends=True) if final_newline else [l+'\n' for l in s.splitlines()]
-    return list(unified_diff(lines(old), lines(new), n=context))
-
-
-def source_diff(
-    old_source, # Original source string
-    new_source, # New source string
-    context=3, # Unchanged lines shown either side of a change
-    final_newline=True # Distinguish a missing final newline (unnecessary for notebook cells)?
-):
-    "Unified source diff, including missing-final-newline markers."
-    lines = _source_lines(old_source, new_source, context, final_newline)
-    return '\n'.join(l.removesuffix('\n') + ('' if l.endswith('\n') else '\n\\ No newline at end of file') for l in lines)
-
-
-def _word_diff(a, b):
-    if a==b: return None
-    if SequenceMatcher(None, re.findall(r'\w+', a), re.findall(r'\w+', b), autojunk=False).ratio()<MIN_RATIO: return None
-    ta,tb = (re.findall(r'\w+|\s+|[^\w\s]', s) for s in (a,b))
-    ops = SequenceMatcher(lambda t: t.isspace(), ta, tb, autojunk=False).get_opcodes()
-    def width(op): return max(sum(map(len, ta[op[1]:op[2]])), sum(map(len, tb[op[3]:op[4]])))
-    groups = []
-    for i,(tag,i1,i2,j1,j2) in enumerate(ops):
-        # Short coincidences inside a rewrite should not split it into alternating words.
-        if tag=='equal' and 0<i<len(ops)-1 and width(ops[i])<min(width(ops[i-1]),width(ops[i+1])): tag = 'replace'
-        if tag!='equal' and groups and groups[-1][0]!='equal':
-            _,i1,_,j1,_ = groups.pop()
-            tag = 'replace'
-        groups.append((tag,i1,i2,j1,j2))
-    res = []
-    for tag,i1,i2,j1,j2 in groups:
-        if tag=='equal': res.append((' ', ''.join(ta[i1:i2])))
-        else:
-            if i2>i1: res.append(('-', ''.join(ta[i1:i2])))
-            if j2>j1: res.append(('+', ''.join(tb[j1:j2])))
-    return res
-
-
-def _refine(lines):
-    res,i = [],0
-    while i<len(lines):
-        if not lines[i].startswith('-'):
-            res.append(lines[i])
-            i += 1
-            continue
-        j = i
-        while j<len(lines) and lines[j].startswith('-'): j += 1
-        k = j
-        while k<len(lines) and lines[k].startswith('+'): k += 1
-        olds,news = lines[i:j],lines[j:k]
-        bo,bn = [],[]
-        for o,n in zip(olds,news):
-            w = _word_diff(o[1:], n[1:])
-            if w: res,bo,bn = res+bo+bn+[w],[],[]
-            else: bo,bn = bo+[o],bn+[n]
-        res += bo+olds[len(news):]+bn+news[len(olds):]
-        i = k
-    return res
 
 
 def _slice_spans(spans, start, end):
@@ -138,10 +76,10 @@ def render_source_diff(
     final_newline=True # Distinguish a missing final newline (unnecessary for notebook cells)?
 ):
     "Render source changes, cropping long word-diff lines around the first change."
-    lines = _source_lines(old_source, new_source, context, final_newline)
-    if not lines: return ''
-    body = [l.removesuffix('\n') for l in lines[2:]]
-    res = [render_line(l, maxlen, color) if isinstance(l,str) else _render_spans(l, maxlen, color) for l in _refine(body)]
+    rows = diff_lines(old_source, new_source, context=context, final_newline=final_newline, min_ratio=MIN_RATIO)
+    if not rows: return ''
+    res = [_render_spans(spans, maxlen, color) if kind=='!' else render_line(kind+''.join(t for _,t in spans), maxlen, color)
+           for kind,spans in rows]
     if final_newline:
         for name,text in (('old',old_source), ('new',new_source)):
             if text and not text.endswith('\n'): res.append(render_line(fr'\ No newline at end of {name} file', maxlen, color))

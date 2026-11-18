@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dynamic = ["version"]
-dependencies = [ "fastcore>=2.2.39", "execnb>=0.3.3", "astunparse", "ghapi>=2.0.2", "watchdog", "asttokens",
+dependencies = [ "fastcore>=2.2.45", "execnb>=0.3.3", "astunparse", "ghapi>=2.0.2", "watchdog", "asttokens",
     "setuptools", "build", "fastgit>=0.0.7", "pyyaml", ]
 
 [project.optional-dependencies]

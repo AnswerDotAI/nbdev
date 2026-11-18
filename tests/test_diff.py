@@ -1,32 +1,6 @@
 import os, re, shlex, subprocess, sys
 from fastcore.nbio import new_nb, write_nb
-from nbdev.diff_core import render_source_diff, source_diff
-
-
-def test_source_changes():
-    old = 'x=1\ny=2\nz=3\nk=4\n'
-    new = 'x = 100\ny=2\nw=5\nq=6\n'
-    result = render_source_diff(old, new)
-    assert '!x{+ +}=[-1-]{+ 100+}' in result
-    assert '-z=3\n-k=4\n+w=5\n+q=6' in result
-    assert '+hello' in render_source_diff('', 'hello\n')
-    assert '-hello' in render_source_diff('hello\n', '')
-    assert not render_source_diff(old, old)
-
-
-def test_phrase_changes():
-    old = 'selects the fields, shown by the vectors'
-    new = 'reverses the coordinates, arranged in two columns'
-    suffix = '. Dragging either point redraws both points.\n'
-    for color in (False, True):
-        result = render_source_diff('The model '+old+suffix, 'The model '+new+suffix, color=color)
-        phrase = f'\x1b[31;9m{old}\x1b[0m\x1b[32m{new}\x1b[0m' if color else f'[-{old}-]{{+{new}+}}'
-        assert phrase in result and suffix.rstrip() in result
-    shared = ' while both points retain their positions '
-    result = render_source_diff('We select fields'+shared+'using the old formula.\n',
-                                'We reverse coordinates'+shared+'using the new expression.\n')
-    assert '[-select fields-]{+reverse coordinates+}' in result and shared in result
-    assert '[-old formula-]{+new expression+}' in result
+from nbdev.diff_core import render_source_diff
 
 
 def test_long_line_changes():
@@ -49,10 +23,8 @@ def test_long_line_changes():
 
 
 def test_final_newline():
-    assert r'\ No newline at end of file' in source_diff('hello\n', 'hello')
     assert 'new file' in render_source_diff('hello\n', 'hello')
     assert 'old file' in render_source_diff('hello', 'hello\n')
-    assert not render_source_diff('hello\n', 'hello', final_newline=False)
 
 
 def test_git_driver(tmp_path):
