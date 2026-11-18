@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.30
+
+### New Features
+
+- Move word-level source diffing into fastcore.diff, render rows from `diff_lines` ([#1668](https://github.com/AnswerDotAI/nbdev/issues/1668))
+
+
 ## 3.3.29
 
 ### New Features
