@@ -139,7 +139,7 @@ def nbdev_sidebar(
     yml = yaml.dump(parsed_struct, Dumper=IndentDumper, sort_keys=False)
 
     if printit: return print(yml)
-    if not yml_path.exists() or yml_path.read_text() != yml: yml_path.write_text(yml)
+    write_if_changed(yml_path, yml)
 
 # %% ../nbs/api/14_quarto.ipynb #aabf2f15
 _quarto_yml="""project:
@@ -191,7 +191,7 @@ def refresh_quarto_yml():
     vals['doc_path'] = cfg.doc_path.name
     if 'title' not in vals: vals['title'] = vals['lib_name']
     text = _nbdev_yml.format(**vals)
-    if not ny.exists() or ny.read_text() != text: ny.write_text(text)
+    write_if_changed(ny, text)
     qy = cfg.nbs_path/'_quarto.yml'
     if 'custom_quarto_yml' in cfg: print("NB: `_quarto.yml` is no longer auto-updated. Remove `custom_quarto_yml` from `pyproject.toml`")
     if qy.exists() and not str2bool(cfg.get('custom_quarto_yml', True)): qy.unlink()
