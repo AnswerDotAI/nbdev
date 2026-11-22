@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.31
+
+### New Features
+
+- Add `write_if_changed` helper and avoid rewriting unchanged generated files during export ([#1669](https://github.com/AnswerDotAI/nbdev/issues/1669))
+
+
 ## 3.3.30
 
 ### New Features
