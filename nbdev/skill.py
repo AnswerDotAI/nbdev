@@ -28,7 +28,6 @@ notation: /why
 - readability first: code and displayed output guide readers through what code does; displayed value worth testing: assign, test, show; test the point, not incidentals like formatting; errors only where readers are likely to hit them
 - realistic values, minimal setup, reused objects, direct supporting assertions; `fastcore.test`, `expect_fail`, in ordinary code cells
 - evidence: compact `_repr_markdown_`, structured summary, plot, table, image, HTML; large output: say what matters, store focused results
-- test-serving cells, e.g. safety-only setup, glue checks: off the page; usually remove; substantive logic check → `#| hide` or pytest; discuss such changes carefully
 - reader-facing examples: no plumbing, mocks, dense comprehensions, long setup → small helper or hidden check
 - rewrites to consider: commented example → markdown and code, keeping constraint comments; numbered steps → markdown/code pairs; `print` inside a sentence → prose or displayed value; final `print(x)` → `x`; reassignment stages, blank-line groups → introduced cells; `try`/`except` → `expect_fail`; long docstring → markdown; TODO, FIXME in example comments → resolve or issue
 
