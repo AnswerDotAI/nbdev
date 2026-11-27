@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.32
+
+### New Features
+
+- Make execnb optional, add `pre_docs`/`post_docs`/`to_meta` config, use pyskills for llms.txt and fastcore.pyparse for AST parsing ([#1670](https://github.com/AnswerDotAI/nbdev/issues/1670))
+
+
 ## 3.3.31
 
 ### New Features
