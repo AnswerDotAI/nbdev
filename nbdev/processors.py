@@ -20,7 +20,6 @@ from .doclinks import *
 from .frontmatter import *
 
 from fastcore.nbio import *
-from execnb.shell import *
 from fastcore.imports import *
 from fastcore.xtras import *
 import sys,yaml
@@ -257,6 +256,8 @@ class exec_show_docs(Processor):
         self.dflt = fm_default_eval(fm)
         flags = cfg.tst_flags
         self.flags = set(flags.split() if isinstance(flags, str) else flags)
+        try: from execnb.shell import CaptureShell
+        except ImportError as e: raise CliError("`execnb` is required to execute notebooks; install with: pip install 'nbdev[exec]'") from e
         self.k = CaptureShell(profile=bool(cfg.exec_profile))
         self.k.run_cell('from nbdev.showdoc import show_doc')
 

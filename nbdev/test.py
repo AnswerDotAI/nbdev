@@ -22,7 +22,6 @@ from .process import NBProcessor, nb_lang
 from .frontmatter import nb_frontmatter
 
 from fastcore.nbio import *
-from execnb.shell import *
 
 # %% ../nbs/api/12_test.ipynb #dc8994ac
 _cur_nb = [None]
@@ -78,6 +77,11 @@ def nb_test_cells(
     return [c for c in nb.cells if not skip(c)]
 
 # %% ../nbs/api/12_test.ipynb #3f4fa1ad
+def _import_capture_shell():
+    try: from execnb.shell import CaptureShell
+    except ImportError as e: raise CliError("`execnb` is required to run notebook tests; install with: pip install 'nbdev[exec]'") from e
+    return CaptureShell
+
 def test_nb(
     fn,  # file name of notebook to test
     skip_flags=None,  # list of flags marking cells to skip
@@ -110,7 +114,7 @@ def test_nb(
 
         start = time.time()
         if profile is None: profile = bool(get_config(fn.parent).exec_profile)
-        k = CaptureShell(fn, profile=profile)
+        k = _import_capture_shell()(fn, profile=profile)
         _cur_shell[0] = k
         if do_print: print(f'Starting {fn}')
         try:
@@ -166,6 +170,7 @@ def nbdev_test(
     files = nbglob(path, as_path=True, **kwargs)
     files = [f.absolute() for f in sorted(files) if _keep_file(f, ignore_fname)]
     if len(files)==0: return print('No files were eligible for testing')
+    _import_capture_shell()
 
     if n_workers is None: n_workers = 0 if len(files)==1 else min(num_cpus(), 8)
     wd_pth = cfg.nbs_path

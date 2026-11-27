@@ -8,7 +8,7 @@ Docs: https://nbdev.fast.ai/api/serve.html.md"""
 __all__ = ['proc_nbs']
 
 # %% ../nbs/api/17_serve.ipynb #6899a335
-import ast
+from fastcore.pyparse import parse_py_file
 from shutil import rmtree,copy2
 from fnmatch import fnmatch
 
@@ -24,17 +24,11 @@ import nbdev.serve_drv
 # %% ../nbs/api/17_serve.ipynb #65766a33
 def _is_qpy(path:Path):
     "Is `path` a py script starting with frontmatter?"
-    path = Path(path)
-    if not path.suffix=='.py': return
-    p = ast.parse(path.read_text(encoding='utf-8'))
-#     try: p = ast.parse(path.read_text(encoding='utf-8'))
-#     except: return
-    if not p.body: return
-    a = p.body[0]
-    if isinstance(a, ast.Expr) and isinstance(a.value, ast.Constant):
-        v = a.value.value.strip()
-        vl = v.splitlines()
-        if vl[0]=='---' and vl[-1]=='---': return '\n'.join(vl[1:-1])
+    if Path(path).suffix != '.py': return
+    m = parse_py_file(path, safe=True)
+    if not (m and m.doc_node): return
+    vl = m.doc_node.value.strip().splitlines()
+    if vl and vl[0]=='---' and vl[-1]=='---': return '\n'.join(vl[1:-1])
 
 # %% ../nbs/api/17_serve.ipynb #abc3835a
 def _proc_file(s, cache, path):

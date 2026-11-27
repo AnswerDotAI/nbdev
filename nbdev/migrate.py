@@ -241,7 +241,7 @@ def _nbdev_migrate_config(d, path):  # Config dict from settings.ini
     set_version(path/lib_path, d.get('version', '0.0.1'))
     lib_name = d.get('lib_name', repo)
     txt = pyproject_tmpl.format(name=lib_name, lib_path=lib_path, description=d.get('description', ''),
-        min_python=d.get('min_python', '3.10'), license=_license_map.get(d.get('license', ''), d.get('license', 'Apache-2.0')),
+        min_python=d.get('min_python', '3.11'), license=_license_map.get(d.get('license', ''), d.get('license', 'Apache-2.0')),
         author=d.get('author', ''), author_email=d.get('author_email', ''),
         keywords=d.get('keywords', 'nbdev').split(), git_url=git_url, doc_url=doc_url, branch=branch)
     # Add dependencies (combine requirements + pip_requirements)

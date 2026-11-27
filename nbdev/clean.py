@@ -77,20 +77,20 @@ def _clean_cell_output(cell, clean_ids, allowed_out_meta_keys):
 
 # %% ../nbs/api/11_clean.ipynb #2ba79c93
 def _clean_cell(cell, clear_all, allowed_metadata_keys, clean_ids, allowed_out_meta_keys):
-    "Clean `cell` by removing superfluous metadata or everything except the input if `clear_all`"
+    "Clean `cell` by removing superfluous metadata, or outputs and non-`nbdev` cell metadata if `clear_all`"
     if 'execution_count' in cell: cell['execution_count'] = None
     if 'outputs' in cell:
         if clear_all: cell['outputs'] = []
         else:         _clean_cell_output(cell, clean_ids, allowed_out_meta_keys)
     if cell['source'] == ['']: cell['source'] = []
-    cell['metadata'] = {} if clear_all else {
-        k:v for k,v in cell['metadata'].items() if k in allowed_metadata_keys}
+    keep = {'nbdev'} if clear_all else allowed_metadata_keys
+    cell['metadata'] = {k:v for k,v in cell['metadata'].items() if k in keep}
     if 'id' not in cell: cell['id'] = rtoken_hex(4)
 
 # %% ../nbs/api/11_clean.ipynb #e8101222
 def clean_nb(
     nb, # The notebook to clean
-    clear_all=False, # Remove all cell metadata and cell outputs?
+    clear_all=False, # Remove cell outputs and non-nbdev cell metadata?
     allowed_metadata_keys:list=None, # Preserve the list of keys in the main notebook metadata
     allowed_cell_metadata_keys:list=None, # Preserve the list of keys in cell level metadata
     clean_ids=True, # Remove ids from plaintext reprs?
@@ -138,7 +138,9 @@ def _cmt_dirs(cell):
 
 def _rm_dir_lines(cell, dirs, code, names):
     "Rewrite `cell` source without the directive lines in `names`"
-    cell.set_source(''.join([o for o in dirs if (t:=_directive(o, cell.lang_)) is None or t[0] not in names] + code))
+    keep = [o for o in dirs if (t:=_directive(o, cell.lang_)) is None or t[0] not in names]
+    while keep and not keep[0].strip(): keep.pop(0)
+    cell.set_source(''.join(keep + code))
 
 def _to_meta(cell, names):
     "Move comment directives in `names` to the cell's `nbdev` metadata key"
@@ -176,13 +178,17 @@ def _hoist_nb_meta(nb, names=('default_exp',)):
         left = set(c.directives) - {'hide'}
         if not left and not ''.join(c._partition()[1]).strip(): nb.cells.remove(c)
 
+def _split_names(x): return x.split() if isinstance(x, str) else list(x or ())
+
 def _dir_moves(nb, dirs=False, to_meta=None, to_comments=None, nb_meta=False):
     "Apply directive migrations to loaded notebook dict `nb` in place"
     nbo = dict2nb(nb)
     if to_meta:
-        for c in nbo.cells: _to_meta(c, to_meta.split())
+        names = _split_names(to_meta)
+        for c in nbo.cells: _to_meta(c, names)
     if to_comments:
-        for c in nbo.cells: _to_comments(c, to_comments.split())
+        names = _split_names(to_comments)
+        for c in nbo.cells: _to_comments(c, names)
     if nb_meta: _hoist_nb_meta(nbo)
     if dirs:
         for c in nbo.cells: _canon_dirs(c)
@@ -195,7 +201,10 @@ def _nbdev_clean(nb, path=None, clear_all=None, repair=True, dirs=False, to_meta
     allowed_metadata_keys = cfg.get("allowed_metadata_keys") or []
     allowed_cell_metadata_keys = cfg.get("allowed_cell_metadata_keys") or []
     allowed_out_metadata_keys = cfg.get("allowed_out_metadata_keys") or []
-    if dirs or to_meta or to_comments or nb_meta: _dir_moves(nb, dirs, to_meta, to_comments, nb_meta)
+    to_c = _split_names(to_comments)
+    to_m = _split_names(cfg.get("to_meta") if to_meta is None else to_meta)
+    if to_meta is None and to_c: to_m = [k for k in to_m if k not in to_c]
+    if dirs or to_m or to_c or nb_meta: _dir_moves(nb, dirs, to_m, to_c, nb_meta)
     clean_nb(nb, clear_all, allowed_metadata_keys, allowed_cell_metadata_keys, cfg.clean_ids, allowed_out_metadata_keys, repair=repair)
     if path: nbdev_trust.__wrapped__(path)
 
@@ -203,12 +212,12 @@ def _nbdev_clean(nb, path=None, clear_all=None, repair=True, dirs=False, to_meta
 @call_parse
 def nbdev_clean(
     fname:str=None, # A notebook name or glob to clean
-    clear_all:bool=False, # Remove all cell metadata and cell outputs?
+    clear_all:bool=False, # Remove cell outputs and non-nbdev cell metadata?
     disp:bool=False,  # Print the cleaned outputs
     stdin:bool=False, # Read notebook from input stream
     repair:bool_arg=True, # Fix structural problems, e.g. stray outputs on non-code cells (see `repair_nb`)?
     dirs:bool=False, # Rewrite comment directives in canonical form?
-    to_meta:str=None, # Space-separated directive names to move from comments to cell metadata
+    to_meta:str=None, # Space-separated directive names to move from comments to cell metadata (defaults to config's `to_meta`)
     to_comments:str=None, # Space-separated directive names to move from cell metadata to comments
     nb_meta:bool=False # Move `default_exp` into notebook metadata?
 ):

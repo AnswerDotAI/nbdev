@@ -91,7 +91,7 @@ def _install_nbdev():
     return div('''#### pip
 
 ```sh
-pip install -U nbdev
+pip install -U 'nbdev[exec]'
 ```
 
 #### conda

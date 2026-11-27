@@ -220,6 +220,7 @@ def _pre_docs(path=None, n_workers:int=defaults.cpus, **kwargs):
     nbdev.doclinks._build_modidx()
     nbdev_sidebar.__wrapped__(path=path, **kwargs)
     cache = proc_nbs(path, n_workers=n_workers, **kwargs)
+    for cmd in listify(cfg.pre_docs): subprocess.run(cmd, cwd=cache, shell=True, check=True)
     return cache,cfg,path
 
 # %% ../nbs/api/14_quarto.ipynb #e3806fa9
@@ -346,6 +347,7 @@ def nbdev_docs(
     shutil.rmtree(cfg.doc_path, ignore_errors=True)
     move(cache/cfg.doc_path.name, cfg.config_path)
     _fix_quarto_nav(cfg.doc_path)
+    for cmd in listify(cfg.post_docs): subprocess.run(cmd, cwd=cfg.doc_path, shell=True, check=True)
 
 # %% ../nbs/api/14_quarto.ipynb #23886f9c
 @call_parse

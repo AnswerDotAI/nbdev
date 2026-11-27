@@ -18,11 +18,12 @@ from fastcore.script import *
 from fastcore.style import *
 from fastcore.xdg import *
 
-import ast,importlib,re
-from IPython.display import Markdown
-from fastcore.nbio import read_nb,NbCell
+from fastcore.pyparse import parse_py, parse_py_file
+import importlib,re
+from fastcore.nbio import read_nb
 
 import tomllib
+from pyskills.llms import pkg_llms as _pkg_llms, update_llms_txt as _update_llms_txt
 
 # %% ../nbs/api/01_config.ipynb #117128e6
 pyproject_nm = 'pyproject.toml'
@@ -114,7 +115,7 @@ def nbdev_create_config(
     author_email:str=None, # Package author's email address
     description:str='', # Short summary of the package
     path:str='.', # Path to create config file
-    min_python:str='3.10', # Minimum Python version
+    min_python:str='3.11', # Minimum Python version
     license:str='Apache-2.0', # License (SPDX identifier)
 ):
     "Create a pyproject.toml config file."
@@ -170,7 +171,7 @@ def _find_nbdev_pyproject(path=None):
 # %% ../nbs/api/01_config.ipynb #3dac70e0
 nbdev_defaults = dict(nbs_path='nbs', doc_path='_docs', tst_flags='notest', recursive=True, readme_nb='index.ipynb',
     clean_ids=True, clear_all=False, put_version_in_init=True, jupyter_hooks=False, custom_sidebar=False, branch='main',
-    doc_procs=[], export_procs=[], exec_profile=True, exec_all=False, cell_timeout=600)
+    doc_procs=[], export_procs=[], pre_docs=[], post_docs=[], to_meta=[], exec_profile=True, exec_all=False, cell_timeout=600)
 
 _path_keys = 'lib_path', 'nbs_path', 'doc_path'
 
@@ -185,7 +186,7 @@ class ConfigToml(AttrDict):
         self.title = self.get('title') or self.lib_name
         self.description = proj.get('description', '')
         self.keywords = proj.get('keywords', [])
-        self.min_python = (proj.get('requires-python') or '>=3.9').lstrip('>=')
+        self.min_python = (proj.get('requires-python') or '>=3.11').lstrip('>=')
         auths = proj.get('authors') or [{}]
         self.author = auths[0].get('name')
         self.author_email = auths[0].get('email')
@@ -261,7 +262,9 @@ def create_output(txt, mime):
         execution_count=1, metadata={}, output_type="execute_result")]
 
 # %% ../nbs/api/01_config.ipynb #5a4d8e52
-def show_src(src, lang='python'): return Markdown(f'```{lang}\n{src}\n```')
+def show_src(src, lang='python'):
+    from IPython.display import Markdown
+    return Markdown(f'```{lang}\n{src}\n```')
 
 # %% ../nbs/api/01_config.ipynb #14a9c607
 def nbpath2html(p):
@@ -371,15 +374,14 @@ def add_init(path=None):
 # %% ../nbs/api/01_config.ipynb #a01b98bb
 def _mod_docstr(py_path):
     "Module docstring of `py_path` via ast, without importing ('' if none or unparseable)"
-    try: return ast.get_docstring(ast.parse(Path(py_path).read_text(encoding='utf-8'))) or ''
-    except SyntaxError: return ''
+    return m.doc if (m := parse_py_file(py_path, safe=True)) else ''
 
 def _substantive(docstr):
     "Does `docstr` say more than the default summary line plus `Docs:` link?"
     return len(docstr.strip().splitlines())>3
 
 def _pkg_mods(path):
-    "`(name, summary, url)` per module of `path` with a substantive docstring: dotted name, one-line first para, `Docs:` url"
+    "`(name, summary)` per module of `path` with a substantive docstring: dotted name and one-line first para"
     res = []
     for p in sorted(Path(path).rglob('*.py')):
         if p.name.startswith('_'): continue
@@ -387,8 +389,7 @@ def _pkg_mods(path):
         if not _substantive(d): continue
         nm = '.'.join((Path(path).name, *p.relative_to(path).with_suffix('').parts))
         summ = ' '.join(d.split('\n\n')[0].splitlines())
-        last = d.strip().splitlines()[-1]
-        res.append((nm, summ, last[5:].strip() if last.startswith('Docs:') else ''))
+        res.append((nm, summ))
     return res
 
 def _index_mdoc(idx_path):
@@ -396,31 +397,25 @@ def _index_mdoc(idx_path):
     if not idx_path or not Path(idx_path).exists(): return ''
     docs = []
     for c in read_nb(idx_path).cells:
+        if not ({'export','exportd'} & set(c.directives)): continue
         lines = c.source.splitlines()
         n = 0
         while n<len(lines) and lines[n].startswith('#|'): n += 1
-        dirs = {l[2:].strip().split()[0] for l in lines[:n] if l[2:].strip()}
         body = '\n'.join(lines[n:]).strip()
-        if not body or not {'export','exportd'}&dirs: continue
-        docs.append(body if c.cell_type=='markdown' else fenced(body, 'python'))
+        if body: docs.append(body if c.cell_type=='markdown' else fenced(body, 'python'))
     return '\n\n'.join(docs)
 
-def _pkg_docparts(path=None, desc=None, index_nb=None):
-    "`(path, desc, intro, mods)` shared by `pkg_mdoc` and `pkg_llms`"
+def pkg_mdoc(path=None, desc=None, index_nb=None):
+    "Package docstring for `path`: `desc`, intro from `index_nb`, and a line per module with a substantive docstring"
     path = Path(path or get_config().lib_path)
     mods = _pkg_mods(path)
     if index_nb is None:
         cfg = get_config()
         if path==Path(cfg.lib_path): index_nb = cfg.nbs_path/cfg.readme_nb
     intro = _index_mdoc(index_nb)
-    if (mods or intro) and desc is None: desc = get_config().description
-    return path,desc,intro,mods
-
-def pkg_mdoc(path=None, desc=None, index_nb=None):
-    "Package docstring for `path`: `desc`, intro from `index_nb`, and a line per module with a substantive docstring"
-    path,desc,intro,mods = _pkg_docparts(path, desc, index_nb)
     if not mods and not intro: return ''
-    mods = ['Modules:', '\n'.join(f'- `{nm}`: {summ}' for nm,summ,url in mods)] if mods else []
+    if desc is None: desc = get_config().description
+    mods = ['Modules:', '\n'.join(f'- `{nm}`: {summ}' for nm,summ in mods)] if mods else []
     return '\n\n'.join(filter(None, [desc, intro, *mods]))
 
 # %% ../nbs/api/01_config.ipynb #a03a0007
@@ -430,11 +425,9 @@ def update_init_mdoc(path=None, desc=None):
     mdoc = pkg_mdoc(path, desc=desc)
     fn = path/'__init__.py'
     txt = fn.read_text(encoding='utf-8') if fn.exists() else ''
-    body = ast.parse(txt).body
-    rest,cur = txt,''
-    if body and isinstance(body[0], ast.Expr) and isinstance(getattr(body[0].value, 'value', None), str):
-        cur = body[0].value.value
-        rest = ''.join(txt.splitlines(keepends=True)[body[0].end_lineno:])
+    m = parse_py(txt)
+    cur = m.doc_node.value if m.doc_node else ''
+    rest = ''.join(txt.splitlines(keepends=True)[m.doc_node.end_lineno:]) if m.doc_node else txt
     if not mdoc:
         if '\nModules:\n' not in cur: return
         mdoc = desc if desc is not None else get_config().description
@@ -443,32 +436,54 @@ def update_init_mdoc(path=None, desc=None):
     write_if_changed(fn, res)
 
 # %% ../nbs/api/01_config.ipynb #f9912ef7
-_llms_marker = '<!-- Generated by nbdev-export; edit the index notebook, not this file -->'
+_re_src_nb = re.compile(r'^# AUTOGENERATED! DO NOT EDIT! File to edit: (.+?\.ipynb)\.', re.M)
 
-def _modline(nm, summ, url):
-    "llms.txt list line: linked when `url` is a single URL, else the `Docs:` text carried verbatim"
-    if url and ' ' not in url: return f'- [{nm}]({url}): {summ}'
-    return f'- `{nm}`: {summ} (Docs: {url})' if url else f'- `{nm}`: {summ}'
+def _nb_mod_urls(path, nbs_path):
+    "Relative `.html.md` doc URL per module of `path` matching a notebook or `.qmd` in `nbs_path`"
+    if not nbs_path or not Path(nbs_path).exists(): return {}
+    path,nbs_path,res = Path(path).resolve(),Path(nbs_path).resolve(),{}
+    for p in sorted(path.rglob('*.py')):
+        if p.name.startswith('_'): continue
+        if not (m := _re_src_nb.search(p.read_text(encoding='utf-8'))): continue
+        try: rel = (p.parent/m.group(1)).resolve().relative_to(nbs_path)
+        except ValueError: continue
+        if (nbs_path/rel).exists():
+            nm = '.'.join((path.name, *p.relative_to(path).with_suffix('').parts))
+            res[nm] = f'{nbpath2html(rel).as_posix()}.md'
+    for ext in ('*.ipynb', '*.qmd'):
+        for f in sorted(nbs_path.rglob(ext)):
+            rel = f.relative_to(nbs_path)
+            if any(pt.startswith(('.', '_')) for pt in rel.parts): continue
+            html = nbpath2html(rel) if rel.suffix=='.ipynb' else rel.with_suffix('.html')
+            stem = nbpath2html(rel).stem
+            cands = [(*rel.parent.parts, stem)]
+            if rel.parts[0] == 'api': cands.append((*rel.parent.parts[1:], stem))
+            for parts in cands:
+                nm = '.'.join((path.name, *parts))
+                if nm not in res and path.joinpath(*parts).with_suffix('.py').exists():
+                    res[nm] = f'{html.as_posix()}.md'
+                    break
+    return res
 
-def pkg_llms(path=None, desc=None, index_nb=None):
-    "llms.txt for the package at `path`, from the same sources as `pkg_mdoc` ('' if no intro or modules)"
-    path,desc,intro,mods = _pkg_docparts(path, desc, index_nb)
-    if not mods and not intro: return ''
-    if mods:
-        links = '\n'.join(_modline(*o) for o in mods)
-        mods = [f'## Modules\n\n{links}']
-    parts = [f'# {path.name}', f'> {desc}' if desc else '', intro, *mods, _llms_marker]
-    return '\n\n'.join(filter(None, parts)) + '\n'
+# %% ../nbs/api/01_config.ipynb #5a309884
+def _nb_llms_kw(path=None, base_url=None, nbs_path=None, mod_urls=None):
+    p = Path(path).expanduser() if path is not None else Path(get_config().lib_path)
+    cfg = get_config(p) if is_nbdev(p) else None
+    if cfg and p.resolve()==cfg.config_path.resolve(): p = Path(cfg.lib_path)
+    if cfg and p.resolve()==Path(cfg.lib_path).resolve():
+        nbs_path,base_url = ifnone(nbs_path, cfg.nbs_path),ifnone(base_url, cfg.doc_url or '')
+    return p, base_url or '', {**_nb_mod_urls(p, nbs_path), **(mod_urls or {})}, nbs_path
 
-def update_llms_txt(path=None, fn=None, desc=None, index_nb=None):
-    "Write `pkg_llms` to `fn` when it's absent or generated (has the nbdev marker)"
-    if fn is None: fn = get_config().nbs_path/'llms.txt'
-    txt = pkg_llms(path, desc=desc, index_nb=index_nb)
-    if fn.exists() and _llms_marker not in fn.read_text(encoding='utf-8'): return
-    if not txt:
-        if fn.exists(): fn.unlink()
-        return
-    write_if_changed(fn, txt)
+def pkg_llms(path=None, base_url=None, nbs_path=None, mod_urls=None):
+    "`(llms_txt, companions)` for the package at `path`, built from `skill.py` via `pyskills.llms`"
+    p,base_url,urls,_ = _nb_llms_kw(path, base_url, nbs_path, mod_urls)
+    return _pkg_llms(p, base_url=base_url, mod_urls=urls)
+
+def update_llms_txt(path=None, fn=None, base_url=None, nbs_path=None, mod_urls=None):
+    "Write `llms.txt` (and `llms-*.txt` companions) to `fn` from `skill.py` via `pyskills.llms`"
+    p,base_url,urls,nbs_path = _nb_llms_kw(path, base_url, nbs_path, mod_urls)
+    if fn is None and nbs_path: fn = Path(nbs_path)/'llms.txt'
+    return _update_llms_txt(p, fn=fn, base_url=base_url, mod_urls=urls)
 
 # %% ../nbs/api/01_config.ipynb #95cebda6
 def import_obj(s):
@@ -493,13 +508,11 @@ def _basic_export_nb(fname, name, dest=None):
     fname,dest = Path(fname),Path(dest)
     nb = read_nb(fname)
 
-    # grab the source from all the cells that have an `export` comment
-    cells = L(cell for cell in nb.cells if re.match(r'#\s*\|export', cell.source))
+    # grab the source from all the exported cells
+    cells = L(cell for cell in nb.cells if {'export', 'exports', 'exporti'} & cell.directives.keys())
 
     # find all the exported functions, to create `__all__`:
-    trees = cells.map(NbCell.parsed_).concat()
-    funcs = trees.filter(risinstance((ast.FunctionDef,ast.ClassDef))).attrgot('name')
-    exp_funcs = [f for f in funcs if f[0]!='_']
+    exp_funcs = [d.name for c in cells if (m := parse_py(c.source, safe=True)) for d in m.defs if d.is_public]
 
     # write out the file
     with (dest/name).open('w',encoding="utf-8") as f:

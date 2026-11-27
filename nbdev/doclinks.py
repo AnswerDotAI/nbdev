@@ -17,11 +17,11 @@ from fastcore.script import *
 from fastcore.utils import *
 from fastcore.meta import delegates
 from fastcore.net import urlread
+from fastcore.pyparse import parse_py, parse_py_file, patch_targets
 
-import ast,builtins,contextlib
+import builtins,contextlib
 import importlib
 
-from astunparse import unparse
 from io import BytesIO
 from collections import defaultdict
 from pprint import pformat
@@ -32,25 +32,12 @@ from types import ModuleType
 from importlib.metadata import entry_points
 
 # %% ../nbs/api/05_doclinks.ipynb #a53fc2bb
-def _sym_nm(klas, sym): return f'{unparse(klas).strip()}.{sym.name}'
-
-def _binop_leafs(bo, o):
-    "List of all leaf nodes under a `BinOp`"
-    def f(b): return _binop_leafs(b, o) if isinstance(b, ast.BinOp) else [_sym_nm(b,o)]
-    return f(bo.left) + f(bo.right)
-
 def patch_name(o):
     "If `o` is decorated with `patch` or `patch_to`, return its class-prefix name"
-    if not isinstance(o, (ast.FunctionDef,ast.AsyncFunctionDef)): return o.name
-    d = first([d for d in o.decorator_list if decor_id(d).startswith('patch')])
-    if not d: return o.name
-    nm = decor_id(d)
-    if nm=='patch': 
-        a = o.args.args[0].annotation
-        if isinstance(a, ast.BinOp): return _binop_leafs(a, o)
-    elif nm=='patch_to': a = d.args[0]
-    else: return o.name
-    return _sym_nm(a,o)
+    ts = patch_targets(o)
+    if not ts: return o.name
+    nms = [f'{t}.{o.name}' for t in ts]
+    return nms[0] if len(nms)==1 else nms
 
 # %% ../nbs/api/05_doclinks.ipynb #7552f6c8
 def _iter_py_cells(p):
@@ -79,7 +66,6 @@ def _get_modidx(py_path, code_root, nbs_path):
     rel_name = py_path.resolve().relative_to(code_root).as_posix()
     mod_name = '.'.join(rel_name.rpartition('.')[0].split('/'))  # module name created by py_path
 
-    _def_types = ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef
     d = {}
     for cell in _iter_py_cells(py_path):
         if 'auto' in cell.nb: continue
@@ -87,11 +73,10 @@ def _get_modidx(py_path, code_root, nbs_path):
 
         def _stor(nm):
             for n in L(nm): d[f'{mod_name}.{n}'] = f'{loc.as_posix()}#{n.lower()}',rel_name
-        for tree in ast.parse(cell.code).body:
-            if isinstance(tree, _def_types): _stor(patch_name(tree))
-            if isinstance(tree, ast.ClassDef):
-                for t2 in tree.body:
-                    if isinstance(t2, _def_types): _stor(f'{tree.name}.{t2.name}')
+        m = parse_py(cell.code)
+        for sym in m.defs: _stor(patch_name(sym))
+        for cls in m.classes:
+            for sub in cls.defs: _stor(sub.qualname)
     return {mod_name: d} if d else {}
 
 # %% ../nbs/api/05_doclinks.ipynb #587df0d4
@@ -183,7 +168,7 @@ def create_index(url, pre=None):
     return syms
 
 # %% ../nbs/api/05_doclinks.ipynb #98a6ee7a
-import importlib,ast
+import importlib
 from functools import lru_cache
 
 # %% ../nbs/api/05_doclinks.ipynb #c30ec2fe
@@ -199,13 +184,9 @@ def _get_exps(mod):
     "Get the line numbers for function and class definitions in module"
     mf = _find_mod(mod)
     if not mf: return {}
-    txt = mf.read_text(encoding='utf-8')
-    _def_types = ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef
-    d = {}
-    for tree in ast.parse(txt).body:
-        if isinstance(tree, _def_types):
-            for t in L(patch_name(tree)): d[t] = tree.lineno
-        if isinstance(tree, ast.ClassDef): d.update({tree.name+"."+t2.name: t2.lineno for t2 in tree.body if isinstance(t2, _def_types)})
+    m = parse_py_file(mf)
+    d = {t: sym.lineno for sym in m.defs for t in L(patch_name(sym))}
+    for cls in m.classes: d.update({sub.qualname: sub.lineno for sub in cls.defs})
     return d
 
 def _lineno(sym, fname): return _get_exps(fname).get(sym, None) if fname else None
@@ -241,9 +222,7 @@ def _build_lookup_table(strip_libs=None, incl_libs=None, skip_mods=None):
     strip_libs = L(strip_libs.split() if isinstance(strip_libs, str) else strip_libs)
     if incl_libs is not None: incl_libs = (L(incl_libs)+strip_libs).unique()
     entries = {}
-    try: eps = entry_points(group='nbdev')
-    # Python 3.9 fallback - entry_points() doesn't accept group parameter
-    except TypeError: eps = entry_points().get('nbdev', [])
+    eps = entry_points(group='nbdev')
     
     for o in eps:
         if incl_libs is not None and o.dist.name not in incl_libs: continue

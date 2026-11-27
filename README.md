@@ -30,8 +30,10 @@ nbdev works on macOS, Linux, and most Unix-style operating systems. It works on 
 You can install nbdev with pip:
 
 ``` sh
-pip install nbdev
+pip install 'nbdev[exec]'
 ```
+
+Install bare `pip install nbdev` if you only need export, clean, merge, diff, or release tools without notebook execution (`nbdev-test` and Python `nbdev-docs`).
 
 Note that `nbdev` must be installed into the same Python environment that you use for both Jupyter and your project.
 

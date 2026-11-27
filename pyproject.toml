@@ -18,11 +18,12 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dynamic = ["version"]
-dependencies = [ "fastcore>=2.2.45", "execnb>=0.3.3", "astunparse", "ghapi>=2.0.2", "watchdog", "asttokens",
-    "setuptools", "build", "fastgit>=0.0.7", "pyyaml", ]
+dependencies = [ "fastcore>=2.2.50", "astunparse", "ghapi>=2.0.2", "watchdog", "asttokens",
+    "setuptools", "build", "fastgit>=0.0.7", "pyyaml", "pyskills>=0.0.37", ]
 
 [project.optional-dependencies]
-dev = [ "ipywidgets", "nbdev-numpy", "nbdev-stdlib", "pandas", "matplotlib", "black", "svg.py", "pysym2md>=0.0.6", "llms-txt", "sphinx", "plum-dispatch", "nbclient", "ipykernel", "pytest", ]
+exec = [ "execnb>=0.3.3" ]
+dev = [ "nbdev[exec]", "ipywidgets", "nbdev-numpy", "nbdev-stdlib", "pandas", "matplotlib", "black", "svg.py", "pysym2md>=0.0.6", "sphinx", "plum-dispatch", "nbclient", "ipykernel", "pytest", ]
 
 [project.urls]
 Repository = "https://github.com/AnswerDotAI/nbdev"
@@ -79,12 +80,13 @@ version = {attr = "nbdev.__version__"}
 include = ["nbdev"]
 
 [tool.nbdev]
+to_meta = ["export"]
 allowed_metadata_keys = ['solveit']
 custom_sidebar = true
 readme_nb = "getting_started.ipynb"
 jupyter_hooks = true
 allowed_cell_metadata_keys = ['solveit_ai']
-
+pre_docs = ["pysym2md --output-file apilist.txt nbdev"]
 
 [tool.chkstyle]
 skip_paths = ["_modidx.py"]
