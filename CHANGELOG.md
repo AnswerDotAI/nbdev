@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 3.3.33
+
+### New Features
+
+- Use fastcore 2.3.1 for version helpers, `read_toml`, and `write_if_changed` ([#1671](https://github.com/AnswerDotAI/nbdev/issues/1671))
+
+
 ## 3.3.32
 
 ### New Features
