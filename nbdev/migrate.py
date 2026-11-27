@@ -9,11 +9,12 @@ __all__ = ['MigrateProc', 'fp_md_fm', 'migrate_nb', 'migrate_md', 'nbdev_migrate
 
 # %% ../nbs/api/16_migrate.ipynb #5b687fa0-dc50-48df-8bfc-e98df34e7572
 from .process import *
-from fastcore.nbio import first_code_ln, langs
+from fastcore.nbio import first_code_ln, langs, read_nb
 from .frontmatter import *
 from .frontmatter import _fm2dict_md, _re_fm_md, _dict2fm, _insertfm
 from .processors import *
-from .config import get_config, read_nb, set_version, pyproject_tmpl, nbdev_defaults
+from .config import get_config, pyproject_tmpl, nbdev_defaults
+from fastcore.project import set_version
 from .sync import write_nb
 from .showdoc import show_doc
 from fastcore.all import *

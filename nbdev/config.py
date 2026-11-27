@@ -6,9 +6,8 @@ Docs: https://nbdev.fast.ai/api/config.html.md"""
 
 # %% auto #0
 __all__ = ['pyproject_nm', 'pyproject_tmpl', 'nbdev_defaults', 'pyproj_tmpl', 'nbdev_create_config', 'ConfigToml', 'get_config',
-           'is_nbdev', 'write_if_changed', 'create_output', 'show_src', 'nbpath2html', 'nbpath2docurl', 'read_version',
-           'set_version', 'bump_version', 'update_version', 'update_proj', 'add_init', 'pkg_mdoc', 'update_init_mdoc',
-           'pkg_llms', 'update_llms_txt', 'import_obj', 'write_cells']
+           'is_nbdev', 'create_output', 'show_src', 'nbpath2html', 'nbpath2docurl', 'update_version', 'update_proj',
+           'add_init', 'pkg_mdoc', 'update_init_mdoc', 'pkg_llms', 'update_llms_txt', 'import_obj', 'write_cells']
 
 # %% ../nbs/api/01_config.ipynb #6fd14ecd
 from fastcore.docments import *
@@ -22,7 +21,7 @@ from fastcore.pyparse import parse_py, parse_py_file
 import importlib,re
 from fastcore.nbio import read_nb
 
-import tomllib
+from fastcore.project import read_version, set_version
 from pyskills.llms import pkg_llms as _pkg_llms, update_llms_txt as _update_llms_txt
 
 # %% ../nbs/api/01_config.ipynb #117128e6
@@ -149,13 +148,9 @@ def nbdev_create_config(
         print(f'{cfg_file} created.')
 
 # %% ../nbs/api/01_config.ipynb #0e56064f
-def _load_toml(p):
-    "Load TOML file at `p` into a dict"
-    return tomllib.loads(Path(p).read_text(encoding='utf-8'))
-
 def _has_nbdev(p):
     "True if pyproject.toml at `p` has [tool.nbdev]"
-    try: return _load_toml(p).get('tool', {}).get('nbdev') is not None
+    try: return Path(p).read_toml().get('tool', {}).get('nbdev') is not None
     except Exception: return False
 
 def _find_nbdev_pyproject(path=None):
@@ -225,7 +220,7 @@ class ConfigToml(AttrDict):
 def _user_config():
     "Load user config from ~/.config/nbdev/config.toml if it exists"
     p = xdg_config_home() / _nbdev_home_dir / _user_cfg_name
-    if p.exists(): return _load_toml(p)
+    if p.exists(): return p.read_toml()
     return {}
 
 # %% ../nbs/api/01_config.ipynb #f6660849
@@ -233,7 +228,7 @@ def get_config(path=None, also_settings=False):
     "Return nbdev config."
     cfg_file = _find_nbdev_pyproject(path)
     if cfg_file is not None:
-        d = _load_toml(cfg_file)
+        d = cfg_file.read_toml()
         user = _user_config()
         nbdev = {**user, **d.get('tool', {}).get('nbdev', {})}
         return ConfigToml(nbdev, d.get('project', {}), cfg_file)
@@ -246,14 +241,6 @@ def get_config(path=None, also_settings=False):
 
 # %% ../nbs/api/01_config.ipynb #6939b40e
 def is_nbdev(path=None): return _find_nbdev_pyproject(path) is not None
-
-# %% ../nbs/api/01_config.ipynb #e3552092
-def write_if_changed(p, txt, encoding='utf-8'):
-    "Write `txt` to `p` only if missing or content differs; return whether written"
-    p = Path(p)
-    if p.exists() and p.read_text(encoding=encoding) == txt: return False
-    p.write_text(txt, encoding=encoding)
-    return True
 
 # %% ../nbs/api/01_config.ipynb #6e89fe6c
 def create_output(txt, mime):
@@ -297,47 +284,10 @@ cache-keys = [{ file = "pyproject.toml" }, { file = "setup.py" }]
 """
 
 # %% ../nbs/api/01_config.ipynb #f1c85f45
-_re_version = re.compile(r'^__version__\s*=\s*[\'"]([^\'"]+)[\'"]', re.MULTILINE)
 _re_proj = re.compile(r'(\[project\](?:\n(?!\[).*)*?\n)name\s*=\s*"[^"]*"')
 _re_reqpy = re.compile(r'^requires-python\s*=\s*".*$', re.MULTILINE)
 _init = '__init__.py'
 _pyproj = 'pyproject.toml'
-
-# %% ../nbs/api/01_config.ipynb #680e62a5
-def read_version(path):
-    "Read __version__ from `path/__init__.py`, or None if not found"
-    fname = Path(path)/_init
-    if not fname.exists(): return None
-    m = _re_version.search(fname.read_text())
-    return m.group(1) if m else None
-
-# %% ../nbs/api/01_config.ipynb #cf0fc6a3
-def set_version(path, version):
-    "Set __version__ in `path/__init__.py`"
-    path = Path(path)
-    path.mkdir(exist_ok=True, parents=True)
-    fname = path/_init
-    ver_line = f'__version__ = "{version}"'
-    code = fname.read_text(encoding='utf-8') if fname.exists() else ''
-    if _re_version.search(code) is None: code = ver_line + "\n" + code
-    else: code = _re_version.sub(ver_line, code)
-    write_if_changed(fname, code)
-
-# %% ../nbs/api/01_config.ipynb #d00889e5
-def bump_version(v, part=None, unbump=False):
-    "Bump `.postN` by default when present, otherwise a semver part counted from the right"
-    v = v or '0.0.0'
-    post = re.fullmatch(r'(.*)\.post(\d+)', v)
-    if part is None and post:
-        n = max(0, int(post[2]) + (-1 if unbump else 1))
-        return f'{post[1]}.post{n}'
-    if part is None: part = 2
-    parts = (post[1] if post else v).split('.')
-    parts += ['0'] * (3 - len(parts))
-    idx = len(parts) - 3 + part
-    parts[idx] = str(int(parts[idx]) + (-1 if unbump else 1))
-    for i in range(idx+1, len(parts)): parts[i] = '0'
-    return '.'.join(parts)
 
 # %% ../nbs/api/01_config.ipynb #e32583e6
 def update_version(path=None):

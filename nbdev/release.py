@@ -183,6 +183,7 @@ async def release_gh(
 # %% ../nbs/api/18_release.ipynb #5b4d4aa2
 from fastcore.all import *
 from .config import *
+from fastcore.project import read_version, set_version, bump_version
 from .cli import *
 
 import yaml,subprocess,glob,platform

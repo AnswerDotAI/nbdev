@@ -1,9 +1,9 @@
 "Word-level terminal diffs of plain text, shared by file and notebook rendering."
 
-from fastcore.diff import MIN_RATIO, source_diff, diff_lines
+from fastcore.diff import MIN_RATIO, diff_lines
 from fastcore.utils import *
 
-__all__ = ['MAXLEN', 'MIN_RATIO', 'truncate', 'render_line', 'source_diff', 'render_source_diff']
+__all__ = ['MAXLEN', 'truncate', 'render_line', 'render_source_diff']
 
 MAXLEN = 180 # Most visible characters per displayed line; 0 means unlimited
 _dcolors = {'## …':'\x1b[34m', '# ':'\x1b[1;7m', '#':'\x1b[1m', '-':'\x1b[31m', '+':'\x1b[32m', '@':'\x1b[36m'}

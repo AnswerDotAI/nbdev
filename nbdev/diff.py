@@ -20,6 +20,7 @@ from fastcore.nbio import *
 from fastcore.nbio import _directive
 from .doclinks import nbglob
 from .diff_core import *
+from fastcore.diff import source_diff
 
 # %% ../nbs/api/19_diff.ipynb #a8981115
 def read_nb_from_git(
